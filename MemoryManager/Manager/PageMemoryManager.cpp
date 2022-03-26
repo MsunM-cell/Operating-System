@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-03-26 11:42:49
+ * @LastEditTime: 2022-03-26 12:03:33
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 #include "../MemoryManager.cpp"
@@ -83,6 +83,7 @@ public:
         //怎么进行逻辑地址与物理地址的转换？比如说啊书上给出的转换地址方法是逻辑地址除以页表大小，得到第几个页表项，根据该页表项得到对应的物理块地址
         //假如不能从中间释放，只能从末尾释放的话，是否太过简单不方便？
         //是否引入堆区和栈区？堆区使用链表进行管理吗 
+        //
     }
 
     bool freeAll(int pid)
