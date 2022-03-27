@@ -1,0 +1,174 @@
+
+// include guard
+#ifndef FILE_MANAGER_H_
+#define FILE_MANAGER_H_
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <filesystem>
+#include "json.hpp" // JSON for Modern C++
+
+using namespace std;
+using namespace std::filesystem; // filesystem and their components
+using nlohmann::json;
+
+// compare each other on the basis of 2nd element of pairs
+// in ascending order
+bool cmp(pair<int, int> a, pair<int, int> b);
+
+// Block class
+class Block
+{
+public:
+    /**
+     * @brief Construct a new Block object.
+     *
+     * @param total_space total space of the Block (byte)
+     * @param track track index of the Block
+     * @param sector sector index of the Block
+     */
+    Block(int total_space, int track, int sector);
+    /**
+     * @brief Set new value to free_space.
+     *
+     * @param free_space
+     */
+    void set_free_space(int free_space);
+    /**
+     * @brief Set new value to fp.
+     *
+     * @param fp
+     */
+    void set_fp(string fp);
+
+private:
+    int total_space; // total space of the Block (byte)
+    int free_space;  // free space of the Block (byte)
+    int track;       // track index of the Block
+    int sector;      // sector index of the Block
+    string fp;       // file path relative to home directory
+};
+
+// FileManager class
+class FileManager
+{
+public:
+    char file_separator = (char)path::preferred_separator;               // directory separator
+    string home_path = (string)current_path() + file_separator + "home"; // absolute path of home directory
+
+    /**
+     * @brief Construct a new File Manager object
+     *
+     * @param block_size block size (byte)
+     * @param track_num the number of tracks
+     * @param sector_num the number of sectors
+     */
+    FileManager(int block_size, int track_num, int sector_num);
+    /**
+     * @brief Initialize all disk blocks.
+     *
+     */
+    void init_blocks();
+    /**
+     * @brief Set busy blocks to 0 in bitmap.
+     *
+     */
+    void set_busy_block();
+    /**
+     * @brief Initialize file system tree.
+     *
+     * build tree recursively
+     * tree stored by dictionay (JSON)
+     * key: file name
+     * value: a string like "type/read/write/execute" for files, a new dictionary for directories
+     *
+     * @param current_path absolute path of current directory
+     * @return file system tree
+     */
+    json init_file_system_tree(string current_path);
+    /**
+     * @brief Allocate disk blocks to a file.
+     *
+     * @param file_info information about the file in JSON
+     * @param file_path file path relative to home directory
+     * @param method how to find the idle disk blocks
+     * @return true if allocate successfully
+     */
+    bool fill_file_into_blocks(json file_info, string file_path, int method);
+    /**
+     * @brief Find the idle blocks in a certain method.
+     *
+     * @param num the number of disk blocks we need
+     * @param method 0(first fit), 1(best fit), 2(worst fit)
+     * @return first block index of allocated blocks
+     */
+    int find_idle_blocks(int num, int method);
+    /**
+     * @brief Convert bitmap to string.
+     *
+     * @param source_bitmap
+     * @return string
+     */
+    string bitmap2str(vector<int> source_bitmap);
+    /**
+     * @brief Use First Fit to find the idle blocks.
+     *
+     * @param target_str
+     * @return int
+     */
+    int first_fit(string target_str);
+    /**
+     * @brief Use Best Fit to find the idle blocks.
+     *
+     * @param target_str
+     * @return int
+     */
+    int best_fit(string target_str);
+    /**
+     * @brief Worst First Fit to find the idle blocks.
+     *
+     * @param target_str
+     * @return int
+     */
+    int worst_fit(string target_str);
+
+private:
+    /* private variables */
+
+    /* file system tree */
+    json file_system_tree;
+
+    /**
+     * @brief store block allocation information for each file
+     *
+     * (first block index, the number of blocks allocated, the size of file(byte))
+     */
+    json file_blocks;
+
+    /* all blocks */
+    vector<Block> blocks;
+    /**
+     * @brief bitmap
+     *
+     * for every block
+     * 1 means idle and 0 means busy
+     */
+    vector<int> bitmap;
+
+    /* block size (byte) */
+    int block_size;
+    /* the number of tracks */
+    int track_num;
+    /* the number of sectors */
+    int sector_num;
+    /* the number of blocks */
+    int block_num;
+
+    /* current working directory */
+    string working_path;
+    /* busy blocks list */
+    vector<int> busy_blocks;
+};
+
+#endif
