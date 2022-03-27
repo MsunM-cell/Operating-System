@@ -1,41 +1,54 @@
-/*
- * @Author: LuChang
- * @Date: 2022-03-26 13:29:50
- * @LastEditors: LuChang
- * @LastEditTime: 2022-03-26 15:41:18
- * @FilePath: \osDesign\OS\Operating-System\processManager\FCFS.cpp
- * @Description: 
- *      processmanager,using FCFS algorithm
- * Copyright (c) 2022 by LuChang, All Rights Reserved. 
- */
-
 #include <iostream>
 #include "proc.h"
+#include "../MemoryManager/Manager/PageMemoryManager.cpp"
+
+
+/*** 
+ * @description: a class to manage process with fcfs algorithm
+ */
 class procManagerFCFS{
     public:
         void addToQueue(PCB p);
-        void runProcManager();
-        void run(PCB p);
+        void runProcManager(PageMemoryManager m);
+        void run(PCB p,PageMemoryManager m);
     private:
         queue <PCB> fcfsQueue;
     
 };
 
+/*** 
+ * @description: push this process into the fcfs queue
+ * @param {PCB} p
+ * @return {*}
+ */
 void procManagerFCFS::addToQueue(PCB p){
     fcfsQueue.push(p);
 }
 
-void procManagerFCFS::runProcManager(){
+
+/*** 
+ * @description: the fcfs algorithm
+ * @param {  }
+ * @return {*}
+ */
+void procManagerFCFS::runProcManager(PageMemoryManager m){
     while(true){
         while(!fcfsQueue.empty()){
             PCB p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
-            run(p);
+            run(p,m);
             fcfsQueue.pop();
         }
     }
 }
 
-void procManagerFCFS::run(PCB p){
+
+/*** 
+ * @description: execute the programme,not written yet
+ * @param {PCB} p
+ * @return {*}
+ */
+void procManagerFCFS::run(PCB p,PageMemoryManager m){
+    // m.accessMemory(pid);
     std::cout << "process " << p.id << " is running" << endl;
 }

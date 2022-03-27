@@ -4,7 +4,7 @@
  * @LastEditTime: 2022-03-26 12:03:33
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
-#include "../MemoryManager.cpp"
+#include "../Interface/MemoryManager.cpp"
 #include <vector>
 #include <map>
 

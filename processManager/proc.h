@@ -25,6 +25,11 @@ typedef struct
    int time_need;
 } PCB;
 
+// CPU是否在使用，可扩展为数组
+bool CPU;
+// IO设备是否在使用，可扩展为数组
+bool IO;
+
 // 全局变量
 // rr队列
 static queue<PCB*> rr_que;
