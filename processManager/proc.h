@@ -11,8 +11,16 @@
 using namespace std;
 
 // 宏
+// 对齐宽度
 #define WIDETH 10
+// 时间片大小
 #define TIME_SLICE 200
+// 高优先级
+#define HIGH_PRI 0
+// 低优先级
+#define LOW_PRI 1
+// 最大时间片数量
+#define MAX_CNT 10
 
 // PCB的结构体
 typedef struct 
