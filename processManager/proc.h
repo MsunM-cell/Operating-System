@@ -26,9 +26,9 @@ typedef struct
 } PCB;
 
 // CPU是否在使用，可扩展为数组
-bool CPU;
+bool CPU[2];
 // IO设备是否在使用，可扩展为数组
-bool IO;
+bool IO[2];
 
 // 全局变量
 // rr队列
