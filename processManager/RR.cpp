@@ -8,22 +8,12 @@ using namespace std;
 
 
 /**
- * @brief RR队列的一般构造
- * @param void
- */
-RRQueue::RRQueue()
-{
-    this->size = 0;
-}
-
-/**
  * @brief 仅会在测试中使用，根据输入的大小随机构造
  * @param n_size 队列中不会被降级的个数
  * @param x_size 被降级的个数
  */
 RRQueue::RRQueue(int n_size, int x_size)
 {
-    this->size = n_size + x_size;
     // 不会被降级的PCB
     for (int i = 0; i < n_size; i++)
     {
@@ -33,7 +23,7 @@ RRQueue::RRQueue(int n_size, int x_size)
         new_pcb->slice_cnt = 0;
         new_pcb->time_need = rand() % 30 * 100;
         active_pcb.push_back(new_pcb);
-        this->rr_que.push(new_pcb);
+        this->rr_que.push_back(new_pcb);
     }
     // 降级测试
     for (int i = 0; i < x_size; i++)
@@ -44,7 +34,7 @@ RRQueue::RRQueue(int n_size, int x_size)
         new_pcb->slice_cnt = 0;
         new_pcb->time_need = rand() % 10 * 100 + TIME_SLICE * MAX_CNT;
         active_pcb.push_back(new_pcb);
-        this->rr_que.push(new_pcb);
+        this->rr_que.push_back(new_pcb);
     }
 }
 
@@ -62,33 +52,7 @@ RRQueue::~RRQueue()
  */
 int RRQueue::getSize()
 {
-    return this->size;
-}
-
-/**
- * @brief 将RR队列中的首个PCB弹出
- * @return 指向弹出PCB的指针，如果空则返回空指针
- */
-PCB* RRQueue::popFront()
-{
-    if (this->rr_que.empty())
-    {
-        return nullptr;
-    }
-    PCB* cur_pcb =  this->rr_que.front();
-    this->rr_que.pop();
-    this->size--;
-    return cur_pcb;
-}
-
-/**
- * @brief 将某个PCB加入队尾
- * @param target 指向需要插入PCB的指针
- */
-void RRQueue::pushBack(PCB* target)
-{
-    this->rr_que.push(target);
-    this->size++;
+    return (int)(this->rr_que.size());
 }
 
 /**
@@ -101,6 +65,24 @@ void RRQueue::downLevel(PCB* target)
 }
 
 /**
+ * 移除一个pcb
+ * @param pid 将要移除的pcb的id
+ * @return 成功则返回true
+ */
+bool RRQueue::removePCB(int pid)
+{
+    for (auto it = this->rr_que.begin(); it != this->rr_que.end(); it++)
+    {
+        if ((*it)->id == pid)
+        {
+            this->rr_que.erase(it);
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * @brief 调度主算法
  * @return 正常结束返回0
  */
@@ -108,34 +90,40 @@ int RRQueue::scheduling()
 {
     cout << setw(WIDTH) << "Id" << setw(WIDTH) << "Time_need\n";
     // 循环到rr队列为空
-    while (this->getSize() != 0)
+    while (!this->rr_que.empty())
     {
-        // 取出需要处理的PCB
-        PCB* cur_pcb = this->popFront();
-        if (cur_pcb != nullptr)
+        // 对每个pcb进行处理
+        for (auto it = this->rr_que.begin(); it < this->rr_que.end(); it++)
         {
+            PCB* cur_pcb = *it;
             cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
             // 判断时间是否够完成一次循环
-            if (cur_pcb->time_need > TIME_SLICE) {
+            if (cur_pcb->time_need > TIME_SLICE)
+            {
                 // 模拟服务过程
                 Sleep(TIME_SLICE);
                 // 时间片到
                 cur_pcb->time_need -= TIME_SLICE;
                 printf("[%ld]Pid %d time out! Still need %d.\n", clock() - system_start, cur_pcb->id,
                        cur_pcb->time_need);
-                // 判断一下是否使用了过多的时间片,是则降级,否则加入队尾
+                // 判断一下是否使用了过多的时间片,是则降级
                 cur_pcb->slice_cnt++;
-                if (cur_pcb->slice_cnt == MAX_CNT) {
+                if (cur_pcb->slice_cnt == MAX_CNT)
+                {
                     cur_pcb->pri = LOW_PRI;
-                    // 降级加入fcfs队列中
+                    // 降级加入fcfs队列中,并从当前队列删除
                     this->downLevel(cur_pcb);
-                } else {
-                    this->pushBack(cur_pcb);
+                    it = this->rr_que.erase(it);
                 }
-            } else {
-                // 需要的时间小于完整的时间片
+            }
+            else
+            {
+                // 需要的时间小于完整的时间片，完成后从队列中删除该项
                 Sleep(cur_pcb->time_need);
+                cur_pcb->time_need = -1;
                 printf("[%ld]Pid %d time out! No time need.\n", clock() - system_start, cur_pcb->id);
+                it = this->rr_que.erase(it);
+                //TODO 如何实现到外部的队列更新？
             }
         }
     }
@@ -167,15 +155,45 @@ ProcManager::~ProcManager()
  */
 bool ProcManager::kill(int pid)
 {
+    // 在活跃队列里面寻找进程
     for (auto it=this->active_pcb.begin(); it < this->active_pcb.end(); it++)
     {
-        // 找到目标进程并消灭
+        // 找到了，删除它并将其从对应的调度队列中删除
+        if ((*it)->id == pid)
+        {
+            if ((*it)->pri == HIGH_PRI)
+            {
+                this->rr_queue->removePCB(pid);
+            }
+            // else if ((*it)->pri == LOW_PRI)
+            // {
+            // //    到fcfs队列里面找
+            // }
+            delete *it;
+            this->active_pcb.erase(it);
+            return true;
+        }
+    }
+    // 在等待队列里面寻找进程
+    for (auto it=this->waiting_pcb.begin(); it < this->waiting_pcb.end(); it++)
+    {
+        // 找到了，删除它
         if ((*it)->id == pid)
         {
             delete *it;
             this->active_pcb.erase(it);
+            return true;
         }
     }
+    return false;
+}
+
+/**
+ * 列出当前所有存在的pcb
+ */
+void ProcManager::ps()
+{
+    //TODO 继续写ps
 }
 
 int main()

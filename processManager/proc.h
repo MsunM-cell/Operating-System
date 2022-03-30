@@ -42,17 +42,14 @@ static queue <PCB> FCFS;
 class RRQueue
 {
 private:
-    //目前队列中PCB的数量
-    int size;
     //rr队列本身
-    queue<PCB*> rr_que;
+    vector<PCB*> rr_que;
 public:
-    RRQueue();
+    RRQueue() = default;
     RRQueue(int n_size, int x_size);
     ~RRQueue();
     int getSize();
-    PCB* popFront();
-    void pushBack(PCB* target);
+    bool removePCB(int pid);
     void downLevel(PCB* target);
     int scheduling();
 };
