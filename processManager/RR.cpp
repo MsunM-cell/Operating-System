@@ -111,36 +111,71 @@ int RRQueue::scheduling()
     while (this->getSize() != 0)
     {
         // 取出需要处理的PCB
-        PCB* cur_pcb =  this->popFront();
-        cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
-        // 判断时间是否够完成一次循环
-        if (cur_pcb->time_need > TIME_SLICE)
+        PCB* cur_pcb = this->popFront();
+        if (cur_pcb != nullptr)
         {
-            // 模拟服务过程
-            Sleep(TIME_SLICE);
-            // 时间片到
-            cur_pcb->time_need -= TIME_SLICE;
-            printf("[%ld]Pid %d time out! Still need %d.\n", clock() - system_start, cur_pcb->id, cur_pcb->time_need);
-            // 判断一下是否使用了过多的时间片,是则降级,否则加入队尾
-            cur_pcb->slice_cnt++;
-            if (cur_pcb->slice_cnt == MAX_CNT)
-            {
-                cur_pcb->pri = LOW_PRI;
-                // 降级加入fcfs队列中
-                this->downLevel(cur_pcb);
+            cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
+            // 判断时间是否够完成一次循环
+            if (cur_pcb->time_need > TIME_SLICE) {
+                // 模拟服务过程
+                Sleep(TIME_SLICE);
+                // 时间片到
+                cur_pcb->time_need -= TIME_SLICE;
+                printf("[%ld]Pid %d time out! Still need %d.\n", clock() - system_start, cur_pcb->id,
+                       cur_pcb->time_need);
+                // 判断一下是否使用了过多的时间片,是则降级,否则加入队尾
+                cur_pcb->slice_cnt++;
+                if (cur_pcb->slice_cnt == MAX_CNT) {
+                    cur_pcb->pri = LOW_PRI;
+                    // 降级加入fcfs队列中
+                    this->downLevel(cur_pcb);
+                } else {
+                    this->pushBack(cur_pcb);
+                }
+            } else {
+                // 需要的时间小于完整的时间片
+                Sleep(cur_pcb->time_need);
+                printf("[%ld]Pid %d time out! No time need.\n", clock() - system_start, cur_pcb->id);
             }
-            else {
-                this->pushBack(cur_pcb);
-            }
-        }
-        else
-        {
-            // 需要的时间小于完整的时间片
-            Sleep(cur_pcb->time_need);
-            printf("[%ld]Pid %d time out! No time need.\n", clock() - system_start, cur_pcb->id);
         }
     }
     return 0;
+}
+
+/**
+ * @brief ProcManager的构造函数
+ */
+ProcManager::ProcManager()
+{
+    cout << "ProcManager is running!\n";
+    // 测试用代码
+    this->rr_queue = new RRQueue(5,2);
+}
+
+/**
+ * @brief ProcManager的析构函数
+ */
+ProcManager::~ProcManager()
+{
+    cout << "ProcManager is over!\n";
+}
+
+/**
+ * 杀掉一个进程
+ * @param pid 进程的id
+ * @return 成功则返回true
+ */
+bool ProcManager::kill(int pid)
+{
+    for (auto it=this->active_pcb.begin(); it < this->active_pcb.end(); it++)
+    {
+        // 找到目标进程并消灭
+        if ((*it)->id == pid)
+        {
+            delete *it;
+            this->active_pcb.erase(it);
+        }
+    }
 }
 
 int main()

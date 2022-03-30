@@ -9,7 +9,7 @@
 
 
 // PCB的结构体
-typedef struct
+typedef struct PCB
 {
     // pid
     int id;
@@ -19,14 +19,17 @@ typedef struct
     int slice_cnt;
     // 预计还需要的时间
     int time_need;
+    // PC
+    int pc;
+    // 块大小
+    int size;
 } PCB;
 
 //文件结构体
-typedef struct
+typedef struct XFILE
 {
     int id;
 }XFILE;
-
 
 //程序运行的开始时间
 clock_t system_start;

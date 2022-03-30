@@ -61,8 +61,19 @@ public:
 class ProcManager
 {
 private:
+    // 处于就绪状态的pcb
+    vector<PCB*> active_pcb;
+    // 位于等待状态的pcb
+    vector<PCB*> waiting_pcb;
+    // RR队列
+    RRQueue* rr_queue;
 public:
-
+    ProcManager();
+    ~ProcManager();
+    bool kill(int pid);
+    bool run(XFILE file);
+    void ps();
+    void ps(int pid);
 };
 
 #endif // !PROC_H
