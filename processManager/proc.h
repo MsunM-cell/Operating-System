@@ -47,19 +47,35 @@ private:
     vector<PCB*> rr_que;
 public:
     RRQueue() = default;
-    RRQueue(int n_size, int x_size);
     ~RRQueue();
     int getSize();
+    bool addPCB(PCB* target);
     bool removePCB(int pid);
     void downLevel(PCB* target);
     int scheduling();
+    void getInfo();
+    void getInfo(int pid);
+};
+
+
+class procManagerFCFS{
+public:
+    void addToQueue(PCB p);
+    void runProcManager(PageMemoryManager* m);
+    bool removeProc(int pid);
+    ~procManagerFCFS();
+private:
+    vector <PCB> fcfsQueue;
+    void run(PCB p,PageMemoryManager* m);
+    string getCommand();
+
 };
 
 //进程管理器类
 class ProcManager
 {
 private:
-    // 处于就绪状态的pcb
+    // 处于就绪状态的pcb，这个东西应该不存在，假装它来自内存
     vector<PCB*> active_pcb;
     // 位于等待状态的pcb
     vector<PCB*> waiting_pcb;
@@ -68,26 +84,15 @@ private:
     procManagerFCFS* fsfcProcManager;
 public:
     ProcManager();
+    ProcManager(int n_size, int x_size);
     ~ProcManager();
-    bool kill(int pid);
-    bool run(XFILE file);
+    int getActiveNum();
+    void kill(int pid);
+    void run(XFILE file);
     void ps();
     void ps(int pid);
+    void scheduling();
 };
-
-class procManagerFCFS{
-    public:
-        void addToQueue(PCB p);
-        void runProcManager(PageMemoryManager* m);
-        bool removeProc(int pid);
-        ~procManagerFCFS();
-    private:
-        vector <PCB> fcfsQueue;
-        void run(PCB p,PageMemoryManager* m);
-        string getCommand();
-    
-};
-
 
 #endif // !PROC_H
 
