@@ -64,6 +64,7 @@ private:
     vector<PCB*> waiting_pcb;
     // RR∂”¡–
     RRQueue* rr_queue;
+    procManagerFCFS* fsfcProcManager;
 public:
     ProcManager();
     ~ProcManager();
@@ -72,6 +73,20 @@ public:
     void ps();
     void ps(int pid);
 };
+
+class procManagerFCFS{
+    public:
+        void addToQueue(PCB p);
+        void runProcManager(PageMemoryManager* m);
+        bool removeProc(int pid);
+        ~procManagerFCFS();
+    private:
+        vector <PCB> fcfsQueue;
+        void run(PCB p,PageMemoryManager* m);
+        string getCommand();
+    
+};
+
 
 #endif // !PROC_H
 

@@ -2,20 +2,12 @@
 #include "proc.h"
 #include "../MemoryManager/Manager/PageMemoryManager.cpp"
 
-
 /*** 
  * @description: a class to manage process with fcfs algorithm
  */
-class procManagerFCFS{
-    public:
-        void addToQueue(PCB p);
-        void runProcManager(PageMemoryManager* m);
-    private:
-        queue <PCB> fcfsQueue;
-        void run(PCB p,PageMemoryManager* m);
-        string getCommand();
-    
-};
+procManagerFCFS::~procManagerFCFS(){
+    cout << "FCFS proc manager is terminated" << endl;
+}
 
 /*** 
  * @description: push this process into the fcfs queue
@@ -23,7 +15,7 @@ class procManagerFCFS{
  * @return {*}
  */
 void procManagerFCFS::addToQueue(PCB p){
-    fcfsQueue.push(p);
+    fcfsQueue.push_back(p);
 }
 
 
@@ -38,8 +30,10 @@ void procManagerFCFS::runProcManager(PageMemoryManager* m){
             PCB p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
             run(p,m);
-            fcfsQueue.pop();
+            auto it = fcfsQueue.begin();
+            it = fcfsQueue.erase(it);
         }
+        return ;
     }
 }
 
@@ -84,4 +78,21 @@ void procManagerFCFS::run(PCB p,PageMemoryManager* m){
         m->accessMemory(p.id,atoi(cmd.substr(index).c_str()));
     }
     return ;
+}
+
+
+/*** 
+ * @description: 
+ * @param {int} pid
+ * @return {*}
+ */
+bool procManagerFCFS::removeProc(int pid){
+    for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
+        if(it->id == pid){
+            it = fcfsQueue.erase(it);
+            return true;
+        }
+    }
+    cout << "no such pid" << endl;
+    return false;
 }
