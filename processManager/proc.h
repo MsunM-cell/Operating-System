@@ -11,6 +11,7 @@
 #include <cmath>
 #include <windows.h>
 
+#include "../MemoryManager/Manager/PageMemoryManager.cpp"
 #include "../lib/sys.h"
 using namespace std;
 

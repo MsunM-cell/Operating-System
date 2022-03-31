@@ -1,6 +1,5 @@
 #include <iostream>
 #include "proc.h"
-#include "../MemoryManager/Manager/PageMemoryManager.cpp"
 
 /*** 
  * @description: a class to manage process with fcfs algorithm
