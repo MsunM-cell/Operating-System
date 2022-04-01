@@ -17,6 +17,13 @@ using nlohmann::json;
 // in ascending order
 bool cmp(pair<int, int> a, pair<int, int> b);
 
+// If you need to convert a wstring into a string, just call it.
+string WStringToString(const wstring& s);
+
+// If you need to convert a string into a wstring, just call it.
+wstring StringToWString(const string& s)
+
+
 // Block class
 class Block
 {

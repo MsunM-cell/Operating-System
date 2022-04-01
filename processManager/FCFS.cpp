@@ -59,6 +59,9 @@ string ProcManagerFCFS::getCommand(){
  */
 void ProcManagerFCFS::run(PCB p){
     // 因为还没定文件格式，run函数暂时没有办法写
+    cout << "process " << p.id << " is running," << " will use " << p.time_need << " ms."<< endl;
+    Sleep(p.time_need);
+    cout << "process " << p.id << " is terminated" << endl;
     return ;
 }
 
@@ -103,7 +106,7 @@ void ProcManagerFCFS::getFcfsInfo(){
  */
 void ProcManagerFCFS::getFcfsInfo(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
-        if(it->id = pid){
+        if(it->id == pid){
             cout << it->id << " " << endl;
             return ;
         }

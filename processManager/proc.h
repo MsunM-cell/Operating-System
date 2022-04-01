@@ -41,6 +41,23 @@ static vector<PCB*> active_pcb;
 
 static queue <PCB> FCFS;
 
+
+class ProcManagerFCFS{
+public:
+    void addToQueue(PCB p);
+    void runProcManager();
+    bool removeProc(int pid);
+    ProcManagerFCFS() = default;
+    ~ProcManagerFCFS();
+    void getFcfsInfo();
+    void getFcfsInfo(int pid);
+    int getQueueSize();
+private:
+    vector <PCB> fcfsQueue;
+    void run(PCB p);
+    string getCommand();
+};
+
 // RR队列类
 class RRQueue
 {
@@ -53,27 +70,12 @@ public:
     int getSize();
     bool addPCB(PCB* target);
     bool removePCB(int pid);
-    void downLevel(PCB* target);
-    int scheduling();
+    void downLevel(PCB* target,ProcManagerFCFS* fcfs);
+    int scheduling(ProcManagerFCFS* fcfs);
     void getInfo();
     void getInfo(int pid);
 };
 
-
-class ProcManagerFCFS{
-public:
-    void addToQueue(PCB p);
-    void runProcManager();
-    bool removeProc(int pid);
-    ~ProcManagerFCFS();
-    void getFcfsInfo();
-    void getFcfsInfo(int pid);
-    int getQueueSize();
-private:
-    vector <PCB> fcfsQueue;
-    void run(PCB p);
-    string getCommand();
-};
 
 //进程管理器类
 class ProcManager

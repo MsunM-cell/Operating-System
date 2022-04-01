@@ -8,6 +8,31 @@ bool cmp(pair<int, int> a, pair<int, int> b)
 }
 
 /**
+ * @brief convert a wstring into a string
+ * 
+ * @param s a const wstring
+ */
+string WStringToString(const wstring& s)
+{
+    string temp(s.length(), ' ');
+    copy(s.begin(), s.end(), temp.begin());
+    return temp;
+}
+
+
+/**
+ * @brief convert a string into a wstring
+ * 
+ * @param s a const string
+ */
+wstring StringToWString(const string& s)
+{
+    wstring temp(s.length(), L' ');
+    copy(s.begin(), s.end(), temp.begin());
+    return temp;
+}
+
+/**
  * @brief Construct a new Block object
  *
  * @param total_space total space of the Block (byte)
@@ -123,8 +148,8 @@ json FileManager::init_file_system_tree(string current_path)
     // traverse directory
     for (auto &file : file_list)
     {
-        string file_path = (string)file.path();            // absolute path
-        string file_name = (string)file.path().filename(); // file name
+        wstring file_path = (wstring)file.path();            // absolute path
+        wstring file_name = (wstring)file.path().filename(); // file name
         // if path is a directory, set key's value a new dictionary
         // otherwise, set key's value a string like "crwx"
         if (file.status().type() == file_type::directory)
@@ -143,7 +168,7 @@ json FileManager::init_file_system_tree(string current_path)
             json file_info;
             i >> file_info;
             tree[file_name] = file_info["type"];
-            string relative_path = file_path.substr(this->home_path.size());
+            wstring relative_path = file_path.substr(this->home_path.size());
             // check if there is enough space to fill file into disk blocks
             if (this->fill_file_into_blocks(file_info, relative_path, 0) == false)
                 printf("disk storage error: no enough initial space.\n");
