@@ -106,7 +106,7 @@ void ProcManagerFCFS::getFcfsInfo(){
  */
 void ProcManagerFCFS::getFcfsInfo(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
-        if(it->id = pid){
+        if(it->id == pid){
             cout << it->id << " " << endl;
             return ;
         }
