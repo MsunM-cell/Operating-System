@@ -27,12 +27,12 @@ void ProcManagerFCFS::addToQueue(PCB p){
  * @param {PageMemoryManager*} m
  * @return {NULL}
  */
-void ProcManagerFCFS::runProcManager(PageMemoryManager* m){
+void ProcManagerFCFS::runProcManager(){
     while(true){
         while(!fcfsQueue.empty()){
             PCB p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
-            run(p,m);
+            run(p);
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
         }
@@ -57,36 +57,8 @@ string ProcManagerFCFS::getCommand(){
  * @param {PageMemoryManager*} m
  * @return {NULL}
  */
-void ProcManagerFCFS::run(PCB p,PageMemoryManager* m){
-    string cpuCmd = "CPU",IOCmd = "IO",accessCmd = "access";
-    int index;
-    // m.accessMemory(pid);
-    // 这里我们假设已经获取到了指令
-    string cmd = getCommand();
-    if(cmd.find(cpuCmd) != string::npos){
-        index = cmd.find(cpuCmd) + 3;
-        if(CPU[atoi(cmd.substr(index).c_str())]){
-            CPU[atoi(cmd.substr(index).c_str())] = false;
-            index = cmd.find(' ');
-            string tmp = cmd.substr(index);
-            Sleep(atoi(tmp.c_str()));
-            CPU[atoi(cmd.substr(index).c_str())] = true;
-        }
-    }
-    else if(cmd.find(IOCmd) != string::npos){
-        index = cmd.find(IOCmd) + 2;
-        if(IO[atoi(cmd.substr(index).c_str())]){
-            IO[atoi(cmd.substr(index).c_str())] = false;
-            string tmp = cmd.substr(index);
-            index += 2;
-            Sleep(atoi(tmp.c_str()));
-            IO[atoi(cmd.substr(index).c_str())] = true;
-        }
-    }
-    else if(cmd.find(accessCmd) != string::npos){
-        index = cmd.find(accessCmd) + 7;
-        m->accessMemory(p.id,atoi(cmd.substr(index).c_str()));
-    }
+void ProcManagerFCFS::run(PCB p){
+    // 因为还没定文件格式，run函数暂时没有办法写
     return ;
 }
 

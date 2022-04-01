@@ -12,7 +12,6 @@
 #include <windows.h>
 #include <string>
 
-#include "../MemoryManager/Manager/PageMemoryManager.cpp"
 #include "../lib/sys.h"
 using namespace std;
 
@@ -64,7 +63,7 @@ public:
 class ProcManagerFCFS{
 public:
     void addToQueue(PCB p);
-    void runProcManager(PageMemoryManager* m);
+    void runProcManager();
     bool removeProc(int pid);
     ~ProcManagerFCFS();
     void getFcfsInfo();
@@ -72,9 +71,8 @@ public:
     int getQueueSize();
 private:
     vector <PCB> fcfsQueue;
-    void run(PCB p,PageMemoryManager* m);
+    void run(PCB p);
     string getCommand();
-
 };
 
 //进程管理器类
@@ -89,7 +87,7 @@ private:
     vector<PCB*> waiting_pcb;
     // RR队列
     RRQueue* rr_queue;
-    ProcManagerFCFS* fsfcProcManager;
+    ProcManagerFCFS* fcfsProcManager;
 public:
     ProcManager();
     ProcManager(int n_size, int x_size);
