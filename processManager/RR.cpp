@@ -73,7 +73,7 @@ bool RRQueue::removePCB(int pid)
  */
 int RRQueue::scheduling()
 {
-    cout << setw(WIDTH) << "Id" << setw(WIDTH) << "Time_need\n";
+    // cout << setw(WIDTH) << "Id" << setw(WIDTH) << "Time_need\n";
     // 循环到rr队列为空
     while (!this->rr_que.empty())
     {
@@ -81,7 +81,7 @@ int RRQueue::scheduling()
         for (auto it = this->rr_que.begin(); it < this->rr_que.end(); it++)
         {
             PCB* cur_pcb = *it;
-            cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
+            // cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
             // 判断时间是否够完成一次循环
             if (cur_pcb->time_need > TIME_SLICE)
             {
@@ -123,7 +123,8 @@ void RRQueue::getInfo()
 {
     for (PCB* pcb : rr_que)
     {
-        cout << "pid: " << pcb->id << " pri: " << pcb->pri << " need: " << pcb->time_need << endl;
+        cout << "pid: " << pcb->id << " name:" << pcb->name ;
+        cout << " pri: " << pcb->pri << " need: " << pcb->time_need << endl;
     }
 }
 
@@ -139,7 +140,8 @@ void RRQueue::getInfo(int pid)
         PCB* pcb = *it;
         if (pcb->id == pid)
         {
-            cout << "pid: " << pcb->id << " pri: " << pcb->pri << " need: " << pcb->time_need << endl;
+            cout << "pid: " << pcb->id << " name:" << pcb->name ;
+            cout << " pri: " << pcb->pri << " need: " << pcb->time_need << endl;
             return;
         }
     }
@@ -155,6 +157,8 @@ void RRQueue::getInfo(int pid)
  */
 ProcManager::ProcManager()
 {
+    this->cpid = 0;
+    this->rr_queue = new RRQueue();
     cout << "ProcManager is running!\n";
 }
 
@@ -165,6 +169,7 @@ ProcManager::ProcManager()
  */
 ProcManager::ProcManager(int n_size, int x_size)
 {
+    this->cpid = 0;
     this->rr_queue = new RRQueue();
     cout << "ProcManager is running!\n";
     // 不会被降级的PCB
@@ -172,6 +177,7 @@ ProcManager::ProcManager(int n_size, int x_size)
     {
         PCB* new_pcb = (PCB*) malloc(sizeof(PCB));
         new_pcb->id = i;
+        new_pcb->name = "normal";
         new_pcb->pri = HIGH_PRI;
         new_pcb->slice_cnt = 0;
         new_pcb->time_need = rand() % 30 * 100;
@@ -182,11 +188,14 @@ ProcManager::ProcManager(int n_size, int x_size)
     {
         PCB* new_pcb = (PCB*) malloc(sizeof(PCB));
         new_pcb->id = n_size + i;
+        new_pcb->name ="large";
         new_pcb->pri = HIGH_PRI;
         new_pcb->slice_cnt = 0;
         new_pcb->time_need = rand() % 10 * 100 + TIME_SLICE * MAX_CNT;
         active_pcb.push_back(new_pcb);
     }
+    this->cpid = 7;
+
     // 向rr添加pcb，之后可重用
     for (PCB* pcb : this->active_pcb)
     {
@@ -211,6 +220,17 @@ int ProcManager::getActiveNum()
     return rr_queue->getSize();
     // TODO fcfs链接后:
     //  return rr_queue->getSize() + fcfs数量;
+}
+
+/**
+ * 进程全杀了（实验用）
+ */
+void ProcManager::kill()
+{
+    for (PCB* pcb : this->active_pcb)
+    {
+        delete pcb;
+    }
 }
 
 /**
@@ -266,11 +286,38 @@ void ProcManager::ps(int pid)
 
 /**
  * 启动一个进程
- * @param file 要启动的文件
+ * @param file_name 要启动的文件名
  */
-void ProcManager::run(XFILE file)
+void ProcManager::run(string file_name)
 {
-    //TODO 写这个了
+    // 从其他模块获取文件的有关信息，这里模拟一下
+    PCB* new_pcb = new PCB;
+    new_pcb->id = this->cpid;
+    new_pcb->name = file_name;
+    new_pcb->pri = HIGH_PRI;
+    new_pcb->time_need = 1888;
+    new_pcb->slice_cnt = 0;
+    this->cpid = (this->cpid + 1) % 65536;
+    PCB* pcb = new_pcb;
+
+    // 判断是否需要加入到等待队列
+    if (this->getActiveNum() < MAX_PROC)
+    {
+        if (pcb->pri == HIGH_PRI)
+        {
+            this->rr_queue->addPCB(pcb);
+        }
+        else if (pcb->pri == LOW_PRI)
+        {
+            // 加入fcfs队列
+        }
+        printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
+    }
+    else
+    {
+        this->waiting_pcb.push_back(pcb);
+        printf("[%ld]Pid=%d is waiting.\n", clock() - system_start, pcb->id);
+    }
 }
 
 /**
@@ -297,7 +344,12 @@ int main()
     cout <<"kill test\n";
     proc_manager.kill(3);
     proc_manager.ps();
-    // proc_manager.scheduling();
-    // proc_manager.ps();
+    cout <<"run test\n";
+    proc_manager.run("run_test");
+    proc_manager.ps();
+    proc_manager.scheduling();
+    proc_manager.ps();
+
+    proc_manager.kill();
     return 0;
 }

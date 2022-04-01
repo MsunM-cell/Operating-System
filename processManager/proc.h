@@ -10,6 +10,7 @@
 #include <vector>
 #include <cmath>
 #include <windows.h>
+#include <string>
 
 #include "../MemoryManager/Manager/PageMemoryManager.cpp"
 #include "../lib/sys.h"
@@ -26,6 +27,8 @@ using namespace std;
 #define LOW_PRI 1
 // 最大占用的时间片数量
 #define MAX_CNT 10
+// 最大可调度的进程数量
+#define MAX_PROC 10
 
 
 // CPU是否在使用，可扩展为数组
@@ -78,6 +81,8 @@ private:
 class ProcManager
 {
 private:
+    // 记录可用的pid号
+    int cpid;
     // 处于就绪状态的pcb，这个东西应该不存在，假装它来自内存
     vector<PCB*> active_pcb;
     // 位于等待状态的pcb
@@ -90,8 +95,9 @@ public:
     ProcManager(int n_size, int x_size);
     ~ProcManager();
     int getActiveNum();
+    void kill();
     void kill(int pid);
-    void run(XFILE file);
+    void run(string file_name);
     void ps();
     void ps(int pid);
     void scheduling();
