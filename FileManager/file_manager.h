@@ -148,6 +148,7 @@ public:
      * @return int
      */
     int worst_fit(string target_str);
+    int get_number_of_files(string directory);
     /**
      * @brief print file system by tree recursively
      * 

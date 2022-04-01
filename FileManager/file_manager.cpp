@@ -336,6 +336,16 @@ int FileManager::worst_fit(string target_str)
     return free_blocks[free_blocks.size() - 1].first;
 }
 
+int FileManager::get_number_of_files(string directory)
+{
+    path cur_directory(directory);
+    directory_iterator file_list(cur_directory);
+    int count = 0;
+    for (auto file : file_list)
+        count++;
+    return count;
+}
+
 /**
  * @brief print file system by tree recursively
  *
@@ -345,15 +355,25 @@ int FileManager::worst_fit(string target_str)
 void FileManager::print_file_system_tree(string directory, int layer)
 {
     path cur_directory(directory);
+    // the number of files in current directory
+    int count = (int)distance(directory_iterator(cur_directory), directory_iterator{});
+    int index = 0; // the index of files in current directory
+
     directory_iterator file_list(cur_directory);
-    for (auto &file : file_list)
+    // start to print tree
+    if (layer == 0)
+        printf(".\n");
+    for (auto file : file_list)
     {
         string file_path = (string)file.path();
         string file_name = (string)file.path().filename();
-        for (int i = 0; i < layer - 1; i++)
-            printf("|  ");
-        if (layer > 0)
-            printf("|--");
+        for (int i = 0; i < layer; i++)
+            printf("|   ");
+        index++;
+        if (index == count)
+            printf("`-- ");
+        else
+            printf("|-- ");
         printf("%s\n", file_name.c_str());
         if (file.status().type() == file_type::directory)
             this->print_file_system_tree(file_path, layer + 1);
