@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-03-26 12:03:33
+ * @LastEditTime: 2022-04-01 10:14:20
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 #include "../Interface/MemoryManager.cpp"
@@ -49,7 +49,7 @@ public:
 
     ~PageMemoryManager();
 
-    int pageAlloc(int pid, int length)
+    int memoryAlloc(int pid, int length)
     {
         int allocPageNum = length % pageSize == 0 ? length / pageSize : length / pageSize + 1;
         if (pageNum - occupiedPageNum < allocPageNum) //剩余内存不足
@@ -74,15 +74,15 @@ public:
         }
         return 1;
     }
-    
+
     // 不太清楚是否可以中间某一页
-    bool pageFree(int pid, int address, int length) 
+    bool memoryFree(int pid, int address, int length)
     {
         //假如可以释放中间某一页的话，那程序的逻辑地址是否是不连续的呢？
         //这样怎么判断该程序是否越界？
         //怎么进行逻辑地址与物理地址的转换？比如说啊书上给出的转换地址方法是逻辑地址除以页表大小，得到第几个页表项，根据该页表项得到对应的物理块地址
         //假如不能从中间释放，只能从末尾释放的话，是否太过简单不方便？
-        //是否引入堆区和栈区？堆区使用链表进行管理吗 
+        //是否引入堆区和栈区？堆区使用链表进行管理吗
         //
     }
 
@@ -92,9 +92,10 @@ public:
 
     char accessMemory(int pid, int address)
     { //读一个字节？
-        vector<tableItem>* pageTable = getProcessPageTable(pid);
+        vector<tableItem> *pageTable = getProcessPageTable(pid);
         int temp = address / pageSize;
-        if(temp+1 < pageTable->size()){
+        if (temp + 1 < pageTable->size())
+        {
             return -1;
         }
         int pageNo = pageTable->at(temp).pageNo;
