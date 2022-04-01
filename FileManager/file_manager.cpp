@@ -43,6 +43,7 @@ void Block::set_fp(string fp)
     this->fp = fp;
 }
 
+
 /**
  * @brief Construct a new File Manager object
  *
@@ -312,7 +313,27 @@ int FileManager::worst_fit(string target_str)
     return free_blocks[free_blocks.size() - 1].first;
 }
 
+void FileManager::print_file_system_tree(string directory, int layer)
+{
+    path cur_directory(directory);
+    directory_iterator file_list(cur_directory);
+    for (auto &file : file_list)
+    {
+        string file_path = (string)file.path();
+        string file_name = (string)file.path().filename();
+        for (int i = 0; i < layer - 1; i++)
+            printf("|  ");
+        if (layer > 0)
+            printf("|--");
+        printf("%s\n", file_name.c_str());
+        if (file.status().type() == file_type::directory)
+            this->print_file_system_tree(file_path, layer + 1);
+    }
+}
+
 int main()
 {
     FileManager fm(512, 200, 12);
+    fm.print_file_system_tree(fm.home_path);
+    return 0;
 }

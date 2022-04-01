@@ -132,6 +132,7 @@ public:
      * @return int
      */
     int worst_fit(string target_str);
+    void print_file_system_tree(string directory, int layer = 0);
 
 private:
     vector<Block> blocks; // all disk blocks
