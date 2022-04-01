@@ -9,23 +9,22 @@ bool cmp(pair<int, int> a, pair<int, int> b)
 
 /**
  * @brief convert a wstring into a string
- * 
+ *
  * @param s a const wstring
  */
-string WStringToString(const wstring& s)
+string WStringToString(const wstring &s)
 {
     string temp(s.length(), ' ');
     copy(s.begin(), s.end(), temp.begin());
     return temp;
 }
 
-
 /**
  * @brief convert a string into a wstring
- * 
+ *
  * @param s a const string
  */
-wstring StringToWString(const string& s)
+wstring StringToWString(const string &s)
 {
     wstring temp(s.length(), L' ');
     copy(s.begin(), s.end(), temp.begin());
@@ -67,7 +66,6 @@ void Block::set_fp(string fp)
 {
     this->fp = fp;
 }
-
 
 /**
  * @brief Construct a new File Manager object
@@ -338,6 +336,12 @@ int FileManager::worst_fit(string target_str)
     return free_blocks[free_blocks.size() - 1].first;
 }
 
+/**
+ * @brief print file system by tree recursively
+ *
+ * @param directory
+ * @param layer
+ */
 void FileManager::print_file_system_tree(string directory, int layer)
 {
     path cur_directory(directory);

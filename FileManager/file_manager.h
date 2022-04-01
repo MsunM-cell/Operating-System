@@ -18,11 +18,10 @@ using nlohmann::json;
 bool cmp(pair<int, int> a, pair<int, int> b);
 
 // If you need to convert a wstring into a string, just call it.
-string WStringToString(const wstring& s);
+string WStringToString(const wstring &s);
 
 // If you need to convert a string into a wstring, just call it.
-wstring StringToWString(const string& s)
-
+wstring StringToWString(const string &s);
 
 // Block class
 class Block
@@ -139,22 +138,28 @@ public:
      * @return int
      */
     int worst_fit(string target_str);
+    /**
+     * @brief print file system by tree recursively
+     * 
+     * @param directory 
+     * @param layer 
+     */
     void print_file_system_tree(string directory, int layer = 0);
 
 private:
-    vector<Block> blocks; // all disk blocks
-    vector<int> bitmap; // bitmap for disk blocks
-                    // 1 stands for a idle block and 0 a busy block
+    vector<Block> blocks;  // all disk blocks
+    vector<int> bitmap;    // bitmap for disk blocks
+                           // 1 stands for a idle block and 0 a busy block
     json file_system_tree; // file system tree
-    json file_blocks; // store file's blocks info
-                    // directory entry: first block index, blocks length, file size
+    json file_blocks;      // store file's blocks info
+                           // directory entry: first block index, blocks length, file size
 
     int block_size; // block size (byte)
-    int track_num; // the number of tracks
+    int track_num;  // the number of tracks
     int sector_num; // the number of sectors for each track
-    int block_num; // the number of blocks
+    int block_num;  // the number of blocks
 
-    string working_path; // working directory
+    string working_path;     // working directory
     vector<int> busy_blocks; // busy blocks list
 };
 
