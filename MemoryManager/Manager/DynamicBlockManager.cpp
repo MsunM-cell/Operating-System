@@ -1,48 +1,17 @@
-#include<iostream>
-#include<algorithm>
-#include<vector>
-#include<utility>
-using namespace std;
+/*
+@Author:Yuxing Long
+@Date:2022.4.1
+@Content:The dynamic block allocation(First fit & Best fit)
+*/
 
-typedef pair<int, int> PII;
- 
-//总页数
-const int total_page_num = 32;
-//页大小
-const int page_size = 1024;
-//内存大小
-const int memory_size = total_page_num * page_size;
-
-//空闲分区链的node
-typedef struct free_block_node {
-	int head_addr;//首地址
-	int len;//长度
-	free_block_node* next;
-}free_block,*free_list;
-
-//进程控制块
-typedef struct pcb {
-	int PID;
-	int size;
-	int start_addr;
-}PCB;
-
-//空闲分区链表
-free_list free_block_list;
-//当前分配策略，0为首次适应，1为最佳适应
-int adjust_mode;
-
-//容量递增排序方法
-bool cmp1(PII x, PII y) { return x.second == y.second ? x.first < y.first : x.second < y.second; }
-//地址递增排序方法
-bool cmp2(PII x, PII y) { return x.first < y.first; }
+#include "memory.h"
 
 //空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
-void adjust_list(int type)
+void BlockMemoryManager::adjust_list(int type)
 {
 	vector<PII> temp;
 	free_list p = free_block_list->next;
-	while (p != NULL)
+	while (p)
 	{
 		temp.push_back({ p->head_addr,p->len });
 		p = p->next;
@@ -53,7 +22,7 @@ void adjust_list(int type)
 		sort(temp.begin(), temp.end(), cmp2);
 	p = free_block_list->next;
 	int i = 0;
-	while (p != NULL)
+	while (p)
 	{
 		p->head_addr = temp[i].first;
 		p->len = temp[i++].second;
@@ -62,10 +31,10 @@ void adjust_list(int type)
 }
 
 //搜索满足条件的空闲块，并返回空闲块首地址
-int search_free_block(PCB p)
+int BlockMemoryManager::search_free_block(PCB p)
 {
 	free_list q = free_block_list->next;
-	while (q != NULL && q->len < p.size)
+	while (q && q->len < p.size)
 		q = q->next;
 	if (q == NULL)
 	{
@@ -86,14 +55,14 @@ int search_free_block(PCB p)
 			pre->next = q->next;
 			free(q);
 		}
-		printf("Process  %d starts from %d, length %d\n\n", p.PID, addr, p.size);
+		printf("Process %d starts from %d, length %d\n\n", p.PID, addr, p.size);
 		adjust_list(adjust_mode);
 		return addr;//返回进程开始首地址
 	}
 }
 
 //释放内存，传入参数pcb
-void deallocate_process_mem(PCB p)
+void BlockMemoryManager::deallocate_process_mem(PCB p)
 {
 	int addr = p.start_addr;
 	int length = p.size;
@@ -129,8 +98,16 @@ void deallocate_process_mem(PCB p)
 	printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.PID, addr, addr + length - 1);
 }
 
+//初始化内存管理系统
+void BlockMemoryManager::init_manager()
+{
+	//读取配置文件，尤其是动态分区的分配策略
+	//调用init_list
+	init_list();
+}
+
 //初始化空闲分区链表
-void init_list()
+void BlockMemoryManager::init_list()
 {
 	free_block_list = (free_list)malloc(sizeof(free_block));
 	free_list q = (free_list)malloc(sizeof(free_block));
@@ -141,7 +118,7 @@ void init_list()
 }
 
 //打印空闲分区链
-void print_list()
+void BlockMemoryManager::print_list()
 {
 	printf("**********Output the free block list**********\n");
 	free_list q = free_block_list->next;
@@ -160,23 +137,23 @@ int main()
 	PCB b = { 1002,6 * 1024,-1 };//14KB
 	PCB c = { 1003,10 * 1024,-1 };//18KB
 	PCB d = { 1004,4 * 1024,-1 };//4KB
-	init_list();
-	print_list();
-	a.start_addr = search_free_block(a);
-	b.start_addr = search_free_block(b);
-	c.start_addr = search_free_block(c);
-	print_list();
-	deallocate_process_mem(b);
-	d.start_addr = search_free_block(d);
-	print_list();
-	deallocate_process_mem(a);
-	b.start_addr = search_free_block(b);
-	print_list();
-	deallocate_process_mem(d);
-	print_list();
-	deallocate_process_mem(b);
-	print_list();
-	deallocate_process_mem(c);
-	print_list();
+	BlockMemoryManager bmm;
+	bmm.print_list();
+	a.start_addr = bmm.search_free_block(a);
+	b.start_addr = bmm.search_free_block(b);
+	c.start_addr = bmm.search_free_block(c);
+	bmm.print_list();
+	bmm.deallocate_process_mem(b);
+	d.start_addr = bmm.search_free_block(d);
+	bmm.print_list();
+	bmm.deallocate_process_mem(a);
+	b.start_addr = bmm.search_free_block(b);
+	bmm.print_list();
+	bmm.deallocate_process_mem(d);
+	bmm.print_list();
+	bmm.deallocate_process_mem(b);
+	bmm.print_list();
+	bmm.deallocate_process_mem(c);
+	bmm.print_list();
 	return 0;
 }
