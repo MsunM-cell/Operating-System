@@ -1,10 +1,10 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-01 19:15:16
+ * @LastEditTime: 2022-04-01 19:42:14
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
-#include "../Interface/MemoryManager.cpp"
+#include "../Interface/MemoryManager-1.cpp"
 #include"FrameTableItem.h"
 #include "config.h"
 #include <vector>
