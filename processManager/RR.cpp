@@ -4,6 +4,7 @@
  * @date 2022-03-25
  */
 #include "proc.h"
+#include "FCFS.cpp"
 using namespace std;
 
 
@@ -32,8 +33,9 @@ int RRQueue::getSize()
  * @brief 降级操作
  * @param target 被降级的PCB
  */
-void RRQueue::downLevel(PCB* target)
+void RRQueue::downLevel(PCB* target,ProcManagerFCFS* fcfs)
 {
+    fcfs->addToQueue(*target);
     printf("[%ld]Pid %d down to fcfs.\n", clock() - system_start, target->id);
 }
 
@@ -71,7 +73,7 @@ bool RRQueue::removePCB(int pid)
  * @brief 调度主算法
  * @return 正常结束返回0
  */
-int RRQueue::scheduling()
+int RRQueue::scheduling(ProcManagerFCFS* fcfs)
 {
     // cout << setw(WIDTH) << "Id" << setw(WIDTH) << "Time_need\n";
     // 循环到rr队列为空
@@ -97,7 +99,7 @@ int RRQueue::scheduling()
                 {
                     cur_pcb->pri = LOW_PRI;
                     // 降级加入fcfs队列中,并从当前队列删除
-                    this->downLevel(cur_pcb);
+                    this->downLevel(cur_pcb,fcfs);
                     it = this->rr_que.erase(it);
                 }
             }
@@ -171,13 +173,14 @@ ProcManager::ProcManager(int n_size, int x_size)
 {
     this->cpid = 0;
     this->rr_queue = new RRQueue();
+    this->fcfsProcManager = new ProcManagerFCFS();
     cout << "ProcManager is running!\n";
     // 不会被降级的PCB
     for (int i = 0; i < n_size; i++)
     {
         PCB* new_pcb = new PCB();
         new_pcb->id = i;
-        new_pcb->name = "";
+        new_pcb->name = "normal";
         new_pcb->pri = HIGH_PRI;
         new_pcb->slice_cnt = 0;
         new_pcb->time_need = rand() % 30 * 100;
@@ -217,7 +220,7 @@ ProcManager::~ProcManager()
  */
 int ProcManager::getActiveNum()
 {
-    return rr_queue->getSize();
+    return rr_queue->getSize() + fcfsProcManager->getQueueSize();
     // TODO fcfs链接后:
     //  return rr_queue->getSize() + fcfs数量;
 }
@@ -309,7 +312,7 @@ void ProcManager::run(string file_name)
         }
         else if (pcb->pri == LOW_PRI)
         {
-            // 加入fcfs队列
+            this->fcfsProcManager->addToQueue(*pcb);
         }
         printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
     }
@@ -325,7 +328,8 @@ void ProcManager::run(string file_name)
  */
 void ProcManager::scheduling()
 {
-    rr_queue->scheduling();
+    rr_queue->scheduling(fcfsProcManager);
+    fcfsProcManager->runProcManager();
 }
 
 int main()
@@ -351,5 +355,6 @@ int main()
     proc_manager.ps();
 
     proc_manager.kill();
+    system("pause");
     return 0;
 }
