@@ -175,9 +175,9 @@ ProcManager::ProcManager(int n_size, int x_size)
     // 不会被降级的PCB
     for (int i = 0; i < n_size; i++)
     {
-        PCB* new_pcb = new PCB();
+        PCB* new_pcb = new PCB;
         new_pcb->id = i;
-        new_pcb->name = "";
+        new_pcb->name = "normal";
         new_pcb->pri = HIGH_PRI;
         new_pcb->slice_cnt = 0;
         new_pcb->time_need = rand() % 30 * 100;
@@ -186,7 +186,7 @@ ProcManager::ProcManager(int n_size, int x_size)
     // 降级测试
     for (int i = 0; i < x_size; i++)
     {
-        PCB* new_pcb = new PCB();
+        PCB* new_pcb = new PCB;
         new_pcb->id = n_size + i;
         new_pcb->name ="large";
         new_pcb->pri = HIGH_PRI;
