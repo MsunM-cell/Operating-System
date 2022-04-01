@@ -1,34 +1,38 @@
 #include <iostream>
 #include "proc.h"
 
+
 /*** 
- * @description: a class to manage process with fcfs algorithm
+ * @brief destructor
+ * @param {NULL}
+ * @return {NULL}
  */
-procManagerFCFS::~procManagerFCFS(){
+ProcManagerFCFS::~ProcManagerFCFS(){
     cout << "FCFS proc manager is terminated" << endl;
 }
 
+
 /*** 
- * @description: push this process into the fcfs queue
+ * @brief add an process into the fcfs queue
  * @param {PCB} p
- * @return {*}
+ * @return {NULL}
  */
-void procManagerFCFS::addToQueue(PCB p){
+void ProcManagerFCFS::addToQueue(PCB p){
     fcfsQueue.push_back(p);
 }
 
 
 /*** 
- * @description: the fcfs algorithm
- * @param {  }
- * @return {*}
+ * @brief run processes using an fcfs algorithm
+ * @param {PageMemoryManager*} m
+ * @return {NULL}
  */
-void procManagerFCFS::runProcManager(PageMemoryManager* m){
+void ProcManagerFCFS::runProcManager(){
     while(true){
         while(!fcfsQueue.empty()){
             PCB p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
-            run(p,m);
+            run(p);
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
         }
@@ -36,56 +40,39 @@ void procManagerFCFS::runProcManager(PageMemoryManager* m){
     }
 }
 
-string procManagerFCFS::getCommand(){
-
+/*** 
+ * @brief not written yet
+ * @param {NULL}
+ * @return {NULL}
+ */
+string ProcManagerFCFS::getCommand(){
+    return "aaa";
 }
 
 
+
 /*** 
- * @description: execute the programme,not written yet
+ * @brief execute the programme,not written yet
  * @param {PCB} p
- * @return {*}
+ * @param {PageMemoryManager*} m
+ * @return {NULL}
  */
-void procManagerFCFS::run(PCB p,PageMemoryManager* m){
-    string cpuCmd = "CPU",IOCmd = "IO",accessCmd = "access";
-    int index;
-    // m.accessMemory(pid);
-    // 这里我们假设已经获取到了指令
-    string cmd = getCommand();
-    if(cmd.find(cpuCmd) != string::npos){
-        index = cmd.find(cpuCmd) + 3;
-        if(CPU[atoi(cmd.substr(index).c_str())]){
-            CPU[atoi(cmd.substr(index).c_str())] = false;
-            index = cmd.find(' ');
-            string tmp = cmd.substr(index);
-            Sleep(atoi(tmp.c_str()));
-            CPU[atoi(cmd.substr(index).c_str())] = true;
-        }
-    }
-    else if(cmd.find(IOCmd) != string::npos){
-        index = cmd.find(IOCmd) + 2;
-        if(IO[atoi(cmd.substr(index).c_str())]){
-            IO[atoi(cmd.substr(index).c_str())] = false;
-            string tmp = cmd.substr(index);
-            index += 2;
-            Sleep(atoi(tmp.c_str()));
-            IO[atoi(cmd.substr(index).c_str())] = true;
-        }
-    }
-    else if(cmd.find(accessCmd) != string::npos){
-        index = cmd.find(accessCmd) + 7;
-        m->accessMemory(p.id,atoi(cmd.substr(index).c_str()));
-    }
+void ProcManagerFCFS::run(PCB p){
+    // 因为还没定文件格式，run函数暂时没有办法写
+    cout << "process " << p.id << " is running," << " will use " << p.time_need << " ms."<< endl;
+    Sleep(p.time_need);
+    cout << "process " << p.id << " is terminated" << endl;
     return ;
 }
 
 
+
 /*** 
- * @description: 
+ * @brief remove a process from the fcfs queue
  * @param {int} pid
- * @return {*}
+ * @return {NULL}
  */
-bool procManagerFCFS::removeProc(int pid){
+bool ProcManagerFCFS::removeProc(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
         if(it->id == pid){
             it = fcfsQueue.erase(it);
@@ -94,4 +81,46 @@ bool procManagerFCFS::removeProc(int pid){
     }
     cout << "no such pid" << endl;
     return false;
+}
+
+
+
+/*** 
+ * @brief get all active process information in the fcfs queue
+ * @param {NULL}
+ * @return {NULL}
+ */
+void ProcManagerFCFS::getFcfsInfo(){
+    for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
+        cout << it->id << " " << endl;
+    }
+    return ;
+}
+
+
+
+/*** 
+ * @brief get selected process information in the fcfs queue
+ * @param {int} pid
+ * @return {NULL}
+ */
+void ProcManagerFCFS::getFcfsInfo(int pid){
+    for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
+        if(it->id = pid){
+            cout << it->id << " " << endl;
+            return ;
+        }
+    }
+    cout << "no such process" << endl;
+    return ;
+}
+
+
+/*** 
+ * @brief get the number of processes in the fcfs queue
+ * @param {NULL}
+ * @return {NULL}
+ */
+int ProcManagerFCFS::getQueueSize(){
+    return fcfsQueue.size();
 }

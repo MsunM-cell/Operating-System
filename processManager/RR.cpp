@@ -4,39 +4,13 @@
  * @date 2022-03-25
  */
 #include "proc.h"
+#include "FCFS.cpp"
 using namespace std;
 
 
-/**
- * @brief 仅会在测试中使用，根据输入的大小随机构造
- * @param n_size 队列中不会被降级的个数
- * @param x_size 被降级的个数
- */
-RRQueue::RRQueue(int n_size, int x_size)
-{
-    // 不会被降级的PCB
-    for (int i = 0; i < n_size; i++)
-    {
-        PCB* new_pcb = (PCB*) malloc(sizeof(PCB));
-        new_pcb->id = i;
-        new_pcb->pri = HIGH_PRI;
-        new_pcb->slice_cnt = 0;
-        new_pcb->time_need = rand() % 30 * 100;
-        active_pcb.push_back(new_pcb);
-        this->rr_que.push_back(new_pcb);
-    }
-    // 降级测试
-    for (int i = 0; i < x_size; i++)
-    {
-        PCB* new_pcb = (PCB*) malloc(sizeof(PCB));
-        new_pcb->id = n_size + i;
-        new_pcb->pri = HIGH_PRI;
-        new_pcb->slice_cnt = 0;
-        new_pcb->time_need = rand() % 10 * 100 + TIME_SLICE * MAX_CNT;
-        active_pcb.push_back(new_pcb);
-        this->rr_que.push_back(new_pcb);
-    }
-}
+/*****************************************************************************************
+ * RRQueue类的有关定义部分
+ ****************************************************************************************/
 
 /**
  * @brief 析构函数
@@ -59,13 +33,25 @@ int RRQueue::getSize()
  * @brief 降级操作
  * @param target 被降级的PCB
  */
-void RRQueue::downLevel(PCB* target)
+void RRQueue::downLevel(PCB* target,ProcManagerFCFS* fcfs)
 {
+    fcfs->addToQueue(*target);
     printf("[%ld]Pid %d down to fcfs.\n", clock() - system_start, target->id);
 }
 
 /**
- * 移除一个pcb
+ * 向RR队列中加入一个PCB
+ * @param target 指向要加入的PCB
+ * @return 成功则返回true
+ */
+bool RRQueue::addPCB(PCB *target)
+{
+    rr_que.push_back(target);
+    return true;
+}
+
+/**
+ * 移除一个pcb,并将其占用的内存释放
  * @param pid 将要移除的pcb的id
  * @return 成功则返回true
  */
@@ -75,6 +61,7 @@ bool RRQueue::removePCB(int pid)
     {
         if ((*it)->id == pid)
         {
+            delete *it;
             this->rr_que.erase(it);
             return true;
         }
@@ -86,9 +73,9 @@ bool RRQueue::removePCB(int pid)
  * @brief 调度主算法
  * @return 正常结束返回0
  */
-int RRQueue::scheduling()
+int RRQueue::scheduling(ProcManagerFCFS* fcfs)
 {
-    cout << setw(WIDTH) << "Id" << setw(WIDTH) << "Time_need\n";
+    // cout << setw(WIDTH) << "Id" << setw(WIDTH) << "Time_need\n";
     // 循环到rr队列为空
     while (!this->rr_que.empty())
     {
@@ -96,7 +83,7 @@ int RRQueue::scheduling()
         for (auto it = this->rr_que.begin(); it < this->rr_que.end(); it++)
         {
             PCB* cur_pcb = *it;
-            cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
+            // cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
             // 判断时间是否够完成一次循环
             if (cur_pcb->time_need > TIME_SLICE)
             {
@@ -112,7 +99,7 @@ int RRQueue::scheduling()
                 {
                     cur_pcb->pri = LOW_PRI;
                     // 降级加入fcfs队列中,并从当前队列删除
-                    this->downLevel(cur_pcb);
+                    this->downLevel(cur_pcb,fcfs);
                     it = this->rr_que.erase(it);
                 }
             }
@@ -122,8 +109,8 @@ int RRQueue::scheduling()
                 Sleep(cur_pcb->time_need);
                 cur_pcb->time_need = -1;
                 printf("[%ld]Pid %d time out! No time need.\n", clock() - system_start, cur_pcb->id);
+                delete cur_pcb;
                 it = this->rr_que.erase(it);
-                //TODO 如何实现到外部的队列更新？
             }
         }
     }
@@ -131,13 +118,92 @@ int RRQueue::scheduling()
 }
 
 /**
+ * 获取RR队列中所有pcb的信息
+ * @return 迭代器头指针
+ */
+void RRQueue::getInfo()
+{
+    for (PCB* pcb : rr_que)
+    {
+        cout << "pid: " << pcb->id << " name:" << pcb->name ;
+        cout << " pri: " << pcb->pri << " need: " << pcb->time_need << endl;
+    }
+}
+
+/**
+ * 获取RR队列中指定pcb的信息
+ * @param pid 指定pcb的id
+ * @return 指向其的迭代器，没找到就返回空
+ */
+void RRQueue::getInfo(int pid)
+{
+    for (auto it=this->rr_que.begin(); it != rr_que.end(); it++)
+    {
+        PCB* pcb = *it;
+        if (pcb->id == pid)
+        {
+            cout << "pid: " << pcb->id << " name:" << pcb->name ;
+            cout << " pri: " << pcb->pri << " need: " << pcb->time_need << endl;
+            return;
+        }
+    }
+    cout << "Can't find pid " << pid << endl;
+}
+
+/*****************************************************************************************
+ * ProcManager类的有关定义部分
+ ****************************************************************************************/
+
+/**
  * @brief ProcManager的构造函数
  */
 ProcManager::ProcManager()
 {
+    this->cpid = 0;
+    this->rr_queue = new RRQueue();
     cout << "ProcManager is running!\n";
-    // 测试用代码
-    this->rr_queue = new RRQueue(5,2);
+}
+
+/**
+ * 测试用
+ * @param x
+ * @param y
+ */
+ProcManager::ProcManager(int n_size, int x_size)
+{
+    this->cpid = 0;
+    this->rr_queue = new RRQueue();
+    this->fcfsProcManager = new ProcManagerFCFS();
+    cout << "ProcManager is running!\n";
+    // 不会被降级的PCB
+    for (int i = 0; i < n_size; i++)
+    {
+        PCB* new_pcb = new PCB;
+        new_pcb->id = i;
+        new_pcb->name = "normal";
+        new_pcb->pri = HIGH_PRI;
+        new_pcb->slice_cnt = 0;
+        new_pcb->time_need = rand() % 30 * 100;
+        active_pcb.push_back(new_pcb);
+    }
+    // 降级测试
+    for (int i = 0; i < x_size; i++)
+    {
+        PCB* new_pcb = new PCB;
+        new_pcb->id = n_size + i;
+        new_pcb->name ="large";
+        new_pcb->pri = HIGH_PRI;
+        new_pcb->slice_cnt = 0;
+        new_pcb->time_need = rand() % 10 * 100 + TIME_SLICE * MAX_CNT;
+        active_pcb.push_back(new_pcb);
+    }
+    this->cpid = 7;
+
+    // 向rr添加pcb，之后可重用
+    for (PCB* pcb : this->active_pcb)
+    {
+        this->rr_queue->addPCB(pcb);
+    }
 }
 
 /**
@@ -149,31 +215,45 @@ ProcManager::~ProcManager()
 }
 
 /**
+ * 获取当前活跃的进程个数
+ * @return 进程个数
+ */
+int ProcManager::getActiveNum()
+{
+    return rr_queue->getSize() + fcfsProcManager->getQueueSize();
+    // TODO fcfs链接后:
+    //  return rr_queue->getSize() + fcfs数量;
+}
+
+/**
+ * 进程全杀了（实验用）
+ */
+void ProcManager::kill()
+{
+    for (PCB* pcb : this->active_pcb)
+    {
+        delete pcb;
+    }
+}
+
+/**
  * 杀掉一个进程
  * @param pid 进程的id
- * @return 成功则返回true
  */
-bool ProcManager::kill(int pid)
+void ProcManager::kill(int pid)
 {
-    // 在活跃队列里面寻找进程
-    for (auto it=this->active_pcb.begin(); it < this->active_pcb.end(); it++)
+    // 找到的标志
+    bool is_found = false;
+    // 在两个队列里面找
+    // TODO 和fcfs对接后为：
+    //  is_found = this->rr_queue->removePCB(pid) || 从fcfs的返回结果；
+    is_found = this->rr_queue->removePCB(pid);
+    if (is_found)
     {
-        // 找到了，删除它并将其从对应的调度队列中删除
-        if ((*it)->id == pid)
-        {
-            if ((*it)->pri == HIGH_PRI)
-            {
-                this->rr_queue->removePCB(pid);
-            }
-            // else if ((*it)->pri == LOW_PRI)
-            // {
-            // //    到fcfs队列里面找
-            // }
-            delete *it;
-            this->active_pcb.erase(it);
-            return true;
-        }
+        printf("[%ld]Active pid=%d is killed.\n", clock() - system_start, pid);
+        return;
     }
+
     // 在等待队列里面寻找进程
     for (auto it=this->waiting_pcb.begin(); it < this->waiting_pcb.end(); it++)
     {
@@ -181,11 +261,11 @@ bool ProcManager::kill(int pid)
         if ((*it)->id == pid)
         {
             delete *it;
-            this->active_pcb.erase(it);
-            return true;
+            this->waiting_pcb.erase(it);
+            printf("[%ld]Waiting pid=%d is killed.\n", clock() - system_start, pid);
         }
     }
-    return false;
+    printf("[%ld]Can't find pid=%d.\n", clock() - system_start, pid);
 }
 
 /**
@@ -193,22 +273,89 @@ bool ProcManager::kill(int pid)
  */
 void ProcManager::ps()
 {
-    //TODO 继续写ps
+    cout << "All: " << this->getActiveNum() << endl;
+    cout << "RR: " << this->rr_queue->getSize() << endl;
+    cout << "FCFS: " << this->fcfsProcManager->getQueueSize() << endl;
+    rr_queue->getInfo();
+}
+
+/**
+ * 列出指定的pcb
+ * @param pid 指定
+ */
+void ProcManager::ps(int pid)
+{
+    rr_queue->getInfo(pid);
+}
+
+/**
+ * 启动一个进程
+ * @param file_name 要启动的文件名
+ */
+void ProcManager::run(string file_name)
+{
+    // 从其他模块获取文件的有关信息，这里模拟一下
+    PCB* new_pcb = new PCB;
+    new_pcb->id = this->cpid;
+    new_pcb->name = file_name;
+    new_pcb->pri = HIGH_PRI;
+    new_pcb->time_need = 1888;
+    new_pcb->slice_cnt = 0;
+    this->cpid = (this->cpid + 1) % 65536;
+    PCB* pcb = new_pcb;
+
+    // 判断是否需要加入到等待队列
+    if (this->getActiveNum() < MAX_PROC)
+    {
+        if (pcb->pri == HIGH_PRI)
+        {
+            this->rr_queue->addPCB(pcb);
+        }
+        else if (pcb->pri == LOW_PRI)
+        {
+            this->fcfsProcManager->addToQueue(*pcb);
+        }
+        printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
+    }
+    else
+    {
+        this->waiting_pcb.push_back(pcb);
+        printf("[%ld]Pid=%d is waiting.\n", clock() - system_start, pcb->id);
+    }
+}
+
+/**
+ * 开始调度
+ */
+void ProcManager::scheduling()
+{
+    rr_queue->scheduling(fcfsProcManager);
+    fcfsProcManager->runProcManager();
 }
 
 int main()
 {
-    RRQueue test_queue(5,2);
+    // RRQueue test_queue(5,2);
     // 系统开始计时，实际应该更早
     system_start = clock();
     cout << setiosflags(ios::left);
     printf("[%ld]This is a RR test\n", clock() - system_start);
 
-    test_queue.scheduling();
+    ProcManager proc_manager(5,2);
+    cout << "ps all" << endl;
+    proc_manager.ps();
+    cout << "ps 3" << endl;
+    proc_manager.ps(3);
+    cout <<"kill test\n";
+    proc_manager.kill(3);
+    proc_manager.ps();
+    cout <<"run test\n";
+    proc_manager.run("run_test");
+    proc_manager.ps();
+    proc_manager.scheduling();
+    proc_manager.ps();
 
-    for (PCB* cur : active_pcb)
-    {
-        delete cur;
-    }
+    proc_manager.kill();
+    system("pause");
     return 0;
 }

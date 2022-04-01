@@ -13,6 +13,8 @@ typedef struct PCB
 {
     // pid
     int id;
+    // 进程名称
+    std::string name;
     // 优先级
     int pri;
     // 使用过的时间片数量

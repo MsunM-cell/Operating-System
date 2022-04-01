@@ -10,8 +10,8 @@
 #include <vector>
 #include <cmath>
 #include <windows.h>
+#include <string>
 
-#include "../MemoryManager/Manager/PageMemoryManager.cpp"
 #include "../lib/sys.h"
 using namespace std;
 
@@ -26,6 +26,8 @@ using namespace std;
 #define LOW_PRI 1
 // 最大占用的时间片数量
 #define MAX_CNT 10
+// 最大可调度的进程数量
+#define MAX_PROC 10
 
 
 // CPU是否在使用，可扩展为数组
@@ -39,6 +41,23 @@ static vector<PCB*> active_pcb;
 
 static queue <PCB> FCFS;
 
+
+class ProcManagerFCFS{
+public:
+    void addToQueue(PCB p);
+    void runProcManager();
+    bool removeProc(int pid);
+    ProcManagerFCFS() = default;
+    ~ProcManagerFCFS();
+    void getFcfsInfo();
+    void getFcfsInfo(int pid);
+    int getQueueSize();
+private:
+    vector <PCB> fcfsQueue;
+    void run(PCB p);
+    string getCommand();
+};
+
 // RR队列类
 class RRQueue
 {
@@ -47,47 +66,42 @@ private:
     vector<PCB*> rr_que;
 public:
     RRQueue() = default;
-    RRQueue(int n_size, int x_size);
     ~RRQueue();
     int getSize();
+    bool addPCB(PCB* target);
     bool removePCB(int pid);
-    void downLevel(PCB* target);
-    int scheduling();
+    void downLevel(PCB* target,ProcManagerFCFS* fcfs);
+    int scheduling(ProcManagerFCFS* fcfs);
+    void getInfo();
+    void getInfo(int pid);
 };
+
 
 //进程管理器类
 class ProcManager
 {
 private:
-    // 处于就绪状态的pcb
+    // 记录可用的pid号
+    int cpid;
+    // 处于就绪状态的pcb，这个东西应该不存在，假装它来自内存
     vector<PCB*> active_pcb;
     // 位于等待状态的pcb
     vector<PCB*> waiting_pcb;
     // RR队列
     RRQueue* rr_queue;
-    procManagerFCFS* fsfcProcManager;
+    ProcManagerFCFS* fcfsProcManager;
 public:
     ProcManager();
+    ProcManager(int n_size, int x_size);
     ~ProcManager();
-    bool kill(int pid);
-    bool run(XFILE file);
+    int getActiveNum();
+    void kill();
+    void kill(int pid);
+    void run(string file_name);
     void ps();
     void ps(int pid);
+    void scheduling();
 };
-
-class procManagerFCFS{
-    public:
-        void addToQueue(PCB p);
-        void runProcManager(PageMemoryManager* m);
-        bool removeProc(int pid);
-        ~procManagerFCFS();
-    private:
-        vector <PCB> fcfsQueue;
-        void run(PCB p,PageMemoryManager* m);
-        string getCommand();
-    
-};
-
 
 #endif // !PROC_H
 
