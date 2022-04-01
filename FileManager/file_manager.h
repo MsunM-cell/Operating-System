@@ -134,41 +134,20 @@ public:
     int worst_fit(string target_str);
 
 private:
-    /* private variables */
+    vector<Block> blocks; // all disk blocks
+    vector<int> bitmap; // bitmap for disk blocks
+                    // 1 stands for a idle block and 0 a busy block
+    json file_system_tree; // file system tree
+    json file_blocks; // store file's blocks info
+                    // directory entry: first block index, blocks length, file size
 
-    /* file system tree */
-    json file_system_tree;
+    int block_size; // block size (byte)
+    int track_num; // the number of tracks
+    int sector_num; // the number of sectors for each track
+    int block_num; // the number of blocks
 
-    /**
-     * @brief store block allocation information for each file
-     *
-     * (first block index, the number of blocks allocated, the size of file(byte))
-     */
-    json file_blocks;
-
-    /* all blocks */
-    vector<Block> blocks;
-    /**
-     * @brief bitmap
-     *
-     * for every block
-     * 1 means idle and 0 means busy
-     */
-    vector<int> bitmap;
-
-    /* block size (byte) */
-    int block_size;
-    /* the number of tracks */
-    int track_num;
-    /* the number of sectors */
-    int sector_num;
-    /* the number of blocks */
-    int block_num;
-
-    /* current working directory */
-    string working_path;
-    /* busy blocks list */
-    vector<int> busy_blocks;
+    string working_path; // working directory
+    vector<int> busy_blocks; // busy blocks list
 };
 
 #endif
