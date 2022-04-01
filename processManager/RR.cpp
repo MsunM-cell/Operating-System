@@ -275,6 +275,7 @@ void ProcManager::ps()
 {
     cout << "All: " << this->getActiveNum() << endl;
     cout << "RR: " << this->rr_queue->getSize() << endl;
+    cout << "FCFS: " << this->fcfsProcManager->getQueueSize() << endl;
     rr_queue->getInfo();
 }
 
