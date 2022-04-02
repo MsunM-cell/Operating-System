@@ -16,11 +16,11 @@ using nlohmann::json;
 // cross platform
 // fit to Windows, Linux and Unix
 # ifdef _WIN64
-typedef wstring STR;
+#define STRING(s) WStringToString(s) 
 # elif _WIN32
-typedef wstring STR;
+#define STRING(s) WStringToString(s) 
 # else
-typedef string STR;
+#define STRING(s) (string)s 
 # endif
 
 // compare each other on the basis of 2nd element of pairs
@@ -71,7 +71,7 @@ class FileManager
 {
 public:
     char file_separator = (char)path::preferred_separator;               // directory separator
-    string home_path = (string)current_path() + file_separator + "home"; // absolute path of home directory
+    string home_path = STRING(current_path()) + file_separator + "home"; // absolute path of home directory
 
     /**
      * @brief Construct a new File Manager object

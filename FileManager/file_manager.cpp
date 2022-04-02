@@ -146,8 +146,8 @@ json FileManager::init_file_system_tree(string current_path)
     // traverse directory
     for (auto &file : file_list)
     {
-        STR file_path = (STR)file.path();            // absolute path
-        STR file_name = (STR)file.path().filename(); // file name
+        string file_path = STRING(file.path());            // absolute path
+        string file_name = STRING(file.path().filename()); // file name
         // if path is a directory, set key's value a new dictionary
         // otherwise, set key's value a string like "crwx"
         if (file.status().type() == file_type::directory)
@@ -166,7 +166,7 @@ json FileManager::init_file_system_tree(string current_path)
             json file_info;
             i >> file_info;
             tree[file_name] = file_info["type"];
-            STR relative_path = file_path.substr(this->home_path.size());
+            string relative_path = file_path.substr(this->home_path.size());
             // check if there is enough space to fill file into disk blocks
             if (this->fill_file_into_blocks(file_info, relative_path, 0) == false)
                 printf("disk storage error: no enough initial space.\n");
@@ -365,8 +365,8 @@ void FileManager::print_file_system_tree(string directory, int layer)
         printf(".\n");
     for (auto file : file_list)
     {
-        string file_path = (string)file.path();
-        string file_name = (string)file.path().filename();
+        string file_path = STRING(file.path());
+        string file_name = STRING(file.path().filename());
         for (int i = 0; i < layer; i++)
             printf("|   ");
         index++;
