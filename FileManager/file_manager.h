@@ -159,6 +159,7 @@ public:
 
     /**
      * @brief return the relative working path
+     * @return string
      */
     string get_relative_working_path();
 

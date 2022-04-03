@@ -381,7 +381,8 @@ void FileManager::print_file_system_tree(string directory, int layer)
 }
 
 /**
- *  @brief return the relative working path
+ * @brief return the relative working path
+ * @return string
  */
 string FileManager::get_relative_working_path()
 {
