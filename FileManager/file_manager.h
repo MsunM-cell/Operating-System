@@ -157,6 +157,11 @@ public:
      */
     void print_file_system_tree(string directory, int layer = 0);
 
+    /**
+     * @brief return the relative working path
+     */
+    string get_relative_working_path();
+
 private:
     vector<Block> blocks;  // all disk blocks
     vector<int> bitmap;    // bitmap for disk blocks
