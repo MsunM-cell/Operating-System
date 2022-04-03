@@ -5,6 +5,7 @@
 */
 
 #include "memory.h"
+#include "../lib/sys.h"
 
 //空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
 void BlockMemoryManager::adjust_list(int type)
@@ -31,19 +32,17 @@ void BlockMemoryManager::adjust_list(int type)
 }
 
 //搜索满足条件的空闲块，并返回空闲块首地址
-int BlockMemoryManager::search_free_block(PCB p)
+void BlockMemoryManager::search_free_block(const PCB& p)
 {
 	free_list q = free_block_list->next;
 	while (q && q->len < p.size)
 		q = q->next;
 	if (q == NULL)
-	{
-		printf("There are no more memory for this process(%d)!\n\n", p.PID);
-		return -1;
-	}
+		printf("There are no more memory for this process(%d)!\n\n", p.id);
 	else
 	{
 		int addr = q->head_addr;
+		pid2addr[p.id] = addr;
 		q->len -= p.size;
 		q->head_addr += p.size;
 		if (q->len == 0)
@@ -55,16 +54,15 @@ int BlockMemoryManager::search_free_block(PCB p)
 			pre->next = q->next;
 			free(q);
 		}
-		printf("Process %d starts from %d, length %d\n\n", p.PID, addr, p.size);
+		printf("Process %d starts from %d, length %d\n\n", p.id, addr, p.size);
 		adjust_list(adjust_mode);
-		return addr;//返回进程开始首地址
 	}
 }
 
 //释放内存，传入参数pcb
-void BlockMemoryManager::deallocate_process_mem(PCB p)
+void BlockMemoryManager::deallocate_process_mem(const PCB& p)
 {
-	int addr = p.start_addr;
+	int addr = pid2addr[p.id];
 	int length = p.size;
 	free_list q = free_block_list;
 	adjust_list(0);//此处必须按地址排序是为了能够合并
@@ -92,10 +90,12 @@ void BlockMemoryManager::deallocate_process_mem(PCB p)
 		temp->next = q->next;
 		q->next = temp;
 	}
+	//删除记录
+	pid2addr.erase(p.id);
 	//释放完重新调整链表
 	adjust_list(adjust_mode);
 	//adjust_list(1);
-	printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.PID, addr, addr + length - 1);
+	printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
 }
 
 //初始化内存管理系统
@@ -133,21 +133,22 @@ void BlockMemoryManager::print_list()
 
 int main()
 {
-	PCB a = { 1001,12 * 1024, -1 };//20KB
-	PCB b = { 1002,6 * 1024,-1 };//14KB
-	PCB c = { 1003,10 * 1024,-1 };//18KB
-	PCB d = { 1004,4 * 1024,-1 };//4KB
+	PCB a, b, c, d;
+	a.id = 1001, a.size = 12 * 1024;//12KB
+	b.id = 1002, b.size = 6 * 1024;//6KB
+	c.id = 1003, c.size = 10 * 1024;//10KB
+	d.id = 1004, d.size = 4 * 1024;//4KB
 	BlockMemoryManager bmm;
 	bmm.print_list();
-	a.start_addr = bmm.search_free_block(a);
-	b.start_addr = bmm.search_free_block(b);
-	c.start_addr = bmm.search_free_block(c);
+	bmm.search_free_block(a);
+	bmm.search_free_block(b);
+	bmm.search_free_block(c);
 	bmm.print_list();
 	bmm.deallocate_process_mem(b);
-	d.start_addr = bmm.search_free_block(d);
+	bmm.search_free_block(d);
 	bmm.print_list();
 	bmm.deallocate_process_mem(a);
-	b.start_addr = bmm.search_free_block(b);
+	bmm.search_free_block(b);
 	bmm.print_list();
 	bmm.deallocate_process_mem(d);
 	bmm.print_list();
