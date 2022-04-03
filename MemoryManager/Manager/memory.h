@@ -4,6 +4,8 @@
 #include<vector>
 #include<utility>
 #include<cstdio>
+#include<map>
+#include "sys.h"
 using namespace std;
 
 typedef pair<int, int> PII;
@@ -22,12 +24,6 @@ typedef struct free_block_node {
 	free_block_node* next;
 }free_block, * free_list;
 
-//进程控制块
-typedef struct pcb {
-	int PID;
-	int size;
-	int start_addr;
-}PCB;
 
 //容量递增排序方法
 bool cmp1(PII x, PII y) { return x.second == y.second ? x.first < y.first : x.second < y.second; }
@@ -44,8 +40,8 @@ public:
     //virtual char accessMemory(int pid, int address) = 0; 
 
 	virtual void adjust_list(int type) = 0;
-	virtual int search_free_block(PCB p) = 0;
-	virtual void deallocate_process_mem(PCB p) = 0;
+	virtual void search_free_block(const PCB& p) = 0;
+	virtual void deallocate_process_mem(const PCB& p) = 0;
 	virtual void init_list() = 0;
 	virtual void print_list() = 0;
 };
@@ -55,6 +51,8 @@ class BlockMemoryManager : public MemoryManager
 private:
 	//空闲分区链表
 	free_list free_block_list;
+	//进程和首地址对应表
+	map<int, int> pid2addr;
 	//当前分配策略，0为首次适应，1为最佳适应
 	int adjust_mode = 0;
 	//读取配置文件，修改分配策略
@@ -69,9 +67,9 @@ public:
 	//空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
 	void adjust_list(int type);
 	//搜索满足条件的空闲块，并返回空闲块首地址
-	int search_free_block(PCB p);
+	void search_free_block(const PCB& p);
 	//释放内存，传入参数pcb
-	void deallocate_process_mem(PCB p);
+	void deallocate_process_mem(const PCB& p);
 	//初始化空闲分区链表
 	void init_list();
 	//打印空闲分区链
