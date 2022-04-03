@@ -380,6 +380,14 @@ void FileManager::print_file_system_tree(string directory, int layer)
     }
 }
 
+/**
+ *  @brief return the relative working path
+ */
+string FileManager::get_relative_working_path()
+{
+    return home_path + working_path;
+}
+
 int main()
 {
     FileManager fm(512, 200, 12);
