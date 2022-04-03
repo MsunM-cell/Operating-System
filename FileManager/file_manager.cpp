@@ -1,5 +1,5 @@
 #include "file_manager.h"
-#include "file_operation.hpp"
+// #include "file_operation.hpp"
 
 // compare each other on the basis of 2nd element of pairs
 // in ascending order
@@ -93,6 +93,7 @@ FileManager::FileManager(int block_size, int track_num, int sector_num)
     this->init_blocks();
     this->set_busy_block();
     this->file_system_tree = this->init_file_system_tree(this->home_path);
+    cout << setw(4) << this->file_system_tree << endl;
 }
 
 /**
@@ -389,6 +390,49 @@ string FileManager::get_relative_working_path()
 {
     return home_path + working_path;
 }
+
+/**
+ * @brief add the json node to the file_system_tree
+ * 
+ * @param path the path of the file
+ * @return bool
+ */
+bool FileManager::add_json_node_to_tree(string path, json node)
+{
+    // 还没来得及写注释！
+    json* tree = &(this->file_system_tree);
+    json* root = &(this->file_system_tree);
+    
+    string relative_path = path.substr(this->home_path.size() + 1);
+    cout << relative_path << endl;
+    int index = -1;
+    while ((index = relative_path.find('/')) != -1) {
+        string temp_dir = relative_path.substr(0, index);
+        relative_path = relative_path.substr(index + 1);
+
+        if ((*root)[temp_dir] == nlohmann::detail::value_t::null)  return false;
+        root = &(*root)[temp_dir];
+    }
+    if (exists(path) && is_directory(path)) {
+        (*root)[(string)node["name"]] = nlohmann::detail::value_t::null;
+        this->file_system_tree = *tree;
+        cout << setw(4) << this->file_system_tree << endl;
+        return true;
+    }
+    else if (exists(path)) {
+        (*root)[(string)node["name"]] = node["type"];
+        this->file_system_tree = *tree;
+        cout << setw(4) << this->file_system_tree << endl;
+        return true;
+    }
+    else {
+        (*root)["test"] = 12;
+        this->file_system_tree = *tree;
+        cout << setw(4) << this->file_system_tree << endl;
+    }
+    return false;
+}
+
 
 int main()
 {
