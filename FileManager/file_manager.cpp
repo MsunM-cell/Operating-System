@@ -399,7 +399,6 @@ string FileManager::get_absolute_working_path()
  */
 bool FileManager::add_json_node_to_tree(string path, json node)
 {
-    json* tree = &(this->file_system_tree); // the pointer to file_system_tree
     json* temp = &(this->file_system_tree); // the temportary pointer to the file_system_tree
     
     string relative_path = path.substr(this->home_path.size() + 1); // get the path relative to the home
