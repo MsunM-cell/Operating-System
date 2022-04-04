@@ -416,12 +416,12 @@ bool FileManager::add_json_node_to_tree(string path, json node)
 
     if (exists(path) && is_directory(path)) {
         (*temp)[(string)node["name"]] = nlohmann::detail::value_t::null; // This is a new directory.
-        // cout << setw(4) << this->file_system_tree << endl;
+        // cout << setw(4) << this->file_system_tree << endl;   // debug
         return true;
     }
     else if (exists(path)) {
         (*temp)[(string)node["name"]] = node["type"];   // This is a new file.
-        // cout << setw(4) << this->file_system_tree << endl;
+        // cout << setw(4) << this->file_system_tree << endl;   // debug
         return true;
     }
     return false;
