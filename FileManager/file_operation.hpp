@@ -38,7 +38,7 @@ public:
      * @param dir_name the name of the directory
      * @return bool
      */
-    bool create_dir(string current_dir, string dir_name);
+    bool create_dir(string currenet_dir, string dir_name);
 
     /**
      * @brief delete a new directory
@@ -95,7 +95,7 @@ bool FileOperation::create_file(string current_dir, string file_name)
     json new_file;
     new_file["name"] = file_name;
     new_file["type"] = "crw-";
-    new_file["size"] = 128;
+    new_file["size"] = 8;
     new_file["content"] = "";
 
     if (file_manager->fill_file_into_blocks(new_file, cur_file_path, 0)) {
@@ -103,7 +103,8 @@ bool FileOperation::create_file(string current_dir, string file_name)
         outfile << std::setw(4) << new_file;
         outfile.close();
         input.open(cur_file_path, ios::in);
-        if (input.is_open()) {
+        // check if the file has been created and if add to the file_system_tree
+        if (input.is_open() && file_manager->add_json_node_to_tree(cur_file_path, new_file)) {
             return true;
         }
     }
@@ -146,13 +147,22 @@ bool FileOperation::create_dir(string current_dir, string dir_name)
         printf("Cannot create directory '%s': File exists\n", dir_name.c_str());
         return false;
     }
-    if (create_directory(cur_dir_path)) 
-        return true;
+    json new_dir;
+    new_dir["name"] = dir_name;
+    new_dir["type"] = "drw-";
+    new_dir["size"] = 8;
+    new_dir["content"] = "";
+
+    if (create_directory(cur_dir_path)) {
+        if (file_manager->add_json_node_to_tree(cur_dir_path, new_dir)) 
+            return true;
+    }     
     
     printf("Create directory '%s' failed.\n", dir_name.c_str());
     return false;
 
 }
+
 /**
  * @brief delete a new directory
  * 
