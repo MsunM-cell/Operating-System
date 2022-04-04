@@ -158,10 +158,10 @@ public:
     void print_file_system_tree(string directory, int layer = 0);
 
     /**
-     * @brief return the relative working path
+     * @brief return the absolute working path
      * @return string
      */
-    string get_relative_working_path();
+    string get_absolute_working_path();
 
     /**
      * @brief add the json node to the file_system_tree
