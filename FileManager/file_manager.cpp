@@ -1,5 +1,5 @@
 #include "file_manager.h"
-// #include "file_operation.hpp"
+#include "file_operation.hpp"
 
 // compare each other on the basis of 2nd element of pairs
 // in ascending order
@@ -93,7 +93,7 @@ FileManager::FileManager(int block_size, int track_num, int sector_num)
     this->init_blocks();
     this->set_busy_block();
     this->file_system_tree = this->init_file_system_tree(this->home_path);
-    cout << setw(4) << this->file_system_tree << endl;
+    // cout << setw(4) << this->file_system_tree << endl;
 }
 
 /**
@@ -191,6 +191,8 @@ bool FileManager::fill_file_into_blocks(json file_info, string file_path, int me
 {
     int num = (int)file_info["size"] / block_size;
     int occupy = (int)file_info["size"] % block_size;
+    if (occupy == 0)
+        num = num - 1;
     // get first block index of allocated blocks
     int first_idle_block = this->find_idle_blocks(num + 1, method);
     if (first_idle_block == -1)
@@ -211,6 +213,26 @@ bool FileManager::fill_file_into_blocks(json file_info, string file_path, int me
         blocks[count].set_fp(file_path);
         count += 1;
     }
+    return true;
+}
+
+/**
+ * @brief free blocks occupied by a file
+ * 
+ * @param file_path path relative to home
+ * @return bool
+ */
+bool FileManager::delete_file_from_blocks(string file_path)
+{
+    int start = (int)this->file_blocks[file_path][0];
+    int length = (int)this->file_blocks[file_path][1];
+    for (int i = start; i < start + length; i++)
+    {
+        this->blocks[i].set_free_space(this->block_size);
+        this->blocks[i].set_fp("");
+        this->bitmap[i] = 1;
+    }
+    file_blocks.erase(file_path);
     return true;
 }
 
@@ -338,16 +360,6 @@ int FileManager::worst_fit(string target_str)
     return free_blocks[free_blocks.size() - 1].first;
 }
 
-int FileManager::get_number_of_files(string directory)
-{
-    path cur_directory(directory);
-    directory_iterator file_list(cur_directory);
-    int count = 0;
-    for (auto file : file_list)
-        count++;
-    return count;
-}
-
 /**
  * @brief print file system by tree recursively
  *
@@ -399,7 +411,7 @@ string FileManager::get_absolute_working_path()
  */
 bool FileManager::add_json_node_to_tree(string path, json node)
 {
-    json* temp = &(this->file_system_tree); // the temportary pointer to the file_system_tree
+    json* temp = &(this->file_system_tree); // the temporary pointer to the file_system_tree
     
     string relative_path = path.substr(this->home_path.size() + 1); // get the path relative to the home
     // cout << relative_path << endl;
@@ -416,7 +428,7 @@ bool FileManager::add_json_node_to_tree(string path, json node)
 
     if (exists(path) && is_directory(path)) {
         (*temp)[(string)node["name"]] = nlohmann::detail::value_t::null; // This is a new directory.
-        // cout << setw(4) << this->file_system_tree << endl;   // debug
+        cout << setw(4) << this->file_system_tree << endl;   // debug
         return true;
     }
     else if (exists(path)) {
@@ -431,6 +443,5 @@ bool FileManager::add_json_node_to_tree(string path, json node)
 int main()
 {
     FileManager fm(512, 200, 12);
-    fm.print_file_system_tree(fm.home_path);
     return 0;
 }

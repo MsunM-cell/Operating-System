@@ -15,13 +15,13 @@ using nlohmann::json;
 
 // cross platform
 // fit to Windows, Linux and Unix
-# ifdef _WIN64
-#define STRING(s) WStringToString(s) 
-# elif _WIN32
-#define STRING(s) WStringToString(s) 
-# else
-#define STRING(s) (string)s 
-# endif
+#ifdef _WIN64
+#define STRING(s) WStringToString(s)
+#elif _WIN32
+#define STRING(s) WStringToString(s)
+#else
+#define STRING(s) (string) s
+#endif
 
 // compare each other on the basis of 2nd element of pairs
 // in ascending order
@@ -72,6 +72,7 @@ class FileManager
 public:
     char file_separator = (char)path::preferred_separator;               // directory separator
     string home_path = STRING(current_path()) + file_separator + "home"; // absolute path of home directory
+    string working_path;                                                 // working directory
 
     /**
      * @brief Construct a new File Manager object
@@ -113,6 +114,13 @@ public:
      */
     bool fill_file_into_blocks(json file_info, string file_path, int method);
     /**
+     * @brief free blocks occupied by a file
+     *
+     * @param file_path path relative to home
+     * @return bool
+     */
+    bool delete_file_from_blocks(string file_path);
+    /**
      * @brief Find the idle blocks in a certain method.
      *
      * @param num the number of disk blocks we need
@@ -151,21 +159,19 @@ public:
     int get_number_of_files(string directory);
     /**
      * @brief print file system by tree recursively
-     * 
-     * @param directory 
-     * @param layer 
+     *
+     * @param directory
+     * @param layer
      */
     void print_file_system_tree(string directory, int layer = 0);
-
     /**
      * @brief return the absolute working path
      * @return string
      */
     string get_absolute_working_path();
-
     /**
      * @brief add the json node to the file_system_tree
-     * 
+     *
      * @param path the path of the file
      * @return bool
      */
@@ -184,7 +190,6 @@ private:
     int sector_num; // the number of sectors for each track
     int block_num;  // the number of blocks
 
-    string working_path;     // working directory
     vector<int> busy_blocks; // busy blocks list
 };
 
