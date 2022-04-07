@@ -31,7 +31,7 @@ void ProcManagerFCFS::runProcManager(){
     while(true){
         while(!fcfsQueue.empty()){
             PCB p = fcfsQueue.front();
-            //¸Ãº¯ÊıÊÇÖ´ĞĞº¯Êı£¬ÔİÊ±Î´¶¨
+            //è¯¥å‡½æ•°æ˜¯æ‰§è¡Œå‡½æ•°ï¼Œæš‚æ—¶æœªå®š
             run(p);
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
@@ -58,7 +58,7 @@ string ProcManagerFCFS::getCommand(){
  * @return {NULL}
  */
 void ProcManagerFCFS::run(PCB p){
-    // ÒòÎª»¹Ã»¶¨ÎÄ¼ş¸ñÊ½£¬runº¯ÊıÔİÊ±Ã»ÓĞ°ì·¨Ğ´
+    // å› ä¸ºè¿˜æ²¡å®šæ–‡ä»¶æ ¼å¼ï¼Œrunå‡½æ•°æš‚æ—¶æ²¡æœ‰åŠæ³•å†™
     cout << "process " << p.id << " is running," << " will use " << p.time_need << " ms."<< endl;
     Sleep(p.time_need);
     cout << "process " << p.id << " is terminated" << endl;
