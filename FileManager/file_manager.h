@@ -16,10 +16,13 @@ using nlohmann::json;
 // cross platform
 // fit to Windows, Linux and Unix
 #ifdef _WIN64
+#include <windows.h>
 #define STRING(s) WStringToString(s)
 #elif _WIN32
+#include <windows.h>
 #define STRING(s) WStringToString(s)
 #else
+#include <unistd.h>
 #define STRING(s) (string) s
 #endif
 
@@ -191,6 +194,22 @@ private:
     int block_num;  // the number of blocks
 
     vector<int> busy_blocks; // busy blocks list
+};
+
+// Disk class
+class Disk
+{
+public:
+    Disk(int block_size, int track_num, int sector_num);
+
+private:
+    int sector_size; // the size of a sector
+    int track_num; // the number of tracks
+    int track_size; // the number of sectors for each track
+    int head_pointer; // the track index of the head
+    int seek_speed; // time taken to cross a track
+    int rotate_speed; // average sector seek and read time
+    int slow_ratio; // slow ratio for simulation disk operation
 };
 
 #endif

@@ -440,8 +440,26 @@ bool FileManager::add_json_node_to_tree(string path, json node)
 }
 
 
+Disk::Disk(int block_size, int track_num, int sector_num)
+{
+    this->sector_size = block_size; // default 512 bytes
+    this->track_num = track_num; // default 200
+    this->track_size = sector_num; // default 12
+    this->head_pointer = 12; // default 12
+
+    this->seek_speed = 0.0001; // default 0.1ms
+    this->rotate_speed = 0.004; // default 4ms
+    // for Windows, it is Sleep function
+    // for Linux and Unix, it is usleep function
+    // accurate to 1ms, so need to multiply by 10
+    this->slow_ratio = 10;
+    this->seek_speed = this->seek_speed * this->slow_ratio;
+    this->rotate_speed = this->rotate_speed * this->slow_ratio;
+}
+
 int main()
 {
+    usleep(2000);
     FileManager fm(512, 200, 12);
     return 0;
 }
