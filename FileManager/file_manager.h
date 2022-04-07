@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include <filesystem>
+#include <cmath>
 #include "json.hpp" // JSON for Modern C++
 
 using namespace std;
@@ -200,16 +201,29 @@ private:
 class Disk
 {
 public:
+    /**
+     * @brief Construct a new Disk object
+     *
+     * @param block_size the size of a block
+     * @param track_num the number of tracks
+     * @param sector_num // the number of sectors for each track
+     */
     Disk(int block_size, int track_num, int sector_num);
+    /**
+     * @brief seek one by one in sequence
+     *
+     * @param seek_queue
+     */
+    void seek_by_queue(vector<pair<int, int>> seek_queue);
 
 private:
-    int sector_size; // the size of a sector
-    int track_num; // the number of tracks
-    int track_size; // the number of sectors for each track
-    int head_pointer; // the track index of the head
-    int seek_speed; // time taken to cross a track
-    int rotate_speed; // average sector seek and read time
-    int slow_ratio; // slow ratio for simulation disk operation
+    int sector_size;     // the size of a sector
+    int track_num;       // the number of tracks
+    int track_size;      // the number of sectors for each track
+    int head_pointer;    // the track index of the head
+    double seek_speed;   // time taken to cross a track
+    double rotate_speed; // average sector seek and read time
+    int slow_ratio;      // slow ratio for simulation disk operation
 };
 
 #endif

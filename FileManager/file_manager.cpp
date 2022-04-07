@@ -218,7 +218,7 @@ bool FileManager::fill_file_into_blocks(json file_info, string file_path, int me
 
 /**
  * @brief free blocks occupied by a file
- * 
+ *
  * @param file_path path relative to home
  * @return bool
  */
@@ -405,61 +405,109 @@ string FileManager::get_absolute_working_path()
 
 /**
  * @brief add the json node to the file_system_tree
- * 
+ *
  * @param path the path of the file
  * @return bool
  */
 bool FileManager::add_json_node_to_tree(string path, json node)
 {
-    json* temp = &(this->file_system_tree); // the temporary pointer to the file_system_tree
-    
+    json *temp = &(this->file_system_tree); // the temporary pointer to the file_system_tree
+
     string relative_path = path.substr(this->home_path.size() + 1); // get the path relative to the home
     // cout << relative_path << endl;
 
     int index = -1; // -1 means not exists file_separator, >= 0 means exists.
-    while ((index = relative_path.find('/')) != -1) {
-        string temp_dir = relative_path.substr(0, index);   // get the next directory name
-        relative_path = relative_path.substr(index + 1);    // get the next path of the next directory
+    while ((index = relative_path.find('/')) != -1)
+    {
+        string temp_dir = relative_path.substr(0, index); // get the next directory name
+        relative_path = relative_path.substr(index + 1);  // get the next path of the next directory
 
         // if not contains the directory name, maybe there is a fault.
-        if ((*temp).contains(temp_dir) == false)  return false; 
-        temp = &(*temp)[temp_dir];  // 'temp' points to the next directory
+        if ((*temp).contains(temp_dir) == false)
+            return false;
+        temp = &(*temp)[temp_dir]; // 'temp' points to the next directory
     }
 
-    if (exists(path) && is_directory(path)) {
+    if (exists(path) && is_directory(path))
+    {
         (*temp)[(string)node["name"]] = nlohmann::detail::value_t::null; // This is a new directory.
-        cout << setw(4) << this->file_system_tree << endl;   // debug
+        cout << setw(4) << this->file_system_tree << endl;               // debug
         return true;
     }
-    else if (exists(path)) {
-        (*temp)[(string)node["name"]] = node["type"];   // This is a new file.
+    else if (exists(path))
+    {
+        (*temp)[(string)node["name"]] = node["type"]; // This is a new file.
         // cout << setw(4) << this->file_system_tree << endl;   // debug
         return true;
     }
     return false;
 }
 
-
+/**
+ * @brief Construct a new Disk object
+ *
+ * @param block_size the size of a block
+ * @param track_num the number of tracks
+ * @param sector_num // the number of sectors for each track
+ */
 Disk::Disk(int block_size, int track_num, int sector_num)
 {
     this->sector_size = block_size; // default 512 bytes
-    this->track_num = track_num; // default 200
-    this->track_size = sector_num; // default 12
-    this->head_pointer = 12; // default 12
+    this->track_num = track_num;    // default 200
+    this->track_size = sector_num;  // default 12
+    this->head_pointer = 12;        // default 12
 
-    this->seek_speed = 0.0001; // default 0.1ms
-    this->rotate_speed = 0.004; // default 4ms
+    this->seek_speed = 0.0001;  // default 0.1 ms
+    this->rotate_speed = 0.004; // default 4 ms
     // for Windows, it is Sleep function
     // for Linux and Unix, it is usleep function
-    // accurate to 1ms, so need to multiply by 10
+    // accurate to 1 ms, so need to multiply by 10
     this->slow_ratio = 10;
     this->seek_speed = this->seek_speed * this->slow_ratio;
     this->rotate_speed = this->rotate_speed * this->slow_ratio;
 }
 
+/**
+ * @brief seek one by one in sequence
+ * 
+ * @param seek_queue 
+ */
+void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
+{
+    double seek_time = 0; // time cost
+    int seek_byte = 0; // read-write bytes
+    int seek_distance = 0; // head movement distance
+    for (auto q : seek_queue)
+    {
+        // seek: calculate the distance the head has to travel
+        int distance = abs(q.first - this->head_pointer);
+        seek_distance += distance;
+        // seek: simulate delay of moving head
+        usleep(distance * this->seek_speed);
+        // record time cost
+        seek_time += (distance * this->seek_speed) / this->slow_ratio;
+        // update head
+        this->head_pointer = q.first;
+
+        // rotate: simulate sector seeking and read-write delay
+        usleep(this->rotate_speed);
+        seek_time += this->rotate_speed / this->slow_ratio;
+        // record read-write bytes
+        seek_byte += this->sector_size; 
+    }
+    printf("disk access success: time used: %.5lf ms\n", seek_time * 1000);
+}
+
 int main()
 {
-    usleep(2000);
     FileManager fm(512, 200, 12);
+    Disk d(512, 200, 12);
+    vector<pair<int, int>> seek_queue;
+    seek_queue.push_back({11, 1});
+    // seek_queue.push_back({2, 1});
+    // seek_queue.push_back({10, 1});
+    // seek_queue.push_back({5, 1});
+    // seek_queue.push_back({20, 1});
+    d.seek_by_queue(seek_queue);
     return 0;
 }
