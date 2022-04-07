@@ -129,7 +129,7 @@ bool FileOperation::delete_file(string current_dir, string file_name)
 {
     string cur_file_path = current_dir + file_name;
     if (!exists(cur_file_path)) {
-        printf("Cannot create file '%s': File exists\n", file_name.c_str());
+        printf("rm: %s: No such file\n", file_name.c_str());
         return false;
     }
 
@@ -153,6 +153,7 @@ bool FileOperation::create_dir(string current_dir, string dir_name)
         printf("Cannot create directory '%s': File exists\n", dir_name.c_str());
         return false;
     }
+
     json new_dir;
     new_dir["name"] = dir_name;
     new_dir["type"] = "drw-";
@@ -166,7 +167,6 @@ bool FileOperation::create_dir(string current_dir, string dir_name)
     
     printf("Create directory '%s' failed.\n", dir_name.c_str());
     return false;
-
 }
 
 /**
@@ -199,7 +199,5 @@ bool FileOperation::delete_dir(string current_dir, string dir_name)
 void FileOperation::tree(string dir, int layer) {
     file_manager->print_file_system_tree(dir, layer);
 }
-
-
 
 #endif
