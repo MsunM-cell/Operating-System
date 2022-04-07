@@ -18,7 +18,7 @@ public:
     /**
      * @brief create a new file
      * 
-     * @param current_dir the working directory
+     * @param current_dir the working directory (absolute)
      * @param file_name the name of the file
      * @return bool
      */
@@ -27,7 +27,7 @@ public:
     /**
      * @brief delete a new file
      * 
-     * @param current_dir the working directory
+     * @param current_dir the working directory (absolute)
      * @param file_name the name of the file
      * @return bool
      */
@@ -36,7 +36,7 @@ public:
     /**
      * @brief create a new directory
      * 
-     * @param current_dir the working directory
+     * @param current_dir the working directory (absolute)
      * @param dir_name the name of the directory
      * @return bool
      */
@@ -45,7 +45,7 @@ public:
     /**
      * @brief delete a new directory
      * 
-     * @param current_dir the working directory
+     * @param current_dir the working directory (absolute)
      * @param dir_name the name of the directory
      * @return bool
      */
@@ -77,7 +77,7 @@ FileOperation::FileOperation(FileManager* fm)
 /**
  * @brief create a new file
  * 
- * @param current_dir the working directory
+ * @param current_dir the working directory (absolute)
  * @param file_name the name of the file
  * @return bool
  */
@@ -121,7 +121,7 @@ bool FileOperation::create_file(string current_dir, string file_name)
 /**
  * @brief delete a new file
  * 
- * @param current_dir the working directory
+ * @param current_dir the working directory (absolute)
  * @param file_name the name of the file
  * @return bool
  */
@@ -142,7 +142,7 @@ bool FileOperation::delete_file(string current_dir, string file_name)
 /**
  * @brief create a new directory
  * 
- * @param current_dir the working directory
+ * @param current_dir the working directory (absolute)
  * @param dir_name the name of the directory
  * @return bool
  */
@@ -172,7 +172,7 @@ bool FileOperation::create_dir(string current_dir, string dir_name)
 /**
  * @brief delete a new directory
  * 
- * @param current_dir the working directory
+ * @param current_dir the working directory (absolute)
  * @param dir_name the name of the directory
  * @return bool
  */
