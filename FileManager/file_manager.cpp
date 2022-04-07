@@ -498,6 +498,18 @@ void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
     printf("disk access success: time used: %.5lf ms\n", seek_time * 1000);
 }
 
+/**
+ * @brief FCFS algorithm
+ * 
+ * @param seek_queue 
+ */
+void Disk::FCFS(vector<pair<int, int>> seek_queue)
+{
+    this->seek_by_queue(seek_queue);
+}
+
+
+
 int main()
 {
     FileManager fm(512, 200, 12);
