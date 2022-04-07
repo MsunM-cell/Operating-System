@@ -221,6 +221,12 @@ public:
      * @param seek_queue
      */
     void FCFS(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief SSTF
+     *
+     * @param seek_queue
+     */
+    void SSTF(vector<pair<int, int>> seek_queue);
 
 private:
     int sector_size;     // the size of a sector

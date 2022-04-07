@@ -508,18 +508,49 @@ void Disk::FCFS(vector<pair<int, int>> seek_queue)
     this->seek_by_queue(seek_queue);
 }
 
-
+/**
+ * @brief SSTF
+ * 
+ * @param seek_queue 
+ */
+void Disk::SSTF(vector<pair<int, int>> seek_queue)
+{
+    vector<pair<int, int>> temp_seek_queue;
+    temp_seek_queue.push_back({this->head_pointer, 0});
+    // sort by seek time cost
+    while (!seek_queue.empty())
+    {
+        int index = 0;
+        int min_distance = this->track_num;
+        for (int i = 0; i < seek_queue.size(); i++)
+        {
+            int temp_head_pointer = temp_seek_queue[temp_seek_queue.size() - 1].first;
+            int distance = abs(seek_queue[i].first - temp_head_pointer);
+            if (distance < min_distance)
+            {
+                min_distance = distance;
+                index = i;
+            }
+        }
+        temp_seek_queue.push_back(seek_queue[index]);
+        seek_queue.erase(seek_queue.begin() + index);
+    }
+    temp_seek_queue.erase(temp_seek_queue.begin());
+    seek_queue = temp_seek_queue;
+    for (int i = 0; i < seek_queue.size(); i++)
+        cout << seek_queue[i].first << endl;
+    this->seek_by_queue(seek_queue);
+}
 
 int main()
 {
     FileManager fm(512, 200, 12);
     Disk d(512, 200, 12);
     vector<pair<int, int>> seek_queue;
-    seek_queue.push_back({11, 1});
-    // seek_queue.push_back({2, 1});
-    // seek_queue.push_back({10, 1});
-    // seek_queue.push_back({5, 1});
-    // seek_queue.push_back({20, 1});
-    d.seek_by_queue(seek_queue);
+    seek_queue.push_back({100, 1});
+    seek_queue.push_back({40, 1});
+    seek_queue.push_back({60, 1});
+    seek_queue.push_back({10, 1});
+    d.SSTF(seek_queue);
     return 0;
 }
