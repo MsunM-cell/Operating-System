@@ -1,6 +1,6 @@
 /**
  * @file testRR.cpp
- * @brief ÓĞ¹ØÓÚÒ»¼¶¶ÓÁĞµÄÒ»Ğ©³¢ÊÔ
+ * @brief æœ‰å…³äºä¸€çº§é˜Ÿåˆ—çš„ä¸€äº›å°è¯•
  * @date 2022-03-25
  */
 #include "proc.h"
@@ -9,11 +9,11 @@ using namespace std;
 
 
 /*****************************************************************************************
- * RRQueueÀàµÄÓĞ¹Ø¶¨Òå²¿·Ö
+ * RRQueueç±»çš„æœ‰å…³å®šä¹‰éƒ¨åˆ†
  ****************************************************************************************/
 
 /**
- * @brief Îö¹¹º¯Êı
+ * @brief ææ„å‡½æ•°
  */
 RRQueue::~RRQueue()
 {
@@ -21,8 +21,8 @@ RRQueue::~RRQueue()
 }
 
 /**
- * @brief ²éÑ¯Ä¿Ç°¶ÓÁĞµÄ³¤¶È
- * @return ¶ÓÁĞ³¤¶È
+ * @brief æŸ¥è¯¢ç›®å‰é˜Ÿåˆ—çš„é•¿åº¦
+ * @return é˜Ÿåˆ—é•¿åº¦
  */
 int RRQueue::getSize()
 {
@@ -30,8 +30,8 @@ int RRQueue::getSize()
 }
 
 /**
- * @brief ½µ¼¶²Ù×÷
- * @param target ±»½µ¼¶µÄPCB
+ * @brief é™çº§æ“ä½œ
+ * @param target è¢«é™çº§çš„PCB
  */
 void RRQueue::downLevel(PCB* target,ProcManagerFCFS* fcfs)
 {
@@ -40,9 +40,9 @@ void RRQueue::downLevel(PCB* target,ProcManagerFCFS* fcfs)
 }
 
 /**
- * ÏòRR¶ÓÁĞÖĞ¼ÓÈëÒ»¸öPCB
- * @param target Ö¸ÏòÒª¼ÓÈëµÄPCB
- * @return ³É¹¦Ôò·µ»Øtrue
+ * å‘RRé˜Ÿåˆ—ä¸­åŠ å…¥ä¸€ä¸ªPCB
+ * @param target æŒ‡å‘è¦åŠ å…¥çš„PCB
+ * @return æˆåŠŸåˆ™è¿”å›true
  */
 bool RRQueue::addPCB(PCB *target)
 {
@@ -51,9 +51,9 @@ bool RRQueue::addPCB(PCB *target)
 }
 
 /**
- * ÒÆ³ıÒ»¸öpcb,²¢½«ÆäÕ¼ÓÃµÄÄÚ´æÊÍ·Å
- * @param pid ½«ÒªÒÆ³ıµÄpcbµÄid
- * @return ³É¹¦Ôò·µ»Øtrue
+ * ç§»é™¤ä¸€ä¸ªpcb,å¹¶å°†å…¶å ç”¨çš„å†…å­˜é‡Šæ”¾
+ * @param pid å°†è¦ç§»é™¤çš„pcbçš„id
+ * @return æˆåŠŸåˆ™è¿”å›true
  */
 bool RRQueue::removePCB(int pid)
 {
@@ -70,42 +70,42 @@ bool RRQueue::removePCB(int pid)
 }
 
 /**
- * @brief µ÷¶ÈÖ÷Ëã·¨
- * @return Õı³£½áÊø·µ»Ø0
+ * @brief è°ƒåº¦ä¸»ç®—æ³•
+ * @return æ­£å¸¸ç»“æŸè¿”å›0
  */
 int RRQueue::scheduling(ProcManagerFCFS* fcfs)
 {
     // cout << setw(WIDTH) << "Id" << setw(WIDTH) << "Time_need\n";
-    // Ñ­»·µ½rr¶ÓÁĞÎª¿Õ
+    // å¾ªç¯åˆ°rré˜Ÿåˆ—ä¸ºç©º
     while (!this->rr_que.empty())
     {
-        // ¶ÔÃ¿¸öpcb½øĞĞ´¦Àí
+        // å¯¹æ¯ä¸ªpcbè¿›è¡Œå¤„ç†
         for (auto it = this->rr_que.begin(); it < this->rr_que.end(); it++)
         {
             PCB* cur_pcb = *it;
             // cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
-            // ÅĞ¶ÏÊ±¼äÊÇ·ñ¹»Íê³ÉÒ»´ÎÑ­»·
+            // åˆ¤æ–­æ—¶é—´æ˜¯å¦å¤Ÿå®Œæˆä¸€æ¬¡å¾ªç¯
             if (cur_pcb->time_need > TIME_SLICE)
             {
-                // Ä£Äâ·şÎñ¹ı³Ì
+                // æ¨¡æ‹ŸæœåŠ¡è¿‡ç¨‹
                 Sleep(TIME_SLICE);
-                // Ê±¼äÆ¬µ½
+                // æ—¶é—´ç‰‡åˆ°
                 cur_pcb->time_need -= TIME_SLICE;
                 printf("[%ld]Pid %d time out! Still need %d.\n", clock() - system_start, cur_pcb->id,
                        cur_pcb->time_need);
-                // ÅĞ¶ÏÒ»ÏÂÊÇ·ñÊ¹ÓÃÁË¹ı¶àµÄÊ±¼äÆ¬,ÊÇÔò½µ¼¶
+                // åˆ¤æ–­ä¸€ä¸‹æ˜¯å¦ä½¿ç”¨äº†è¿‡å¤šçš„æ—¶é—´ç‰‡,æ˜¯åˆ™é™çº§
                 cur_pcb->slice_cnt++;
                 if (cur_pcb->slice_cnt == MAX_CNT)
                 {
                     cur_pcb->pri = LOW_PRI;
-                    // ½µ¼¶¼ÓÈëfcfs¶ÓÁĞÖĞ,²¢´Óµ±Ç°¶ÓÁĞÉ¾³ı
+                    // é™çº§åŠ å…¥fcfsé˜Ÿåˆ—ä¸­,å¹¶ä»å½“å‰é˜Ÿåˆ—åˆ é™¤
                     this->downLevel(cur_pcb,fcfs);
                     it = this->rr_que.erase(it);
                 }
             }
             else
             {
-                // ĞèÒªµÄÊ±¼äĞ¡ÓÚÍêÕûµÄÊ±¼äÆ¬£¬Íê³Éºó´Ó¶ÓÁĞÖĞÉ¾³ı¸ÃÏî
+                // éœ€è¦çš„æ—¶é—´å°äºå®Œæ•´çš„æ—¶é—´ç‰‡ï¼Œå®Œæˆåä»é˜Ÿåˆ—ä¸­åˆ é™¤è¯¥é¡¹
                 Sleep(cur_pcb->time_need);
                 cur_pcb->time_need = -1;
                 printf("[%ld]Pid %d time out! No time need.\n", clock() - system_start, cur_pcb->id);
@@ -118,8 +118,8 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
 }
 
 /**
- * »ñÈ¡RR¶ÓÁĞÖĞËùÓĞpcbµÄĞÅÏ¢
- * @return µü´úÆ÷Í·Ö¸Õë
+ * è·å–RRé˜Ÿåˆ—ä¸­æ‰€æœ‰pcbçš„ä¿¡æ¯
+ * @return è¿­ä»£å™¨å¤´æŒ‡é’ˆ
  */
 void RRQueue::getInfo()
 {
@@ -131,9 +131,9 @@ void RRQueue::getInfo()
 }
 
 /**
- * »ñÈ¡RR¶ÓÁĞÖĞÖ¸¶¨pcbµÄĞÅÏ¢
- * @param pid Ö¸¶¨pcbµÄid
- * @return Ö¸ÏòÆäµÄµü´úÆ÷£¬Ã»ÕÒµ½¾Í·µ»Ø¿Õ
+ * è·å–RRé˜Ÿåˆ—ä¸­æŒ‡å®špcbçš„ä¿¡æ¯
+ * @param pid æŒ‡å®špcbçš„id
+ * @return æŒ‡å‘å…¶çš„è¿­ä»£å™¨ï¼Œæ²¡æ‰¾åˆ°å°±è¿”å›ç©º
  */
 void RRQueue::getInfo(int pid)
 {
@@ -151,11 +151,11 @@ void RRQueue::getInfo(int pid)
 }
 
 /*****************************************************************************************
- * ProcManagerÀàµÄÓĞ¹Ø¶¨Òå²¿·Ö
+ * ProcManagerç±»çš„æœ‰å…³å®šä¹‰éƒ¨åˆ†
  ****************************************************************************************/
 
 /**
- * @brief ProcManagerµÄ¹¹Ôìº¯Êı
+ * @brief ProcManagerçš„æ„é€ å‡½æ•°
  */
 ProcManager::ProcManager()
 {
@@ -165,7 +165,7 @@ ProcManager::ProcManager()
 }
 
 /**
- * ²âÊÔÓÃ
+ * æµ‹è¯•ç”¨
  * @param x
  * @param y
  */
@@ -175,7 +175,7 @@ ProcManager::ProcManager(int n_size, int x_size)
     this->rr_queue = new RRQueue();
     this->fcfsProcManager = new ProcManagerFCFS();
     cout << "ProcManager is running!\n";
-    // ²»»á±»½µ¼¶µÄPCB
+    // ä¸ä¼šè¢«é™çº§çš„PCB
     for (int i = 0; i < n_size; i++)
     {
         PCB* new_pcb = new PCB;
@@ -186,7 +186,7 @@ ProcManager::ProcManager(int n_size, int x_size)
         new_pcb->time_need = rand() % 30 * 100;
         active_pcb.push_back(new_pcb);
     }
-    // ½µ¼¶²âÊÔ
+    // é™çº§æµ‹è¯•
     for (int i = 0; i < x_size; i++)
     {
         PCB* new_pcb = new PCB;
@@ -199,7 +199,7 @@ ProcManager::ProcManager(int n_size, int x_size)
     }
     this->cpid = 7;
 
-    // ÏòrrÌí¼Ópcb£¬Ö®ºó¿ÉÖØÓÃ
+    // å‘rræ·»åŠ pcbï¼Œä¹‹åå¯é‡ç”¨
     for (PCB* pcb : this->active_pcb)
     {
         this->rr_queue->addPCB(pcb);
@@ -207,7 +207,7 @@ ProcManager::ProcManager(int n_size, int x_size)
 }
 
 /**
- * @brief ProcManagerµÄÎö¹¹º¯Êı
+ * @brief ProcManagerçš„ææ„å‡½æ•°
  */
 ProcManager::~ProcManager()
 {
@@ -215,18 +215,18 @@ ProcManager::~ProcManager()
 }
 
 /**
- * »ñÈ¡µ±Ç°»îÔ¾µÄ½ø³Ì¸öÊı
- * @return ½ø³Ì¸öÊı
+ * è·å–å½“å‰æ´»è·ƒçš„è¿›ç¨‹ä¸ªæ•°
+ * @return è¿›ç¨‹ä¸ªæ•°
  */
 int ProcManager::getActiveNum()
 {
     return rr_queue->getSize() + fcfsProcManager->getQueueSize();
-    // TODO fcfsÁ´½Óºó:
-    //  return rr_queue->getSize() + fcfsÊıÁ¿;
+    // TODO fcfsé“¾æ¥å:
+    //  return rr_queue->getSize() + fcfsæ•°é‡;
 }
 
 /**
- * ½ø³ÌÈ«É±ÁË£¨ÊµÑéÓÃ£©
+ * è¿›ç¨‹å…¨æ€äº†ï¼ˆå®éªŒç”¨ï¼‰
  */
 void ProcManager::kill()
 {
@@ -237,16 +237,16 @@ void ProcManager::kill()
 }
 
 /**
- * É±µôÒ»¸ö½ø³Ì
- * @param pid ½ø³ÌµÄid
+ * æ€æ‰ä¸€ä¸ªè¿›ç¨‹
+ * @param pid è¿›ç¨‹çš„id
  */
 void ProcManager::kill(int pid)
 {
-    // ÕÒµ½µÄ±êÖ¾
+    // æ‰¾åˆ°çš„æ ‡å¿—
     bool is_found = false;
-    // ÔÚÁ½¸ö¶ÓÁĞÀïÃæÕÒ
-    // TODO ºÍfcfs¶Ô½ÓºóÎª£º
-    //  is_found = this->rr_queue->removePCB(pid) || ´ÓfcfsµÄ·µ»Ø½á¹û£»
+    // åœ¨ä¸¤ä¸ªé˜Ÿåˆ—é‡Œé¢æ‰¾
+    // TODO å’Œfcfså¯¹æ¥åä¸ºï¼š
+    //  is_found = this->rr_queue->removePCB(pid) || ä»fcfsçš„è¿”å›ç»“æœï¼›
     is_found = this->rr_queue->removePCB(pid);
     if (is_found)
     {
@@ -254,10 +254,10 @@ void ProcManager::kill(int pid)
         return;
     }
 
-    // ÔÚµÈ´ı¶ÓÁĞÀïÃæÑ°ÕÒ½ø³Ì
+    // åœ¨ç­‰å¾…é˜Ÿåˆ—é‡Œé¢å¯»æ‰¾è¿›ç¨‹
     for (auto it=this->waiting_pcb.begin(); it < this->waiting_pcb.end(); it++)
     {
-        // ÕÒµ½ÁË£¬É¾³ıËü
+        // æ‰¾åˆ°äº†ï¼Œåˆ é™¤å®ƒ
         if ((*it)->id == pid)
         {
             delete *it;
@@ -269,7 +269,7 @@ void ProcManager::kill(int pid)
 }
 
 /**
- * ÁĞ³öµ±Ç°ËùÓĞ´æÔÚµÄpcb
+ * åˆ—å‡ºå½“å‰æ‰€æœ‰å­˜åœ¨çš„pcb
  */
 void ProcManager::ps()
 {
@@ -280,8 +280,8 @@ void ProcManager::ps()
 }
 
 /**
- * ÁĞ³öÖ¸¶¨µÄpcb
- * @param pid Ö¸¶¨
+ * åˆ—å‡ºæŒ‡å®šçš„pcb
+ * @param pid æŒ‡å®š
  */
 void ProcManager::ps(int pid)
 {
@@ -289,12 +289,12 @@ void ProcManager::ps(int pid)
 }
 
 /**
- * Æô¶¯Ò»¸ö½ø³Ì
- * @param file_name ÒªÆô¶¯µÄÎÄ¼şÃû
+ * å¯åŠ¨ä¸€ä¸ªè¿›ç¨‹
+ * @param file_name è¦å¯åŠ¨çš„æ–‡ä»¶å
  */
 void ProcManager::run(string file_name)
 {
-    // ´ÓÆäËûÄ£¿é»ñÈ¡ÎÄ¼şµÄÓĞ¹ØĞÅÏ¢£¬ÕâÀïÄ£ÄâÒ»ÏÂ
+    // ä»å…¶ä»–æ¨¡å—è·å–æ–‡ä»¶çš„æœ‰å…³ä¿¡æ¯ï¼Œè¿™é‡Œæ¨¡æ‹Ÿä¸€ä¸‹
     PCB* new_pcb = new PCB;
     new_pcb->id = this->cpid;
     new_pcb->name = file_name;
@@ -304,7 +304,7 @@ void ProcManager::run(string file_name)
     this->cpid = (this->cpid + 1) % 65536;
     PCB* pcb = new_pcb;
 
-    // ÅĞ¶ÏÊÇ·ñĞèÒª¼ÓÈëµ½µÈ´ı¶ÓÁĞ
+    // åˆ¤æ–­æ˜¯å¦éœ€è¦åŠ å…¥åˆ°ç­‰å¾…é˜Ÿåˆ—
     if (this->getActiveNum() < MAX_PROC)
     {
         if (pcb->pri == HIGH_PRI)
@@ -325,7 +325,7 @@ void ProcManager::run(string file_name)
 }
 
 /**
- * ¿ªÊ¼µ÷¶È
+ * å¼€å§‹è°ƒåº¦
  */
 void ProcManager::scheduling()
 {
@@ -336,7 +336,7 @@ void ProcManager::scheduling()
 int main()
 {
     // RRQueue test_queue(5,2);
-    // ÏµÍ³¿ªÊ¼¼ÆÊ±£¬Êµ¼ÊÓ¦¸Ã¸üÔç
+    // ç³»ç»Ÿå¼€å§‹è®¡æ—¶ï¼Œå®é™…åº”è¯¥æ›´æ—©
     system_start = clock();
     cout << setiosflags(ios::left);
     printf("[%ld]This is a RR test\n", clock() - system_start);

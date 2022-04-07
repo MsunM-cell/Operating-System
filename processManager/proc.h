@@ -15,28 +15,28 @@
 #include "../lib/sys.h"
 using namespace std;
 
-// ºê
-// ¶ÔÆë¿í¶È
+// å®
+// å¯¹é½å®½åº¦
 #define WIDTH 10
-// Ê±¼äÆ¬´óĞ¡
+// æ—¶é—´ç‰‡å¤§å°
 #define TIME_SLICE 200
-// ¸ßÓÅÏÈ¼¶
+// é«˜ä¼˜å…ˆçº§
 #define HIGH_PRI 0
-// µÍÓÅÏÈ¼¶
+// ä½ä¼˜å…ˆçº§
 #define LOW_PRI 1
-// ×î´óÕ¼ÓÃµÄÊ±¼äÆ¬ÊıÁ¿
+// æœ€å¤§å ç”¨çš„æ—¶é—´ç‰‡æ•°é‡
 #define MAX_CNT 10
-// ×î´ó¿Éµ÷¶ÈµÄ½ø³ÌÊıÁ¿
+// æœ€å¤§å¯è°ƒåº¦çš„è¿›ç¨‹æ•°é‡
 #define MAX_PROC 10
 
 
-// CPUÊÇ·ñÔÚÊ¹ÓÃ£¬¿ÉÀ©Õ¹ÎªÊı×é
+// CPUæ˜¯å¦åœ¨ä½¿ç”¨ï¼Œå¯æ‰©å±•ä¸ºæ•°ç»„
 bool CPU[2];
-// IOÉè±¸ÊÇ·ñÔÚÊ¹ÓÃ£¬¿ÉÀ©Õ¹ÎªÊı×é
+// IOè®¾å¤‡æ˜¯å¦åœ¨ä½¿ç”¨ï¼Œå¯æ‰©å±•ä¸ºæ•°ç»„
 bool IO[2];
 
-// È«¾Ö±äÁ¿
-// ±£´æÄ¿Ç°»îÔ¾µÄPCB
+// å…¨å±€å˜é‡
+// ä¿å­˜ç›®å‰æ´»è·ƒçš„PCB
 static vector<PCB*> active_pcb;
 
 static queue <PCB> FCFS;
@@ -58,11 +58,11 @@ private:
     string getCommand();
 };
 
-// RR¶ÓÁĞÀà
+// RRé˜Ÿåˆ—ç±»
 class RRQueue
 {
 private:
-    //rr¶ÓÁĞ±¾Éí
+    //rré˜Ÿåˆ—æœ¬èº«
     vector<PCB*> rr_que;
 public:
     RRQueue() = default;
@@ -77,17 +77,17 @@ public:
 };
 
 
-//½ø³Ì¹ÜÀíÆ÷Àà
+//è¿›ç¨‹ç®¡ç†å™¨ç±»
 class ProcManager
 {
 private:
-    // ¼ÇÂ¼¿ÉÓÃµÄpidºÅ
+    // è®°å½•å¯ç”¨çš„pidå·
     int cpid;
-    // ´¦ÓÚ¾ÍĞ÷×´Ì¬µÄpcb£¬Õâ¸ö¶«Î÷Ó¦¸Ã²»´æÔÚ£¬¼Ù×°ËüÀ´×ÔÄÚ´æ
+    // å¤„äºå°±ç»ªçŠ¶æ€çš„pcbï¼Œè¿™ä¸ªä¸œè¥¿åº”è¯¥ä¸å­˜åœ¨ï¼Œå‡è£…å®ƒæ¥è‡ªå†…å­˜
     vector<PCB*> active_pcb;
-    // Î»ÓÚµÈ´ı×´Ì¬µÄpcb
+    // ä½äºç­‰å¾…çŠ¶æ€çš„pcb
     vector<PCB*> waiting_pcb;
-    // RR¶ÓÁĞ
+    // RRé˜Ÿåˆ—
     RRQueue* rr_queue;
     ProcManagerFCFS* fcfsProcManager;
 public:
