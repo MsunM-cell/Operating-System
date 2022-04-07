@@ -1,6 +1,8 @@
-#include "file_manager.h"
+
 #ifndef FILE_OPERATION_HPP
 #define FILE_OPERATION_HPP
+
+#include "file_manager.h"
 
 // FileOperaion class
 class FileOperation
@@ -98,16 +100,20 @@ bool FileOperation::create_file(string current_dir, string file_name)
     new_file["size"] = 8;
     new_file["content"] = "";
 
-    if (file_manager->fill_file_into_blocks(new_file, cur_file_path, 0)) {
+    string relative_path = cur_file_path.substr(file_manager->home_path.size());
+    if (file_manager->fill_file_into_blocks(new_file, relative_path, 0)) {
         ofstream outfile(cur_file_path, ios::out);
         outfile << std::setw(4) << new_file;
         outfile.close();
         input.open(cur_file_path, ios::in);
         // check if the file has been created and if add to the file_system_tree
         if (input.is_open() && file_manager->add_json_node_to_tree(cur_file_path, new_file)) {
+            printf("success: make file %s\n", file_name.c_str());
             return true;
         }
     }
+    else
+        printf("disk storage error: no enough space\n");
 
     return false;
 }
