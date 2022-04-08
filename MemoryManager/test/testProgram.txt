@@ -1,0 +1,13 @@
+1 c 2<<20
+2 c 2<<20
+3 c 2<<20
+1 s 
+2 s 
+1 w 2090000 1: Hello world!
+1 w 1036000 1: Welcome!
+2 w 1450698 2: Operating System
+3 w 1425368 3: Memory Manager
+3 s 
+1 r 1036000
+2 r 1450698
+3 r 1425368
