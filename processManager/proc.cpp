@@ -288,7 +288,8 @@ int ProcManagerFCFS::getQueueSize(){
  ****************************************************************************************/
 
 /**
- * @brief ProcManager的构造函数
+ * @brief Construct a new Proc Manager:: Proc Manager object
+ * ProcManager的构造函数
  */
 ProcManager::ProcManager()
 {
@@ -298,7 +299,7 @@ ProcManager::ProcManager()
 }
 
 /**
- * 测试用
+ * test
  * @param x
  * @param y
  */
@@ -461,6 +462,19 @@ void ProcManager::scheduling()
     fcfsProcManager->runProcManager();
 }
 
+/**
+ * @brief 可以返回单例的函数
+ * 
+ * @return ProcManager& 
+ */
+ProcManager& ProcManager::getInstance() 
+{
+    // 测试用
+    static ProcManager instance(5,2);
+    // static ProcManager instance;
+    return instance;
+}
+
 int main()
 {
     // RRQueue test_queue(5,2);
@@ -469,19 +483,19 @@ int main()
     cout << setiosflags(ios::left);
     printf("[%ld]This is a RR test\n", clock() - system_start);
 
-    ProcManager proc_manager(5,2);
+
     cout << "ps all" << endl;
-    proc_manager.ps();
+    ProcManager::getInstance().ps();
     cout << "ps 3" << endl;
-    proc_manager.ps(3);
+    ProcManager::getInstance().ps(3);
     cout <<"kill test\n";
-    proc_manager.kill(3);
-    proc_manager.ps();
+    ProcManager::getInstance().kill(3);
+    ProcManager::getInstance().ps();
     cout <<"run test\n";
-    proc_manager.run("run_test");
-    proc_manager.ps();
-    proc_manager.scheduling();
-    proc_manager.ps();
+    ProcManager::getInstance().run("run_test");
+    ProcManager::getInstance().ps();
+    ProcManager::getInstance().scheduling();
+    ProcManager::getInstance().ps();
 
 
     // system("pause");

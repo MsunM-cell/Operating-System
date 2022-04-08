@@ -90,16 +90,17 @@ private:
     // RR队列
     RRQueue* rr_queue;
     ProcManagerFCFS* fcfsProcManager;
-public:
     ProcManager();
     ProcManager(int n_size, int x_size);
     ~ProcManager();
+public:
     int getActiveNum();
     void kill(int pid);
     void run(string file_name);
     void ps();
     void ps(int pid);
     void scheduling();
+    static ProcManager& getInstance();
 };
 
 #endif // !PROC_H
