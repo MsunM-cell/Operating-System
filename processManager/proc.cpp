@@ -34,7 +34,7 @@ int RRQueue::getSize()
  */
 void RRQueue::downLevel(PCB* target,ProcManagerFCFS* fcfs)
 {
-    fcfs->addToQueue(*target);
+    fcfs->addToQueue(target);
     printf("[%ld]Pid %d down to fcfs.\n", clock() - system_start, target->id);
 }
 
@@ -173,7 +173,7 @@ ProcManagerFCFS::~ProcManagerFCFS(){
  * @param {PCB} p
  * @return {NULL}
  */
-void ProcManagerFCFS::addToQueue(PCB p){
+void ProcManagerFCFS::addToQueue(PCB *p){
     fcfsQueue.push_back(p);
 }
 
@@ -186,7 +186,7 @@ void ProcManagerFCFS::addToQueue(PCB p){
 void ProcManagerFCFS::runProcManager(){
     while(true){
         while(!fcfsQueue.empty()){
-            PCB p = fcfsQueue.front();
+            PCB *p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
             run(p);
             // FIXME 无用pcb的及时删除， delete
@@ -214,11 +214,11 @@ string ProcManagerFCFS::getCommand(){
  * @param {PageMemoryManager*} m
  * @return {NULL}
  */
-void ProcManagerFCFS::run(PCB p){
+void ProcManagerFCFS::run(PCB *p){
     // 因为还没定文件格式，run函数暂时没有办法写
-    cout << "process " << p.id << " is running," << " will use " << p.time_need << " ms."<< endl;
-    Sleep(p.time_need);
-    cout << "process " << p.id << " is terminated" << endl;
+    cout << "process " << p->id << " is running," << " will use " << p->time_need << " ms."<< endl;
+    Sleep(p->time_need);
+    cout << "process " << p->id << " is terminated" << endl;
     return ;
 }
 
@@ -231,7 +231,7 @@ void ProcManagerFCFS::run(PCB p){
  */
 bool ProcManagerFCFS::removeProc(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
-        if(it->id == pid){
+        if((*it)->id == pid){
             // FIXME pcb也得删
             it = fcfsQueue.erase(it);
             return true;
@@ -250,7 +250,7 @@ bool ProcManagerFCFS::removeProc(int pid){
  */
 void ProcManagerFCFS::getFcfsInfo(){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
-        cout << it->id << " " << endl;
+        cout << (*it)->id << " " << endl;
     }
     return ;
 }
@@ -264,8 +264,8 @@ void ProcManagerFCFS::getFcfsInfo(){
  */
 void ProcManagerFCFS::getFcfsInfo(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
-        if(it->id == pid){
-            cout << it->id << " " << endl;
+        if((*it)->id == pid){
+            cout << (*it)->id << " " << endl;
             return ;
         }
     }
@@ -440,7 +440,7 @@ void ProcManager::run(string file_name)
         }
         else if (pcb->pri == LOW_PRI)
         {
-            this->fcfsProcManager->addToQueue(*pcb);
+            this->fcfsProcManager->addToQueue(pcb);
         }
         printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
     }
@@ -496,6 +496,6 @@ int main()
     ProcManager::getInstance().ps();
 
 
-    // system("pause");
+    system("pause");
     return 0;
 }
