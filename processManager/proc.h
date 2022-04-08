@@ -37,7 +37,7 @@ bool IO[2];
 
 // 全局变量
 // 保存目前活跃的PCB
-static vector<PCB*> active_pcb;
+// static vector<PCB*> active_pcb;
 
 static queue <PCB> FCFS;
 

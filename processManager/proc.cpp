@@ -189,6 +189,7 @@ void ProcManagerFCFS::runProcManager(){
             PCB p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
             run(p);
+            // FIXME 无用pcb的及时删除， delete
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
         }
@@ -231,6 +232,7 @@ void ProcManagerFCFS::run(PCB p){
 bool ProcManagerFCFS::removeProc(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
         if(it->id == pid){
+            // FIXME pcb也得删
             it = fcfsQueue.erase(it);
             return true;
         }
@@ -357,8 +359,6 @@ ProcManager::~ProcManager()
 int ProcManager::getActiveNum()
 {
     return rr_queue->getSize() + fcfsProcManager->getQueueSize();
-    // TODO fcfs链接后:
-    //  return rr_queue->getSize() + fcfs数量;
 }
 
 
@@ -371,9 +371,7 @@ void ProcManager::kill(int pid)
     // 找到的标志
     bool is_found = false;
     // 在两个队列里面找
-    // TODO 和fcfs对接后为：
-    //  is_found = this->rr_queue->removePCB(pid) || 从fcfs的返回结果；
-    is_found = this->rr_queue->removePCB(pid);
+    is_found = this->rr_queue->removePCB(pid) || this->fcfsProcManager->removeProc(pid);
     if (is_found)
     {
         printf("[%ld]Active pid=%d is killed.\n", clock() - system_start, pid);
