@@ -4,7 +4,6 @@
  * @date 2022-03-25
  */
 #include "proc.h"
-#include "FCFS.cpp"
 using namespace std;
 
 
@@ -59,9 +58,11 @@ bool RRQueue::removePCB(int pid)
 {
     for (auto it = this->rr_que.begin(); it != this->rr_que.end(); it++)
     {
-        if ((*it)->id == pid)
+        PCB* pcb = *it;
+        if (pcb->id == pid)
         {
-            delete *it;
+            pcb->status = DEAD;
+            delete pcb;
             this->rr_que.erase(it);
             return true;
         }
@@ -85,11 +86,13 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
             PCB* cur_pcb = *it;
             // cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
             // 判断时间是否够完成一次循环
+            cur_pcb->status = RUNNING;
             if (cur_pcb->time_need > TIME_SLICE)
             {
                 // 模拟服务过程
                 Sleep(TIME_SLICE);
                 // 时间片到
+                cur_pcb->status = READY;
                 cur_pcb->time_need -= TIME_SLICE;
                 printf("[%ld]Pid %d time out! Still need %d.\n", clock() - system_start, cur_pcb->id,
                        cur_pcb->time_need);
@@ -107,7 +110,8 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
             {
                 // 需要的时间小于完整的时间片，完成后从队列中删除该项
                 Sleep(cur_pcb->time_need);
-                cur_pcb->time_need = -1;
+                // cur_pcb->time_need = -1;
+                cur_pcb->status = DEAD;
                 printf("[%ld]Pid %d time out! No time need.\n", clock() - system_start, cur_pcb->id);
                 delete cur_pcb;
                 it = this->rr_que.erase(it);
@@ -151,6 +155,135 @@ void RRQueue::getInfo(int pid)
 }
 
 /*****************************************************************************************
+ * ProcManagerFCFS类的有关定义部分
+ ****************************************************************************************/
+
+/*** 
+ * @brief destructor
+ * @param {NULL}
+ * @return {NULL}
+ */
+ProcManagerFCFS::~ProcManagerFCFS(){
+    cout << "FCFS proc manager is terminated" << endl;
+}
+
+
+/*** 
+ * @brief add an process into the fcfs queue
+ * @param {PCB} p
+ * @return {NULL}
+ */
+void ProcManagerFCFS::addToQueue(PCB p){
+    fcfsQueue.push_back(p);
+}
+
+
+/*** 
+ * @brief run processes using an fcfs algorithm
+ * @param {PageMemoryManager*} m
+ * @return {NULL}
+ */
+void ProcManagerFCFS::runProcManager(){
+    while(true){
+        while(!fcfsQueue.empty()){
+            PCB p = fcfsQueue.front();
+            //该函数是执行函数，暂时未定
+            run(p);
+            auto it = fcfsQueue.begin();
+            it = fcfsQueue.erase(it);
+        }
+        return ;
+    }
+}
+
+/*** 
+ * @brief not written yet
+ * @param {NULL}
+ * @return {NULL}
+ */
+string ProcManagerFCFS::getCommand(){
+    return "aaa";
+}
+
+
+
+/*** 
+ * @brief execute the programme,not written yet
+ * @param {PCB} p
+ * @param {PageMemoryManager*} m
+ * @return {NULL}
+ */
+void ProcManagerFCFS::run(PCB p){
+    // 因为还没定文件格式，run函数暂时没有办法写
+    cout << "process " << p.id << " is running," << " will use " << p.time_need << " ms."<< endl;
+    Sleep(p.time_need);
+    cout << "process " << p.id << " is terminated" << endl;
+    return ;
+}
+
+
+
+/*** 
+ * @brief remove a process from the fcfs queue
+ * @param {int} pid
+ * @return {NULL}
+ */
+bool ProcManagerFCFS::removeProc(int pid){
+    for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
+        if(it->id == pid){
+            it = fcfsQueue.erase(it);
+            return true;
+        }
+    }
+    cout << "no such pid" << endl;
+    return false;
+}
+
+
+
+/*** 
+ * @brief get all active process information in the fcfs queue
+ * @param {NULL}
+ * @return {NULL}
+ */
+void ProcManagerFCFS::getFcfsInfo(){
+    for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
+        cout << it->id << " " << endl;
+    }
+    return ;
+}
+
+
+
+/*** 
+ * @brief get selected process information in the fcfs queue
+ * @param {int} pid
+ * @return {NULL}
+ */
+void ProcManagerFCFS::getFcfsInfo(int pid){
+    for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
+        if(it->id == pid){
+            cout << it->id << " " << endl;
+            return ;
+        }
+    }
+    cout << "no such process" << endl;
+    return ;
+}
+
+
+/*** 
+ * @brief get the number of processes in the fcfs queue
+ * @param {NULL}
+ * @return {NULL}
+ */
+int ProcManagerFCFS::getQueueSize(){
+    return fcfsQueue.size();
+}
+
+
+
+/*****************************************************************************************
  * ProcManager类的有关定义部分
  ****************************************************************************************/
 
@@ -181,6 +314,7 @@ ProcManager::ProcManager(int n_size, int x_size)
         PCB* new_pcb = new PCB;
         new_pcb->id = i;
         new_pcb->name = "normal";
+        new_pcb->status = READY;
         new_pcb->pri = HIGH_PRI;
         new_pcb->slice_cnt = 0;
         new_pcb->time_need = rand() % 30 * 100;
@@ -192,6 +326,7 @@ ProcManager::ProcManager(int n_size, int x_size)
         PCB* new_pcb = new PCB;
         new_pcb->id = n_size + i;
         new_pcb->name ="large";
+        new_pcb->status = READY;
         new_pcb->pri = HIGH_PRI;
         new_pcb->slice_cnt = 0;
         new_pcb->time_need = rand() % 10 * 100 + TIME_SLICE * MAX_CNT;
@@ -225,16 +360,6 @@ int ProcManager::getActiveNum()
     //  return rr_queue->getSize() + fcfs数量;
 }
 
-/**
- * 进程全杀了（实验用）
- */
-void ProcManager::kill()
-{
-    for (PCB* pcb : this->active_pcb)
-    {
-        delete pcb;
-    }
-}
 
 /**
  * 杀掉一个进程
@@ -260,6 +385,7 @@ void ProcManager::kill(int pid)
         // 找到了，删除它
         if ((*it)->id == pid)
         {
+            (*it)->status = DEAD;
             delete *it;
             this->waiting_pcb.erase(it);
             printf("[%ld]Waiting pid=%d is killed.\n", clock() - system_start, pid);
@@ -298,6 +424,7 @@ void ProcManager::run(string file_name)
     PCB* new_pcb = new PCB;
     new_pcb->id = this->cpid;
     new_pcb->name = file_name;
+    new_pcb->status = NEW;
     new_pcb->pri = HIGH_PRI;
     new_pcb->time_need = 1888;
     new_pcb->slice_cnt = 0;
@@ -307,6 +434,7 @@ void ProcManager::run(string file_name)
     // 判断是否需要加入到等待队列
     if (this->getActiveNum() < MAX_PROC)
     {
+        pcb->status = READY;
         if (pcb->pri == HIGH_PRI)
         {
             this->rr_queue->addPCB(pcb);
@@ -355,7 +483,7 @@ int main()
     proc_manager.scheduling();
     proc_manager.ps();
 
-    proc_manager.kill();
-    system("pause");
+
+    // system("pause");
     return 0;
 }

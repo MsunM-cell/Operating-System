@@ -95,7 +95,6 @@ public:
     ProcManager(int n_size, int x_size);
     ~ProcManager();
     int getActiveNum();
-    void kill();
     void kill(int pid);
     void run(string file_name);
     void ps();
