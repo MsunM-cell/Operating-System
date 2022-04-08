@@ -1,21 +1,21 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-01 19:42:14
+ * @LastEditTime: 2022-04-08 13:43:11
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #include "../Interface/MemoryManager-1.cpp"
-#include"FrameTableItem.h"
+#include "FrameTableItem.h"
 #include "config.h"
 #include <vector>
 #include <map>
-#include<iostream>
+#include <iostream>
 #include "../Interface/FileManager.cpp"
-
 
 FileManager fileManager;
 using namespace std;
 
+//
 struct tableItem
 {
     int frameNo;
@@ -23,24 +23,26 @@ struct tableItem
     bool isInMemory;
     int accessTime;
     bool isChange;
-    unsigned long  swapAddress;
+    unsigned long swapAddress;
     bool isLock;
-    tableItem *next , *pre;
+    tableItem *next, *pre;
 };
 
 class PageMemoryManager : public MemoryManager
 {
 private:
+    //逻辑页的使用位图
     bool *bitMap;
+    //物理内存
     char *memory;
+
+    //已经申请的内存量
     int occupiedPageNum;
-
-    tableItem* LRU_StackHead , *LRU_StackTail;
-
-    map<int, vector<tableItem*> *> tableMap;
-    vector<FrameTableItem*> frameTable;
-    vector<tableItem*> *getProcessPageTable(int pid);
-    void usePage(tableItem* ti);
+    tableItem *LRU_StackHead, *LRU_StackTail;
+    map<int, vector<tableItem *> *> tableMap;
+    vector<FrameTableItem *> frameTable;
+    vector<tableItem *> *getProcessPageTable(int pid);
+    void usePage(tableItem *ti);
 
 public:
     PageMemoryManager();
@@ -51,7 +53,6 @@ public:
     char accessMemory(int pid, int address);
     void initPageTable();
     int getOccupiedPageNum();
-    bool pageFault(unsigned int pid, tableItem* ti);
+    bool pageFault(unsigned int pid, tableItem *ti);
     bool write(unsigned long logicalAddress, const void *src, unsigned long size, unsigned int pid);
-    
 };

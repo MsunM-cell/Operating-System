@@ -1,12 +1,17 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-01 19:43:24
+ * @LastEditTime: 2022-04-08 13:39:26
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
 #include "PageMemoryManager.h"
 
+/**
+ * @description: 得到一个进程对应的页表
+ * @param {int} pid
+ * @return {该进程对应的页表}
+ */
 vector<tableItem *> *PageMemoryManager::getProcessPageTable(int pid)
 {
     auto iter = tableMap.find(pid);
@@ -23,6 +28,12 @@ vector<tableItem *> *PageMemoryManager::getProcessPageTable(int pid)
     return pageTable;
 }
 
+/**
+ * @description: 给定pid以及需要分配的长度，为该进程分配内存
+ * @param {unsigned int} pid
+ * @param {unsigned long} length
+ * @return {1为成功，否则失败}
+ */
 int PageMemoryManager::memoryAlloc(unsigned int pid, unsigned long length)
 {
     int allocPageNum = length % PAGE_SIZE == 0 ? length / PAGE_SIZE : length / PAGE_SIZE + 1;
@@ -32,7 +43,10 @@ int PageMemoryManager::memoryAlloc(unsigned int pid, unsigned long length)
     }
     vector<tableItem *> *pageTable = getProcessPageTable(pid); //找到进程对应的页表
 
+    // TODO:bitmap不知道有没有存在的必要吼
+
     int findPage = 0;
+
     for (int i = 0; i < PAGE_NUM && findPage < allocPageNum; i++)
     {
         if (bitMap[i])
@@ -53,14 +67,32 @@ int PageMemoryManager::memoryAlloc(unsigned int pid, unsigned long length)
     return 1;
 }
 
+/**
+ * @description: 释放内存，目前暂时未想好释放内存的操作，可能只能从末尾释放
+ * @param {int} pid
+ * @param {int} address，释放开始地址，暂时无法实现
+ * @param {int} length 单位为 B
+ * @return {1为成功，否则失败}
+ */
 bool PageMemoryManager::memoryFree(int pid, int address, int length)
 {
 }
 
+/**
+ * @description: 进程结束时，释放该进程所有的内存
+ * @param {int} pid
+ * @return {true为成功}
+ */
 bool PageMemoryManager::freeAll(int pid)
 {
 }
 
+/**
+ * @description: 从指定地址读取一个直接
+ * @param {int} pid
+ * @param {int} address
+ * @return {一个字节}
+ */
 char PageMemoryManager::accessMemory(int pid, int address)
 { //读一个字节？
 
@@ -88,7 +120,14 @@ char PageMemoryManager::accessMemory(int pid, int address)
     return *(char *)realAddress;
 }
 
-//这里先假设要写的东西很短，暂时不会跨页写入
+/**
+ * @description: 向内存中写入,这里假设写的东西还比较短，暂时不需要跨页写入
+ * @param {unsigned long} logicalAddress  需要写入的目的地址
+ * @param {void} *src  源地址
+ * @param {unsigned long} size 大小
+ * @param {unsigned int} pid
+ * @return {true为成功}
+ */
 bool PageMemoryManager::write(unsigned long logicalAddress, const void *src, unsigned long size, unsigned int pid)
 {
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
@@ -112,6 +151,9 @@ bool PageMemoryManager::write(unsigned long logicalAddress, const void *src, uns
     return true;
 }
 
+/**
+ * @description: 将bitMap全部设为0
+ */
 void PageMemoryManager::initPageTable()
 {
     occupiedPageNum = 0;
@@ -122,6 +164,12 @@ void PageMemoryManager::initPageTable()
     }
 }
 
+/**
+ * TODO:定义尚不明确
+ * @description: 得到已申请的页数，不一定已申请内存
+ * @param {*}
+ * @return {已申请的页数}
+ */
 int PageMemoryManager::getOccupiedPageNum()
 {
     return occupiedPageNum;
@@ -147,6 +195,12 @@ PageMemoryManager::~PageMemoryManager()
     delete memory;
 }
 
+/**
+ * @description: 申请进行LRU换页
+ * @param {unsigned int} pid
+ * @param {tableItem*} 需要放入内存的页表项
+ * @return {true为成功}
+ */
 bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
 {
     //首先查看是否所有的帧都被使用，倘若存在帧未被使用，则直接使用该帧即可
@@ -216,6 +270,11 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
     return true;
 }
 
+/**
+ * @description: 使用某一页，更新LRU使用情况
+ * @param {tableItem*} ti
+ * @return {*}
+ */
 void PageMemoryManager::usePage(tableItem *ti)
 {
     if (LRU_StackHead == NULL || LRU_StackTail == NULL)
