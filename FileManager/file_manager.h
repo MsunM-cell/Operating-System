@@ -7,15 +7,35 @@
 #include <fstream>
 #include <vector>
 #include <filesystem>
+#include <cmath>
 #include "json.hpp" // JSON for Modern C++
 
 using namespace std;
 using namespace std::filesystem; // filesystem and their components
 using nlohmann::json;
 
+// cross platform
+// fit to Windows, Linux and Unix
+#ifdef _WIN64
+#include <windows.h>
+#define STRING(s) WStringToString(s)
+#elif _WIN32
+#include <windows.h>
+#define STRING(s) WStringToString(s)
+#else
+#include <unistd.h>
+#define STRING(s) (string) s
+#endif
+
 // compare each other on the basis of 2nd element of pairs
 // in ascending order
 bool cmp(pair<int, int> a, pair<int, int> b);
+
+// If you need to convert a wstring into a string, just call it.
+string WStringToString(const wstring &s);
+
+// If you need to convert a string into a wstring, just call it.
+wstring StringToWString(const string &s);
 
 // Block class
 class Block
@@ -55,7 +75,8 @@ class FileManager
 {
 public:
     char file_separator = (char)path::preferred_separator;               // directory separator
-    string home_path = (string)current_path() + file_separator + "home"; // absolute path of home directory
+    string home_path = STRING(current_path()) + file_separator + "home"; // absolute path of home directory
+    string working_path;                                                 // working directory
 
     /**
      * @brief Construct a new File Manager object
@@ -97,6 +118,13 @@ public:
      */
     bool fill_file_into_blocks(json file_info, string file_path, int method);
     /**
+     * @brief free blocks occupied by a file
+     *
+     * @param file_path path relative to home
+     * @return bool
+     */
+    bool delete_file_from_blocks(string file_path);
+    /**
      * @brief Find the idle blocks in a certain method.
      *
      * @param num the number of disk blocks we need
@@ -132,43 +160,82 @@ public:
      * @return int
      */
     int worst_fit(string target_str);
+    int get_number_of_files(string directory);
+    /**
+     * @brief print file system by tree recursively
+     *
+     * @param directory
+     * @param layer
+     */
+    void print_file_system_tree(string directory, int layer = 0);
+    /**
+     * @brief return the absolute working path
+     * @return string
+     */
+    string get_absolute_working_path();
+    /**
+     * @brief add the json node to the file_system_tree
+     *
+     * @param path the path of the file
+     * @return bool
+     */
+    bool add_json_node_to_tree(string path, json node);
 
 private:
-    /* private variables */
+    vector<Block> blocks;  // all disk blocks
+    vector<int> bitmap;    // bitmap for disk blocks
+                           // 1 stands for a idle block and 0 a busy block
+    json file_system_tree; // file system tree
+    json file_blocks;      // store file's blocks info
+                           // directory entry: first block index, blocks length, file size
 
-    /* file system tree */
-    json file_system_tree;
+    int block_size; // block size (byte)
+    int track_num;  // the number of tracks
+    int sector_num; // the number of sectors for each track
+    int block_num;  // the number of blocks
 
+    vector<int> busy_blocks; // busy blocks list
+};
+
+// Disk class
+class Disk
+{
+public:
     /**
-     * @brief store block allocation information for each file
+     * @brief Construct a new Disk object
      *
-     * (first block index, the number of blocks allocated, the size of file(byte))
+     * @param block_size the size of a block
+     * @param track_num the number of tracks
+     * @param sector_num // the number of sectors for each track
      */
-    json file_blocks;
-
-    /* all blocks */
-    vector<Block> blocks;
+    Disk(int block_size, int track_num, int sector_num);
     /**
-     * @brief bitmap
+     * @brief seek one by one in sequence
      *
-     * for every block
-     * 1 means idle and 0 means busy
+     * @param seek_queue
      */
-    vector<int> bitmap;
+    void seek_by_queue(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief FCFS algorithm
+     *
+     * @param seek_queue
+     */
+    void FCFS(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief SSTF
+     *
+     * @param seek_queue
+     */
+    void SSTF(vector<pair<int, int>> seek_queue);
 
-    /* block size (byte) */
-    int block_size;
-    /* the number of tracks */
-    int track_num;
-    /* the number of sectors */
-    int sector_num;
-    /* the number of blocks */
-    int block_num;
-
-    /* current working directory */
-    string working_path;
-    /* busy blocks list */
-    vector<int> busy_blocks;
+private:
+    int sector_size;     // the size of a sector
+    int track_num;       // the number of tracks
+    int track_size;      // the number of sectors for each track
+    int head_pointer;    // the track index of the head
+    double seek_speed;   // time taken to cross a track
+    double rotate_speed; // average sector seek and read time
+    int slow_ratio;      // slow ratio for simulation disk operation
 };
 
 #endif

@@ -1,37 +1,54 @@
 /**
- * ÏµÍ³¹²ÓÃÍ·ÎÄ¼ş
+ * ç³»ç»Ÿå…±ç”¨å¤´æ–‡ä»¶
  */
 
 #ifndef SYS_H
 #define SYS_H
 
 #define SYS_NAME 114
+#define RUNNING 0
+#define READY 1
+#define BLOCKED 2
+#define DEAD 3
+#define NEW 4
 
 
-// PCBµÄ½á¹¹Ìå
+
+// PCBçš„ç»“æ„ä½“
 typedef struct PCB
 {
     // pid
     int id;
-    // ÓÅÏÈ¼¶
+    // è¿›ç¨‹åç§°
+    std::string name;
+    // è¿›ç¨‹çŠ¶æ€
+    int status;
+    // ä¼˜å…ˆçº§
     int pri;
-    // Ê¹ÓÃ¹ıµÄÊ±¼äÆ¬ÊıÁ¿
+    // ä½¿ç”¨è¿‡çš„æ—¶é—´ç‰‡æ•°é‡
     int slice_cnt;
-    // Ô¤¼Æ»¹ĞèÒªµÄÊ±¼ä
+    // é¢„è®¡è¿˜éœ€è¦çš„æ—¶é—´
     int time_need;
     // PC
     int pc;
-    // ¿é´óĞ¡
+    // å—å¤§å°
     int size;
 } PCB;
 
-//ÎÄ¼ş½á¹¹Ìå
+//æ–‡ä»¶ç»“æ„ä½“
 typedef struct XFILE
 {
-    int id;
+    // æ–‡ä»¶å
+    std::string name;
+    // æ–‡ä»¶ç±»å‹
+    std::string type;
+    // æ–‡ä»¶å¤§å°
+    unsigned long size;
+    // æ–‡ä»¶å†…å®¹
+    std::string content;
 }XFILE;
 
-//³ÌĞòÔËĞĞµÄ¿ªÊ¼Ê±¼ä
+//ç¨‹åºè¿è¡Œçš„å¼€å§‹æ—¶é—´
 clock_t system_start;
 
 #endif //SYS_H

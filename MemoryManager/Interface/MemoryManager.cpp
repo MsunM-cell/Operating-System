@@ -11,5 +11,5 @@ public:
     virtual int memoryAlloc(int pid, int length) = 0;
     virtual bool memoryFree(int pid, int address, int length) = 0;
     virtual bool freeAll(int pid) = 0;
-    virtual char accessMemory(int pid, int address) = 0; //��һ���ֽڣ�
+    virtual char accessMemory(int pid, int address) = 0; //¶ÁÒ»¸ö×Ö½Ú£¿
 };

@@ -1,10 +1,35 @@
 #include "file_manager.h"
+#include "file_operation.hpp"
 
 // compare each other on the basis of 2nd element of pairs
 // in ascending order
 bool cmp(pair<int, int> a, pair<int, int> b)
 {
     return a.second < b.second;
+}
+
+/**
+ * @brief convert a wstring into a string
+ *
+ * @param s a const wstring
+ */
+string WStringToString(const wstring &s)
+{
+    string temp(s.length(), ' ');
+    copy(s.begin(), s.end(), temp.begin());
+    return temp;
+}
+
+/**
+ * @brief convert a string into a wstring
+ *
+ * @param s a const string
+ */
+wstring StringToWString(const string &s)
+{
+    wstring temp(s.length(), L' ');
+    copy(s.begin(), s.end(), temp.begin());
+    return temp;
 }
 
 /**
@@ -68,6 +93,7 @@ FileManager::FileManager(int block_size, int track_num, int sector_num)
     this->init_blocks();
     this->set_busy_block();
     this->file_system_tree = this->init_file_system_tree(this->home_path);
+    // cout << setw(4) << this->file_system_tree << endl;
 }
 
 /**
@@ -122,8 +148,8 @@ json FileManager::init_file_system_tree(string current_path)
     // traverse directory
     for (auto &file : file_list)
     {
-        string file_path = (string)file.path();            // absolute path
-        string file_name = (string)file.path().filename(); // file name
+        string file_path = STRING(file.path());            // absolute path
+        string file_name = STRING(file.path().filename()); // file name
         // if path is a directory, set key's value a new dictionary
         // otherwise, set key's value a string like "crwx"
         if (file.status().type() == file_type::directory)
@@ -165,6 +191,8 @@ bool FileManager::fill_file_into_blocks(json file_info, string file_path, int me
 {
     int num = (int)file_info["size"] / block_size;
     int occupy = (int)file_info["size"] % block_size;
+    if (occupy == 0)
+        num = num - 1;
     // get first block index of allocated blocks
     int first_idle_block = this->find_idle_blocks(num + 1, method);
     if (first_idle_block == -1)
@@ -185,6 +213,26 @@ bool FileManager::fill_file_into_blocks(json file_info, string file_path, int me
         blocks[count].set_fp(file_path);
         count += 1;
     }
+    return true;
+}
+
+/**
+ * @brief free blocks occupied by a file
+ *
+ * @param file_path path relative to home
+ * @return bool
+ */
+bool FileManager::delete_file_from_blocks(string file_path)
+{
+    int start = (int)this->file_blocks[file_path][0];
+    int length = (int)this->file_blocks[file_path][1];
+    for (int i = start; i < start + length; i++)
+    {
+        this->blocks[i].set_free_space(this->block_size);
+        this->blocks[i].set_fp("");
+        this->bitmap[i] = 1;
+    }
+    file_blocks.erase(file_path);
     return true;
 }
 
@@ -312,7 +360,197 @@ int FileManager::worst_fit(string target_str)
     return free_blocks[free_blocks.size() - 1].first;
 }
 
+/**
+ * @brief print file system by tree recursively
+ *
+ * @param directory
+ * @param layer
+ */
+void FileManager::print_file_system_tree(string directory, int layer)
+{
+    path cur_directory(directory);
+    // the number of files in current directory
+    int count = (int)distance(directory_iterator(cur_directory), directory_iterator{});
+    int index = 0; // the index of files in current directory
+
+    directory_iterator file_list(cur_directory);
+    // start to print tree
+    if (layer == 0)
+        printf(".\n");
+    for (auto file : file_list)
+    {
+        string file_path = STRING(file.path());
+        string file_name = STRING(file.path().filename());
+        for (int i = 0; i < layer; i++)
+            printf("|   ");
+        index++;
+        if (index == count)
+            printf("`-- ");
+        else
+            printf("|-- ");
+        printf("%s\n", file_name.c_str());
+        if (file.status().type() == file_type::directory)
+            this->print_file_system_tree(file_path, layer + 1);
+    }
+}
+
+/**
+ * @brief return the absolute working path
+ * @return string
+ */
+string FileManager::get_absolute_working_path()
+{
+    return home_path + working_path;
+}
+
+/**
+ * @brief add the json node to the file_system_tree
+ *
+ * @param path the path of the file
+ * @return bool
+ */
+bool FileManager::add_json_node_to_tree(string path, json node)
+{
+    json *temp = &(this->file_system_tree); // the temporary pointer to the file_system_tree
+
+    string relative_path = path.substr(this->home_path.size() + 1); // get the path relative to the home
+    // cout << relative_path << endl;
+
+    int index = -1; // -1 means not exists file_separator, >= 0 means exists.
+    while ((index = relative_path.find('/')) != -1)
+    {
+        string temp_dir = relative_path.substr(0, index); // get the next directory name
+        relative_path = relative_path.substr(index + 1);  // get the next path of the next directory
+
+        // if not contains the directory name, maybe there is a fault.
+        if ((*temp).contains(temp_dir) == false)
+            return false;
+        temp = &(*temp)[temp_dir]; // 'temp' points to the next directory
+    }
+
+    if (exists(path) && is_directory(path))
+    {
+        (*temp)[(string)node["name"]] = nlohmann::detail::value_t::null; // This is a new directory.
+        cout << setw(4) << this->file_system_tree << endl;               // debug
+        return true;
+    }
+    else if (exists(path))
+    {
+        (*temp)[(string)node["name"]] = node["type"]; // This is a new file.
+        // cout << setw(4) << this->file_system_tree << endl;   // debug
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief Construct a new Disk object
+ *
+ * @param block_size the size of a block
+ * @param track_num the number of tracks
+ * @param sector_num // the number of sectors for each track
+ */
+Disk::Disk(int block_size, int track_num, int sector_num)
+{
+    this->sector_size = block_size; // default 512 bytes
+    this->track_num = track_num;    // default 200
+    this->track_size = sector_num;  // default 12
+    this->head_pointer = 12;        // default 12
+
+    this->seek_speed = 0.0001;  // default 0.1 ms
+    this->rotate_speed = 0.004; // default 4 ms
+    // for Windows, it is Sleep function
+    // for Linux and Unix, it is usleep function
+    // accurate to 1 ms, so need to multiply by 10
+    this->slow_ratio = 10;
+    this->seek_speed = this->seek_speed * this->slow_ratio;
+    this->rotate_speed = this->rotate_speed * this->slow_ratio;
+}
+
+/**
+ * @brief seek one by one in sequence
+ * 
+ * @param seek_queue 
+ */
+void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
+{
+    double seek_time = 0; // time cost
+    int seek_byte = 0; // read-write bytes
+    int seek_distance = 0; // head movement distance
+    for (auto q : seek_queue)
+    {
+        // seek: calculate the distance the head has to travel
+        int distance = abs(q.first - this->head_pointer);
+        seek_distance += distance;
+        // seek: simulate delay of moving head
+        usleep(distance * this->seek_speed);
+        // record time cost
+        seek_time += (distance * this->seek_speed) / this->slow_ratio;
+        // update head
+        this->head_pointer = q.first;
+
+        // rotate: simulate sector seeking and read-write delay
+        usleep(this->rotate_speed);
+        seek_time += this->rotate_speed / this->slow_ratio;
+        // record read-write bytes
+        seek_byte += this->sector_size; 
+    }
+    printf("disk access success: time used: %.5lf ms\n", seek_time * 1000);
+}
+
+/**
+ * @brief FCFS algorithm
+ * 
+ * @param seek_queue 
+ */
+void Disk::FCFS(vector<pair<int, int>> seek_queue)
+{
+    this->seek_by_queue(seek_queue);
+}
+
+/**
+ * @brief SSTF
+ * 
+ * @param seek_queue 
+ */
+void Disk::SSTF(vector<pair<int, int>> seek_queue)
+{
+    vector<pair<int, int>> temp_seek_queue;
+    temp_seek_queue.push_back({this->head_pointer, 0});
+    // sort by seek time cost
+    while (!seek_queue.empty())
+    {
+        int index = 0;
+        int min_distance = this->track_num;
+        for (int i = 0; i < seek_queue.size(); i++)
+        {
+            int temp_head_pointer = temp_seek_queue[temp_seek_queue.size() - 1].first;
+            int distance = abs(seek_queue[i].first - temp_head_pointer);
+            if (distance < min_distance)
+            {
+                min_distance = distance;
+                index = i;
+            }
+        }
+        temp_seek_queue.push_back(seek_queue[index]);
+        seek_queue.erase(seek_queue.begin() + index);
+    }
+    temp_seek_queue.erase(temp_seek_queue.begin());
+    seek_queue = temp_seek_queue;
+    for (int i = 0; i < seek_queue.size(); i++)
+        cout << seek_queue[i].first << endl;
+    this->seek_by_queue(seek_queue);
+}
+
 int main()
 {
     FileManager fm(512, 200, 12);
+    Disk d(512, 200, 12);
+    vector<pair<int, int>> seek_queue;
+    seek_queue.push_back({100, 1});
+    seek_queue.push_back({40, 1});
+    seek_queue.push_back({60, 1});
+    seek_queue.push_back({10, 1});
+    d.SSTF(seek_queue);
+    return 0;
 }
