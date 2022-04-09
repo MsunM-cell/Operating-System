@@ -21,12 +21,15 @@ using nlohmann::json;
 #ifdef _WIN64
 #include <windows.h>
 #define STRING(s) WStringToString(s)
+#define SLEEP(t) Sleep(t)
 #elif _WIN32
 #include <windows.h>
 #define STRING(s) WStringToString(s)
+#define SLEEP(t) Sleep(t)
 #else
 #include <unistd.h>
 #define STRING(s) (string) s
+#define SLEEP(t) usleep(1000 * t)
 #endif
 
 // compare each other on the basis of 2nd element of pairs
@@ -86,13 +89,13 @@ public:
     Disk(int block_size, int track_num, int sector_num);
     /**
      * @brief default constructor
-     * 
+     *
      */
     Disk();
     /**
      * @brief set head pointer new position
-     * 
-     * @param head_pointer 
+     *
+     * @param head_pointer
      */
     void set_head_pointer(int head_pointer);
     /**
@@ -236,8 +239,8 @@ public:
     bool add_json_node_to_tree(string path, json node);
     /**
      * @brief set disk's head pointer new position
-     * 
-     * @param head_pointer 
+     *
+     * @param head_pointer
      */
     void set_disk_head_pointer(int head_pointer);
     void get_file_demo(string seek_algo = "FCFS");

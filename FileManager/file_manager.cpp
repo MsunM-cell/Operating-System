@@ -523,13 +523,13 @@ void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
         int distance = abs(q.first - this->head_pointer);
         seek_distance += distance;
         // seek: simulate delay of moving head
-        usleep(1000 * distance * this->seek_speed);
+        SLEEP(distance * this->seek_speed);
         // record time cost
         seek_time += (distance * this->seek_speed) / this->slow_ratio;
         // update head
         this->head_pointer = q.first;
         // rotate: simulate sector seeking and read-write delay
-        usleep(1000 * this->rotate_speed);
+        SLEEP(this->rotate_speed);
         seek_time += this->rotate_speed / this->slow_ratio;
         // record read-write bytes
         seek_byte += this->sector_size;
