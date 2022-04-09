@@ -470,14 +470,22 @@ Disk::Disk(int block_size, int track_num, int sector_num)
 }
 
 /**
+ * @brief default constructor
+ *
+ */
+Disk::Disk()
+{
+}
+
+/**
  * @brief seek one by one in sequence
- * 
- * @param seek_queue 
+ *
+ * @param seek_queue
  */
 void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
 {
-    double seek_time = 0; // time cost
-    int seek_byte = 0; // read-write bytes
+    double seek_time = 0;  // time cost
+    int seek_byte = 0;     // read-write bytes
     int seek_distance = 0; // head movement distance
     for (auto q : seek_queue)
     {
@@ -495,15 +503,15 @@ void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
         usleep(this->rotate_speed);
         seek_time += this->rotate_speed / this->slow_ratio;
         // record read-write bytes
-        seek_byte += this->sector_size; 
+        seek_byte += this->sector_size;
     }
     printf("disk access success: time used: %.5lf ms\n", seek_time * 1000);
 }
 
 /**
  * @brief FCFS algorithm
- * 
- * @param seek_queue 
+ *
+ * @param seek_queue
  */
 void Disk::FCFS(vector<pair<int, int>> seek_queue)
 {
@@ -512,8 +520,8 @@ void Disk::FCFS(vector<pair<int, int>> seek_queue)
 
 /**
  * @brief SSTF
- * 
- * @param seek_queue 
+ *
+ * @param seek_queue
  */
 void Disk::SSTF(vector<pair<int, int>> seek_queue)
 {
@@ -547,12 +555,12 @@ void Disk::SSTF(vector<pair<int, int>> seek_queue)
 int main()
 {
     FileManager fm(512, 200, 12);
-    Disk d(512, 200, 12);
-    vector<pair<int, int>> seek_queue;
-    seek_queue.push_back({100, 1});
-    seek_queue.push_back({40, 1});
-    seek_queue.push_back({60, 1});
-    seek_queue.push_back({10, 1});
-    d.SSTF(seek_queue);
+    // Disk d(512, 200, 12);
+    // vector<pair<int, int>> seek_queue;
+    // seek_queue.push_back({100, 1});
+    // seek_queue.push_back({40, 1});
+    // seek_queue.push_back({60, 1});
+    // seek_queue.push_back({10, 1});
+    // d.SSTF(seek_queue);
     return 0;
 }

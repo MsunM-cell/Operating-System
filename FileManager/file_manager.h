@@ -70,6 +70,52 @@ private:
     string fp;       // file path relative to home directory
 };
 
+// Disk class
+class Disk
+{
+public:
+    /**
+     * @brief Construct a new Disk object
+     *
+     * @param block_size the size of a block
+     * @param track_num the number of tracks
+     * @param sector_num // the number of sectors for each track
+     */
+    Disk(int block_size, int track_num, int sector_num);
+    /**
+     * @brief default constructor
+     * 
+     */
+    Disk();
+    /**
+     * @brief seek one by one in sequence
+     *
+     * @param seek_queue
+     */
+    void seek_by_queue(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief FCFS algorithm
+     *
+     * @param seek_queue
+     */
+    void FCFS(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief SSTF
+     *
+     * @param seek_queue
+     */
+    void SSTF(vector<pair<int, int>> seek_queue);
+
+private:
+    int sector_size;     // the size of a sector
+    int track_num;       // the number of tracks
+    int track_size;      // the number of sectors for each track
+    int head_pointer;    // the track index of the head
+    double seek_speed;   // time taken to cross a track
+    double rotate_speed; // average sector seek and read time
+    int slow_ratio;      // slow ratio for simulation disk operation
+};
+
 // FileManager class
 class FileManager
 {
@@ -196,47 +242,6 @@ private:
     int block_num;  // the number of blocks
 
     vector<int> busy_blocks; // busy blocks list
-};
-
-// Disk class
-class Disk
-{
-public:
-    /**
-     * @brief Construct a new Disk object
-     *
-     * @param block_size the size of a block
-     * @param track_num the number of tracks
-     * @param sector_num // the number of sectors for each track
-     */
-    Disk(int block_size, int track_num, int sector_num);
-    /**
-     * @brief seek one by one in sequence
-     *
-     * @param seek_queue
-     */
-    void seek_by_queue(vector<pair<int, int>> seek_queue);
-    /**
-     * @brief FCFS algorithm
-     *
-     * @param seek_queue
-     */
-    void FCFS(vector<pair<int, int>> seek_queue);
-    /**
-     * @brief SSTF
-     *
-     * @param seek_queue
-     */
-    void SSTF(vector<pair<int, int>> seek_queue);
-
-private:
-    int sector_size;     // the size of a sector
-    int track_num;       // the number of tracks
-    int track_size;      // the number of sectors for each track
-    int head_pointer;    // the track index of the head
-    double seek_speed;   // time taken to cross a track
-    double rotate_speed; // average sector seek and read time
-    int slow_ratio;      // slow ratio for simulation disk operation
 };
 
 #endif
