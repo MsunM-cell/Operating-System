@@ -94,6 +94,8 @@ FileManager::FileManager(int block_size, int track_num, int sector_num)
     this->set_busy_block();
     this->file_system_tree = this->init_file_system_tree(this->home_path);
     // cout << setw(4) << this->file_system_tree << endl;
+
+    this->disk = Disk(this->block_size, this->track_num, this->sector_num);
 }
 
 /**

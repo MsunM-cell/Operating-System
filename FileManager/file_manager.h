@@ -182,6 +182,7 @@ public:
     bool add_json_node_to_tree(string path, json node);
 
 private:
+    Disk disk;             // disk
     vector<Block> blocks;  // all disk blocks
     vector<int> bitmap;    // bitmap for disk blocks
                            // 1 stands for a idle block and 0 a busy block
