@@ -1,14 +1,13 @@
 /*
  * @Date: 2022-04-08 15:46:36
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-08 16:56:37
+ * @LastEditTime: 2022-04-09 15:37:58
  * @FilePath: \Operating-System\MemoryManager\Manager\MyFileManager.cpp
  */
 #include "../Interface/FileManager.cpp"
 #include <vector>
 #include <map>
 #include <string>
-
 
 class MyFileManager : public FileManager
 {
@@ -19,11 +18,13 @@ private:
 public:
     static MyFileManager *instance;
     static MyFileManager *getInstance();
-    char *readData(unsigned long address, unsigned int length);
-    unsigned long write(char *src, unsigned int length);
+    char *readData(long long address, unsigned int length);
+    long long write(char *src, unsigned int length);
     MyFileManager(/* args */);
     ~MyFileManager();
 };
+
+MyFileManager *MyFileManager::instance = nullptr;
 
 MyFileManager::MyFileManager(/* args */)
 {
@@ -47,7 +48,7 @@ MyFileManager *MyFileManager::getInstance()
     }
 }
 
-char *MyFileManager::readData(unsigned long address, unsigned int length)
+char *MyFileManager::readData(long long address, unsigned int length)
 {
     auto iter = myMap.find(address);
     if (iter == myMap.end())
@@ -65,11 +66,11 @@ char *MyFileManager::readData(unsigned long address, unsigned int length)
     }
 }
 
-unsigned long MyFileManager::write(char *src, unsigned int length)
+long long MyFileManager::write(char *src, unsigned int length)
 {
     char *temp = new char[length];
     memcpy(temp, src, length);
     myMap[addressCount] = temp;
     addressCount++;
-    return addressCount;
+    return addressCount-1;
 }

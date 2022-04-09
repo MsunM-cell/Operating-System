@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-08 15:22:17
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-08 17:23:27
+ * @LastEditTime: 2022-04-09 15:23:27
  * @FilePath: \Operating-System\MemoryManager\test\PageMenagerTest.cpp
  */
 #include "../Manager/PageMemoryManager.cpp"
@@ -11,22 +11,24 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
+
     ifstream file;
     file.open("testProgram.txt", ios::in);
     char *buffer = new char[256];
-
+    string TAG = "TestShell";
     while (!file.eof())
     {
         file.getline(buffer, 256);
-        char pid = buffer[0];
+        int pid = buffer[0] - '0';
         char move = buffer[2];
         switch (move)
         {
         case 'c':
         {
-            unsigned long length = 0;
+
+            long long length = 0;
             int index = 4;
-            while (buffer[index] < '9' && buffer[index] > '0' && index < 256)
+            while (buffer[index] <= '9' && buffer[index] >= '0' && index < 256)
             {
                 length = length * 10 + buffer[index] - '0';
                 index++;
@@ -34,57 +36,64 @@ int main(int argc, char const *argv[])
             int res = PageMemoryManager::getInstance()->memoryAlloc(pid, length);
             if (res == 1)
             {
-                cout << "process " << pid << " create , memory Size " << length << " B" << endl;
+                stringstream ss;
+                ss << "process " << pid << " create , memory size " << length << "B";
+                Log::logI(TAG, ss.str());
             }
             else
             {
-                cout << "process " << pid << " create fail!" << endl;
+                stringstream ss;
+                ss << "process " << pid << " create fail!";
+                Log::logI(TAG, ss.str());
             }
             break;
         }
 
         case 'w':
         {
-            unsigned long address = 0;
+            long long address = 0;
             int index = 4;
-            while (buffer[index] < '9' && buffer[index] > '0' && index < 256)
+            while (buffer[index] <= '9' && buffer[index] >= '0' && index < 256)
             {
                 address = address * 10 + buffer[index] - '0';
                 index++;
             }
             index++;
             string str;
-            while (buffer[index] != '\n')
+            while (buffer[index] != '#')
             {
                 str += buffer[index];
                 index++;
             }
-            str += '\0';
+            str += '#';
             PageMemoryManager::getInstance()->write(address, str.c_str(), str.length(), pid);
-            cout << "process " << pid << " write "
-                 << "\"" << str << "\" into" << address << endl;
             break;
         }
 
         case 'r':
         {
-            unsigned long address = 0;
+            long long address = 0;
             int index = 4;
-            while (buffer[index] < '9' && buffer[index] > '0' && index < 256)
+            while (buffer[index] <= '9' && buffer[index] >= '0' && index < 256)
             {
                 address = address * 10 + buffer[index] - '0';
                 index++;
             }
-            break;
             char c = PageMemoryManager::getInstance()->accessMemory(pid, address);
             string res;
-            while (c != '\0')
+            int time = 0;
+            long long temp_address = address;
+            while (c != '#' && time < 100)
             {
-                res += 'c';
-                address++;
-                c = PageMemoryManager::getInstance()->accessMemory(pid, address);
+                res += c;
+                temp_address++;
+                time++;
+                c = PageMemoryManager::getInstance()->accessMemory(pid, temp_address);
             }
-            cout << "process " << pid << " read from " << address << ", result: \"" << res << "\"" << endl;
+            stringstream ss;
+            ss << "process " << pid << " read from logical address " << address << ", result: \"" << res << "\"";
+            Log::logI(TAG, ss.str());
+            break;
         }
 
         case 's':
@@ -93,7 +102,9 @@ int main(int argc, char const *argv[])
             break;
         }
         default:
-            cout << "没有这条指令:" << move << endl;
+            stringstream ss;
+            ss << "instruction \"" << move << "\" NOT found !";
+            Log::logI(TAG, ss.str());
             break;
         }
     }

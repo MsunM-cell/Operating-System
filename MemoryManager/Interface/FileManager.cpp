@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-25 18:10:30
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-08 17:28:41
+ * @LastEditTime: 2022-04-08 18:11:04
  * @FilePath: \Operating-System\MemoryManager\Interface\FileManager.cpp
  */
 
@@ -13,8 +13,8 @@ class FileManager
 private:
     /* data */
 public:
-    virtual char *readData(unsigned long address, unsigned int length);
-    virtual unsigned long write(char *src, unsigned int length);
+    virtual char *readData(long long address, unsigned int length) = 0;
+    virtual long long write(char *src, unsigned int length) = 0;
 };
 
 #endif

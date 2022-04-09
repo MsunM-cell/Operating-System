@@ -9,11 +9,11 @@
 #include <utility>
 #include "PageTableItem.h"
 
-typedef std::pair<unsigned long, unsigned int> pagePair;
+typedef std::pair<long long, unsigned int> pagePair;
 
 struct hash_func
 {
-    unsigned long long operator()(const pagePair &pair) const
+    long long operator()(const pagePair &pair) const
     {
         return pair.first * 9999 + pair.second;
     }

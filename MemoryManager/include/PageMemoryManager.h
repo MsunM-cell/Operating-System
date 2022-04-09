@@ -1,21 +1,21 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-08 17:27:30
+ * @LastEditTime: 2022-04-09 10:05:04
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
+#ifndef PAGEMEMORYMANAGER
+#define PAGEMEMORYMANAGER
+
 #include "../Interface/MemoryManager-1.cpp"
-#include "FrameTableItem.h"
-#include "../include/config.h"
+#include "../Manager/FrameTableItem.cpp"
+#include "config.h"
 #include <vector>
 #include <map>
+#include<sstream>
 #include <iostream>
 #include <string.h>
 
-#include "../Interface/FileManager.cpp"
-
-
-FileManager fileManager;
 using namespace std;
 
 class PageMemoryManager : public MemoryManager
@@ -40,13 +40,15 @@ public:
     static PageMemoryManager *getInstance();
     PageMemoryManager();
     ~PageMemoryManager();
-    int memoryAlloc(unsigned int pid, unsigned long length);
-    bool memoryFree(unsigned int pid, unsigned long address, unsigned long length);
+    int memoryAlloc(unsigned int pid, long long length);
+    bool memoryFree(unsigned int pid, long long address, long long length);
     bool freeAll(unsigned int pid);
-    char accessMemory(unsigned int pid, unsigned long address);
+    char accessMemory(unsigned int pid, long long address);
     void initPageTable();
     int getOccupiedPageNum();
     bool pageFault(unsigned int pid, tableItem *ti);
-    bool write(unsigned long logicalAddress, const void *src, unsigned long size, unsigned int pid);
+    bool write(long long logicalAddress, const void *src, long long size, unsigned int pid);
     void stuff(unsigned int pid);
 };
+
+#endif
