@@ -446,6 +446,26 @@ bool FileManager::add_json_node_to_tree(string path, json node)
 }
 
 /**
+ * @brief set disk's head pointer new position
+ *
+ * @param head_pointer
+ */
+void FileManager::set_disk_head_pointer(int head_pointer)
+{
+    this->disk.set_head_pointer(head_pointer);
+}
+
+void FileManager::get_file_demo(string seek_algo)
+{
+    vector<pair<int, int>> seek_queue;
+    seek_queue = {{98, 3}, {183, 5}, {37, 2}, {122, 11}, {119, 5}, {14, 0}, {124, 8}, {65, 5}, {67, 1}, {198, 5}, {105, 5}, {53, 3}};
+    if (seek_algo == "FCFS")
+        this->disk.FCFS(seek_queue);
+    else if (seek_algo == "SSTF")
+        this->disk.SSTF(seek_queue);
+}
+
+/**
  * @brief Construct a new Disk object
  *
  * @param block_size the size of a block
@@ -478,6 +498,16 @@ Disk::Disk()
 }
 
 /**
+ * @brief set head pointer new position
+ *
+ * @param head_pointer
+ */
+void Disk::set_head_pointer(int head_pointer)
+{
+    this->head_pointer = head_pointer;
+}
+
+/**
  * @brief seek one by one in sequence
  *
  * @param seek_queue
@@ -493,14 +523,13 @@ void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
         int distance = abs(q.first - this->head_pointer);
         seek_distance += distance;
         // seek: simulate delay of moving head
-        usleep(distance * this->seek_speed);
+        usleep(1000 * distance * this->seek_speed);
         // record time cost
         seek_time += (distance * this->seek_speed) / this->slow_ratio;
         // update head
         this->head_pointer = q.first;
-
         // rotate: simulate sector seeking and read-write delay
-        usleep(this->rotate_speed);
+        usleep(1000 * this->rotate_speed);
         seek_time += this->rotate_speed / this->slow_ratio;
         // record read-write bytes
         seek_byte += this->sector_size;
@@ -547,14 +576,16 @@ void Disk::SSTF(vector<pair<int, int>> seek_queue)
     }
     temp_seek_queue.erase(temp_seek_queue.begin());
     seek_queue = temp_seek_queue;
-    for (int i = 0; i < seek_queue.size(); i++)
-        cout << seek_queue[i].first << endl;
     this->seek_by_queue(seek_queue);
 }
 
 int main()
 {
     FileManager fm(512, 200, 12);
+    fm.set_disk_head_pointer(12);
+    fm.get_file_demo("FCFS");
+    fm.set_disk_head_pointer(12);
+    fm.get_file_demo("SSTF");
     // Disk d(512, 200, 12);
     // vector<pair<int, int>> seek_queue;
     // seek_queue.push_back({100, 1});

@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <cmath>
 #include "json.hpp" // JSON for Modern C++
+#include <chrono>
+#include <thread>
 
 using namespace std;
 using namespace std::filesystem; // filesystem and their components
@@ -87,6 +89,12 @@ public:
      * 
      */
     Disk();
+    /**
+     * @brief set head pointer new position
+     * 
+     * @param head_pointer 
+     */
+    void set_head_pointer(int head_pointer);
     /**
      * @brief seek one by one in sequence
      *
@@ -226,6 +234,13 @@ public:
      * @return bool
      */
     bool add_json_node_to_tree(string path, json node);
+    /**
+     * @brief set disk's head pointer new position
+     * 
+     * @param head_pointer 
+     */
+    void set_disk_head_pointer(int head_pointer);
+    void get_file_demo(string seek_algo = "FCFS");
 
 private:
     Disk disk;             // disk
