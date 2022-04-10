@@ -69,6 +69,16 @@ void Block::set_fp(string fp)
 }
 
 /**
+ * @brief return track and sector by pair
+ *
+ * @return pair<int, int>
+ */
+pair<int, int> Block::get_location()
+{
+    return {this->track, this->sector};
+}
+
+/**
  * @brief Construct a new File Manager object
  *
  * @param block_size block size (byte)
@@ -455,6 +465,31 @@ void FileManager::set_disk_head_pointer(int head_pointer)
     this->disk.set_head_pointer(head_pointer);
 }
 
+/**
+ * @brief get dict by path
+ *
+ * @param file_path file path relative to home
+ * @return json
+ */
+json FileManager::path2dict(string file_path)
+{
+    json temp = this->file_system_tree;
+    file_path.erase(0, 1); // remove first file separator
+    int index = -1;
+    while ((index = file_path.find(this->file_separator)) != -1)
+    {
+        string temp_dir = file_path.substr(0, index);
+        file_path = file_path.substr(index + 1);
+        temp = temp[temp_dir];
+    }
+    return temp;
+}
+
+/**
+ * @brief just a demo for disk seek
+ * 
+ * @param seek_algo 
+ */
 void FileManager::get_file_demo(string seek_algo)
 {
     vector<pair<int, int>> seek_queue;
@@ -463,6 +498,64 @@ void FileManager::get_file_demo(string seek_algo)
         this->disk.FCFS(seek_queue);
     else if (seek_algo == "SSTF")
         this->disk.SSTF(seek_queue);
+}
+
+/**
+ * @brief get file info
+ * 
+ * @param file_path file path relative to home
+ * @param mode read or write
+ * @param seek_algo seek algorithm
+ * @return json 
+ */
+json FileManager::get_file(string file_path, string mode, string seek_algo)
+{
+    // remove last file separator
+    if (file_path.back() == this->file_separator)
+        file_path.pop_back();
+    // split path
+    int pos = file_path.find_last_of(this->file_separator);
+    string upper_directory = file_path.substr(0, pos + 1); // upper directory
+    string file_name = file_path.substr(pos + 1);          // file name
+
+    // get upper directory dict
+    json upper_dict = this->path2dict(upper_directory);
+    cout << setw(4) << upper_dict << endl;
+
+    if (upper_dict.contains(file_name))
+    {
+        // check if the file is a directory
+        string path = home_path + file_path;
+        if (is_directory(path))
+            printf("file: cannot access '%s': not a regular file but a directory\n", file_name.c_str());
+        else
+        {
+            // get seek queue
+            int start = this->file_blocks[file_path][0];
+            int length = this->file_blocks[file_path][1];
+            vector<pair<int, int>> seek_queue;
+            for (int i = start; i < start + length; i++)
+                seek_queue.push_back(this->blocks[i].get_location());
+
+            // seek by algorithm
+            if (seek_algo == "FCFS")
+                this->disk.FCFS(seek_queue);
+            else if (seek_algo == "SSTF")
+                this->disk.SSTF(seek_queue);
+
+            // get file info
+            ifstream i(path);
+            json file_info;
+            i >> file_info;
+            i.close();
+
+            return file_info;
+        }
+    }
+    else // file not exist
+        printf("file: cannot access '%s': No such file or directory\n", file_name.c_str());
+    
+    return {};
 }
 
 /**
@@ -582,10 +675,12 @@ void Disk::SSTF(vector<pair<int, int>> seek_queue)
 int main()
 {
     FileManager fm(512, 200, 12);
-    fm.set_disk_head_pointer(12);
-    fm.get_file_demo("FCFS");
-    fm.set_disk_head_pointer(12);
-    fm.get_file_demo("SSTF");
+    // json a = fm.get_file("/a.txt", "r", "FCFS");
+    // cout << setw(4) << a << endl;
+    // fm.set_disk_head_pointer(12);
+    // fm.get_file_demo("FCFS");
+    // fm.set_disk_head_pointer(12);
+    // fm.get_file_demo("SSTF");
     // Disk d(512, 200, 12);
     // vector<pair<int, int>> seek_queue;
     // seek_queue.push_back({100, 1});

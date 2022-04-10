@@ -66,6 +66,12 @@ public:
      * @param fp
      */
     void set_fp(string fp);
+    /**
+     * @brief return track and sector by pair
+     *
+     * @return pair<int, int>
+     */
+    pair<int, int> get_location();
 
 private:
     int total_space; // total space of the Block (byte)
@@ -243,7 +249,28 @@ public:
      * @param head_pointer
      */
     void set_disk_head_pointer(int head_pointer);
+    /**
+     * @brief get dict by path
+     *
+     * @param file_path file path relative to home
+     * @return json
+     */
+    json path2dict(string file_path);
+    /**
+     * @brief just a demo for disk seek
+     *
+     * @param seek_algo
+     */
     void get_file_demo(string seek_algo = "FCFS");
+    /**
+     * @brief get file info
+     *
+     * @param file_path file path relative to home
+     * @param mode read or write
+     * @param seek_algo seek algorithm
+     * @return json
+     */
+    json get_file(string file_path, string mode, string seek_algo);
 
 private:
     Disk disk;             // disk
