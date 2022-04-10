@@ -15,14 +15,14 @@ class RRQueue {
     +getInfo(int pid) void
 }
 class ProcManagerFCFS {
-    -vector ~PCB~ fcfsQueue
-    +addToQueue(PCB p) void
+    -vector ~PCB*~ fcfsQueue
+    +addToQueue(PCB *p) void
     +runProcManager() void
     +removeProc(int pid) bool
     +getFcfsInfo() void
     +getFcfsInfo(int pid) void
     +getQueueSize() int
-    -run(PCB p) void
+    -run(PCB *p) void
     -getCommand() string
 }
 class ProcManager {
