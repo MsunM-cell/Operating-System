@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-09 15:11:26
+ * @LastEditTime: 2022-04-10 10:45:56
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -160,7 +160,7 @@ bool PageMemoryManager::write(long long logicalAddress, const void *src, long lo
     if (logicalAddress + size > pageTable->size() * PAGE_SIZE)
     {
         stringstream ss;
-        ss << "process " << pid << " write logical address [" << logicalAddress<<" - "<< logicalAddress+size << "] out of bound (" << pageTable->size() * PAGE_SIZE - 1 << ")!";
+        ss << "process " << pid << " write logical address [" << logicalAddress << " - " << logicalAddress + size << "] out of bound (" << pageTable->size() * PAGE_SIZE - 1 << ")!";
         Log::logE(TAG, ss.str());
         return false;
     }
@@ -319,15 +319,6 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
         if (data)
         {
 
-            // for (int i = 0; i < PAGE_SIZE; i++)
-            // {
-            //     cout << data[i] << " ";
-            //     if (i % 100 == 0)
-            //     {
-            //         cout << endl;
-            //     }
-            // }
-
             memcpy((char *)frameTableItem->getFrameAddress(), data, PAGE_SIZE);
             delete data;
 
@@ -375,6 +366,7 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
         return;
     }
 
+    //假如链表中没有帧，这个是第一个
     if (LRU_StackHead == nullptr || LRU_StackTail == nullptr)
     {
         LRU_StackHead = fti;
@@ -384,6 +376,7 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
     }
     else
     {
+        //如果这个帧之前没有添加进链表过
         if (fti->pre == nullptr && fti->next == nullptr)
         {
             fti->next = LRU_StackHead;
@@ -393,13 +386,16 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
             LRU_StackTail->next = fti;
             LRU_StackHead = fti;
         }
+        //如果这个帧为帧头
         else if (fti == LRU_StackHead)
         {
             return;
         }
-        else if(fti == LRU_StackTail){
+        //如果这个帧为帧尾
+        else if (fti == LRU_StackTail)
+        {
             LRU_StackTail = fti->pre;
-            
+
             LRU_StackTail->next = fti;
             LRU_StackHead->pre = fti;
 
@@ -407,8 +403,8 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
             fti->pre = LRU_StackTail;
 
             LRU_StackHead = fti;
-
         }
+        //这个帧在中间的情况
         else
         {
             //如果存在上一个
@@ -445,7 +441,7 @@ void PageMemoryManager::stuff(unsigned int pid)
     {
         src[i] = c;
     }
-    Log::stopLog();
+    Log::stopLog();//暂时将日志输出阈值调到最高，以防stuff过程中输出太多信息
     vector<tableItem *> *table = getProcessPageTable(pid);
     for (int i = 0; i < table->size(); i++)
     {
@@ -453,26 +449,5 @@ void PageMemoryManager::stuff(unsigned int pid)
     }
     Log::continueLog();
     delete src;
-    // // Log::stopLog();//暂时将日志输出阈值调到最高，以防stuff过程中输出太多信息
-    // for (tableItem *ti : *table)
-    // {
-    //     if (!ti->isInMemory)
-    //     {
-    //         bool swapres = pageFault(pid, ti);
-
-    //         if (!swapres)
-    //         {
-    //             stringstream ss;
-    //             ss << "swap page " << ti->pageNo << "fail !";
-    //             Log::logcat(TAG, ss.str());
-
-    //             continue;
-    //         }
-    //     }
-    //     FrameTableItem *fti = ti->frame;
-    //     long long realAddress = fti->getFrameAddress();
-    //     memset((void *)realAddress, 0, PAGE_SIZE);
-    //     useFrame(fti);
-    //}
-    // Log::continueLog();
+  
 }

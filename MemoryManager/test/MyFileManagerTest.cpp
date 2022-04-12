@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-09 15:31:01
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-09 15:36:59
+ * @LastEditTime: 2022-04-10 10:12:09
  * @FilePath: \Operating-System\MemoryManager\test\MyFileManagerTest.cpp
  */
 #include "../Manager/MyFileManager.cpp"
@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
     char* newChar = new char[10];
     char* data = MyFileManager::getInstance()->readData(address,10);
     if(!data){
-        std::cout<<"怎么回事???"<<std::endl;
+        std::cout<<"怎么回事"<<std::endl;
     }
     memcpy(newChar,data,10);
     for(int i = 0 ; i < 10 ; i++){

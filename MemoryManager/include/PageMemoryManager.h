@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-09 10:05:04
+ * @LastEditTime: 2022-04-10 00:58:36
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #ifndef PAGEMEMORYMANAGER
@@ -22,6 +22,7 @@ class PageMemoryManager : public MemoryManager
 {
 private:
     std::string TAG = "PageMemoryManager";
+    
     //逻辑页的使用位图
     bool *bitMap;
     //物理内存
