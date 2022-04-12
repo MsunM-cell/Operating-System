@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <cmath>
 #include "json.hpp" // JSON for Modern C++
+#include <chrono>
+#include <thread>
 
 using namespace std;
 using namespace std::filesystem; // filesystem and their components
@@ -19,12 +21,15 @@ using nlohmann::json;
 #ifdef _WIN64
 #include <windows.h>
 #define STRING(s) WStringToString(s)
+#define SLEEP(t) Sleep(t)
 #elif _WIN32
 #include <windows.h>
 #define STRING(s) WStringToString(s)
+#define SLEEP(t) Sleep(t)
 #else
 #include <unistd.h>
 #define STRING(s) (string) s
+#define SLEEP(t) usleep(1000 * t)
 #endif
 
 // compare each other on the basis of 2nd element of pairs
@@ -61,6 +66,12 @@ public:
      * @param fp
      */
     void set_fp(string fp);
+    /**
+     * @brief return track and sector by pair
+     *
+     * @return pair<int, int>
+     */
+    pair<int, int> get_location();
 
 private:
     int total_space; // total space of the Block (byte)
@@ -68,6 +79,58 @@ private:
     int track;       // track index of the Block
     int sector;      // sector index of the Block
     string fp;       // file path relative to home directory
+};
+
+// Disk class
+class Disk
+{
+public:
+    /**
+     * @brief Construct a new Disk object
+     *
+     * @param block_size the size of a block
+     * @param track_num the number of tracks
+     * @param sector_num // the number of sectors for each track
+     */
+    Disk(int block_size, int track_num, int sector_num);
+    /**
+     * @brief default constructor
+     *
+     */
+    Disk();
+    /**
+     * @brief set head pointer new position
+     *
+     * @param head_pointer
+     */
+    void set_head_pointer(int head_pointer);
+    /**
+     * @brief seek one by one in sequence
+     *
+     * @param seek_queue
+     */
+    void seek_by_queue(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief FCFS algorithm
+     *
+     * @param seek_queue
+     */
+    void FCFS(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief SSTF
+     *
+     * @param seek_queue
+     */
+    void SSTF(vector<pair<int, int>> seek_queue);
+
+private:
+    int sector_size;     // the size of a sector
+    int track_num;       // the number of tracks
+    int track_size;      // the number of sectors for each track
+    int head_pointer;    // the track index of the head
+    double seek_speed;   // time taken to cross a track
+    double rotate_speed; // average sector seek and read time
+    int slow_ratio;      // slow ratio for simulation disk operation
 };
 
 // FileManager class
@@ -180,8 +243,37 @@ public:
      * @return bool
      */
     bool add_json_node_to_tree(string path, json node);
+    /**
+     * @brief set disk's head pointer new position
+     *
+     * @param head_pointer
+     */
+    void set_disk_head_pointer(int head_pointer);
+    /**
+     * @brief get dict by path
+     *
+     * @param file_path file path relative to home
+     * @return json
+     */
+    json path2dict(string file_path);
+    /**
+     * @brief just a demo for disk seek
+     *
+     * @param seek_algo
+     */
+    void get_file_demo(string seek_algo = "FCFS");
+    /**
+     * @brief get file info
+     *
+     * @param file_path file path relative to home
+     * @param mode read or write
+     * @param seek_algo seek algorithm
+     * @return json
+     */
+    json get_file(string file_path, string mode, string seek_algo);
 
 private:
+    Disk disk;             // disk
     vector<Block> blocks;  // all disk blocks
     vector<int> bitmap;    // bitmap for disk blocks
                            // 1 stands for a idle block and 0 a busy block
@@ -195,47 +287,6 @@ private:
     int block_num;  // the number of blocks
 
     vector<int> busy_blocks; // busy blocks list
-};
-
-// Disk class
-class Disk
-{
-public:
-    /**
-     * @brief Construct a new Disk object
-     *
-     * @param block_size the size of a block
-     * @param track_num the number of tracks
-     * @param sector_num // the number of sectors for each track
-     */
-    Disk(int block_size, int track_num, int sector_num);
-    /**
-     * @brief seek one by one in sequence
-     *
-     * @param seek_queue
-     */
-    void seek_by_queue(vector<pair<int, int>> seek_queue);
-    /**
-     * @brief FCFS algorithm
-     *
-     * @param seek_queue
-     */
-    void FCFS(vector<pair<int, int>> seek_queue);
-    /**
-     * @brief SSTF
-     *
-     * @param seek_queue
-     */
-    void SSTF(vector<pair<int, int>> seek_queue);
-
-private:
-    int sector_size;     // the size of a sector
-    int track_num;       // the number of tracks
-    int track_size;      // the number of sectors for each track
-    int head_pointer;    // the track index of the head
-    double seek_speed;   // time taken to cross a track
-    double rotate_speed; // average sector seek and read time
-    int slow_ratio;      // slow ratio for simulation disk operation
 };
 
 #endif

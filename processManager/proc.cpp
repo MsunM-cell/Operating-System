@@ -189,7 +189,7 @@ void ProcManagerFCFS::runProcManager(){
             PCB *p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
             run(p);
-            // FIXME 无用pcb的及时删除， delete
+            delete p;
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
         }
@@ -232,7 +232,7 @@ void ProcManagerFCFS::run(PCB *p){
 bool ProcManagerFCFS::removeProc(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
         if((*it)->id == pid){
-            // FIXME pcb也得删
+            delete *it;
             it = fcfsQueue.erase(it);
             return true;
         }
