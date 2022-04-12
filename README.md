@@ -9,7 +9,7 @@ class RRQueue {
     +getSize() int 
     +addPCB(PCB* target) bool
     +removePCB(int pid) bool
-    +downLevel(PCB* target,ProcManagerFCFS*fcfs) +void 
+    +downLevel(PCB* target,ProcManagerFCFS*fcfs) void 
     +scheduling(ProcManagerFCFS* fcfs) int
     +getInfo() void
     +getInfo(int pid) void
