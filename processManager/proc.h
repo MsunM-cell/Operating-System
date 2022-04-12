@@ -44,7 +44,7 @@ static queue <PCB> FCFS;
 
 class ProcManagerFCFS{
 public:
-    void addToQueue(PCB p);
+    void addToQueue(PCB *p);
     void runProcManager();
     bool removeProc(int pid);
     ProcManagerFCFS() = default;
@@ -53,8 +53,8 @@ public:
     void getFcfsInfo(int pid);
     int getQueueSize();
 private:
-    vector <PCB> fcfsQueue;
-    void run(PCB p);
+    vector <PCB*> fcfsQueue;
+    void run(PCB *p);
     string getCommand();
 };
 

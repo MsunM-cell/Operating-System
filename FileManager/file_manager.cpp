@@ -69,6 +69,16 @@ void Block::set_fp(string fp)
 }
 
 /**
+ * @brief return track and sector by pair
+ *
+ * @return pair<int, int>
+ */
+pair<int, int> Block::get_location()
+{
+    return {this->track, this->sector};
+}
+
+/**
  * @brief Construct a new File Manager object
  *
  * @param block_size block size (byte)
@@ -94,6 +104,8 @@ FileManager::FileManager(int block_size, int track_num, int sector_num)
     this->set_busy_block();
     this->file_system_tree = this->init_file_system_tree(this->home_path);
     // cout << setw(4) << this->file_system_tree << endl;
+
+    this->disk = Disk(this->block_size, this->track_num, this->sector_num);
 }
 
 /**
@@ -444,6 +456,109 @@ bool FileManager::add_json_node_to_tree(string path, json node)
 }
 
 /**
+ * @brief set disk's head pointer new position
+ *
+ * @param head_pointer
+ */
+void FileManager::set_disk_head_pointer(int head_pointer)
+{
+    this->disk.set_head_pointer(head_pointer);
+}
+
+/**
+ * @brief get dict by path
+ *
+ * @param file_path file path relative to home
+ * @return json
+ */
+json FileManager::path2dict(string file_path)
+{
+    json temp = this->file_system_tree;
+    file_path.erase(0, 1); // remove first file separator
+    int index = -1;
+    while ((index = file_path.find(this->file_separator)) != -1)
+    {
+        string temp_dir = file_path.substr(0, index);
+        file_path = file_path.substr(index + 1);
+        temp = temp[temp_dir];
+    }
+    return temp;
+}
+
+/**
+ * @brief just a demo for disk seek
+ * 
+ * @param seek_algo 
+ */
+void FileManager::get_file_demo(string seek_algo)
+{
+    vector<pair<int, int>> seek_queue;
+    seek_queue = {{98, 3}, {183, 5}, {37, 2}, {122, 11}, {119, 5}, {14, 0}, {124, 8}, {65, 5}, {67, 1}, {198, 5}, {105, 5}, {53, 3}};
+    if (seek_algo == "FCFS")
+        this->disk.FCFS(seek_queue);
+    else if (seek_algo == "SSTF")
+        this->disk.SSTF(seek_queue);
+}
+
+/**
+ * @brief get file info
+ * 
+ * @param file_path file path relative to home
+ * @param mode read or write
+ * @param seek_algo seek algorithm
+ * @return json 
+ */
+json FileManager::get_file(string file_path, string mode, string seek_algo)
+{
+    // remove last file separator
+    if (file_path.back() == this->file_separator)
+        file_path.pop_back();
+    // split path
+    int pos = file_path.find_last_of(this->file_separator);
+    string upper_directory = file_path.substr(0, pos + 1); // upper directory
+    string file_name = file_path.substr(pos + 1);          // file name
+
+    // get upper directory dict
+    json upper_dict = this->path2dict(upper_directory);
+    cout << setw(4) << upper_dict << endl;
+
+    if (upper_dict.contains(file_name))
+    {
+        // check if the file is a directory
+        string path = home_path + file_path;
+        if (is_directory(path))
+            printf("file: cannot access '%s': not a regular file but a directory\n", file_name.c_str());
+        else
+        {
+            // get seek queue
+            int start = this->file_blocks[file_path][0];
+            int length = this->file_blocks[file_path][1];
+            vector<pair<int, int>> seek_queue;
+            for (int i = start; i < start + length; i++)
+                seek_queue.push_back(this->blocks[i].get_location());
+
+            // seek by algorithm
+            if (seek_algo == "FCFS")
+                this->disk.FCFS(seek_queue);
+            else if (seek_algo == "SSTF")
+                this->disk.SSTF(seek_queue);
+
+            // get file info
+            ifstream i(path);
+            json file_info;
+            i >> file_info;
+            i.close();
+
+            return file_info;
+        }
+    }
+    else // file not exist
+        printf("file: cannot access '%s': No such file or directory\n", file_name.c_str());
+    
+    return {};
+}
+
+/**
  * @brief Construct a new Disk object
  *
  * @param block_size the size of a block
@@ -468,14 +583,32 @@ Disk::Disk(int block_size, int track_num, int sector_num)
 }
 
 /**
+ * @brief default constructor
+ *
+ */
+Disk::Disk()
+{
+}
+
+/**
+ * @brief set head pointer new position
+ *
+ * @param head_pointer
+ */
+void Disk::set_head_pointer(int head_pointer)
+{
+    this->head_pointer = head_pointer;
+}
+
+/**
  * @brief seek one by one in sequence
- * 
- * @param seek_queue 
+ *
+ * @param seek_queue
  */
 void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
 {
-    double seek_time = 0; // time cost
-    int seek_byte = 0; // read-write bytes
+    double seek_time = 0;  // time cost
+    int seek_byte = 0;     // read-write bytes
     int seek_distance = 0; // head movement distance
     for (auto q : seek_queue)
     {
@@ -483,25 +616,24 @@ void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
         int distance = abs(q.first - this->head_pointer);
         seek_distance += distance;
         // seek: simulate delay of moving head
-        usleep(distance * this->seek_speed);
+        SLEEP(distance * this->seek_speed);
         // record time cost
         seek_time += (distance * this->seek_speed) / this->slow_ratio;
         // update head
         this->head_pointer = q.first;
-
         // rotate: simulate sector seeking and read-write delay
-        usleep(this->rotate_speed);
+        SLEEP(this->rotate_speed);
         seek_time += this->rotate_speed / this->slow_ratio;
         // record read-write bytes
-        seek_byte += this->sector_size; 
+        seek_byte += this->sector_size;
     }
     printf("disk access success: time used: %.5lf ms\n", seek_time * 1000);
 }
 
 /**
  * @brief FCFS algorithm
- * 
- * @param seek_queue 
+ *
+ * @param seek_queue
  */
 void Disk::FCFS(vector<pair<int, int>> seek_queue)
 {
@@ -510,8 +642,8 @@ void Disk::FCFS(vector<pair<int, int>> seek_queue)
 
 /**
  * @brief SSTF
- * 
- * @param seek_queue 
+ *
+ * @param seek_queue
  */
 void Disk::SSTF(vector<pair<int, int>> seek_queue)
 {
@@ -537,20 +669,24 @@ void Disk::SSTF(vector<pair<int, int>> seek_queue)
     }
     temp_seek_queue.erase(temp_seek_queue.begin());
     seek_queue = temp_seek_queue;
-    for (int i = 0; i < seek_queue.size(); i++)
-        cout << seek_queue[i].first << endl;
     this->seek_by_queue(seek_queue);
 }
 
 int main()
 {
     FileManager fm(512, 200, 12);
-    Disk d(512, 200, 12);
-    vector<pair<int, int>> seek_queue;
-    seek_queue.push_back({100, 1});
-    seek_queue.push_back({40, 1});
-    seek_queue.push_back({60, 1});
-    seek_queue.push_back({10, 1});
-    d.SSTF(seek_queue);
+    // json a = fm.get_file("/a.txt", "r", "FCFS");
+    // cout << setw(4) << a << endl;
+    // fm.set_disk_head_pointer(12);
+    // fm.get_file_demo("FCFS");
+    // fm.set_disk_head_pointer(12);
+    // fm.get_file_demo("SSTF");
+    // Disk d(512, 200, 12);
+    // vector<pair<int, int>> seek_queue;
+    // seek_queue.push_back({100, 1});
+    // seek_queue.push_back({40, 1});
+    // seek_queue.push_back({60, 1});
+    // seek_queue.push_back({10, 1});
+    // d.SSTF(seek_queue);
     return 0;
 }

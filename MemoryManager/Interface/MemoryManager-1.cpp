@@ -1,21 +1,16 @@
 /*
- * @Date: 2022-04-01 19:43:00
+ * @Date: 2022-03-24 19:43:00
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-01 19:43:00
- * @FilePath: \Operating-System\MemoryManager\Interface\MemoryManager copy.cpp
+ * @LastEditTime: 2022-04-08 17:34:13
+ * @FilePath: \Operating-System\MemoryManager\Interface\MemoryManager-1.cpp
  */
-/*
- * @Date: 2022-03-24 13:33:24
- * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-01 14:52:32
- * @FilePath: \Operating-System\MemoryManager\Interface\MemoryManager.cpp
- */
+
 class MemoryManager
 {
 
 public:
-    virtual int memoryAlloc(int pid, int length) = 0;
-    virtual bool memoryFree(int pid, int address, int length) = 0;
-    virtual bool freeAll(int pid) = 0;
-    virtual char accessMemory(int pid, int address) = 0; //¶ÁÒ»¸ö×Ö½Ú£¿
+    virtual int memoryAlloc(unsigned int pid, long long length) = 0;
+    virtual bool memoryFree(unsigned int pid, long long address, long long length) = 0;
+    virtual bool freeAll(unsigned int pid) = 0;
+    virtual char accessMemory(unsigned int pid, long long address) = 0; 
 };
