@@ -45,6 +45,50 @@ ProcManager *-- ProcManagerFCFS
 RRQueue ..>ProcManagerFCFS 
 ```
 
+
+```mermaid
+classDiagram
+class RRQueue {
+    -vector~PCB*~ rr_que
+    +getSize() int 
+    +addPCB(PCB* target) bool
+    +removePCB(int pid) bool
+    +downLevel(PCB* target,ProcManagerFCFS*fcfs) +void 
+    +scheduling(ProcManagerFCFS* fcfs) int
+    +getInfo() void
+    +getInfo(int pid) void
+}
+class ProcManagerFCFS {
+    -vector ~PCB~ fcfsQueue
+    +addToQueue(PCB p) void
+    +runProcManager() void
+    +removeProc(int pid) bool
+    +getFcfsInfo() void
+    +getFcfsInfo(int pid) void
+    +getQueueSize() int
+    -run(PCB p) void
+    -getCommand() string
+}
+class ProcManager {
+    -int cpid
+    -vector~PCB*~ active_pcb
+    -vector~PCB*~ waiting_pcb
+    -RRQueue* rr_queue
+    -ProcManagerFCFS* fcfsProcManager
+
+    +getActiveNum() int
+    +kill(int pid) void
+    +run(string file_name) void
+    +ps() void
+    +ps(int pid) void
+    +scheduling() void
+    +getInstance()$
+}
+ProcManager *-- RRQueue
+ProcManager *-- ProcManagerFCFS
+RRQueue ..>ProcManagerFCFS 
+```
+
 ## 存在的问题
 
 ### 内存
