@@ -133,7 +133,7 @@ bool FileOperation::delete_file(string current_dir, string file_name)
         return false;
     }
 
-    if (remove(cur_file_path)) 
+    if (file_manager->delete_json_node_from_tree(cur_file_path) && remove(cur_file_path)) 
         return true;
 
     return false;
@@ -184,7 +184,7 @@ bool FileOperation::delete_dir(string current_dir, string dir_name)
         return false;
     }
     
-    if (remove(cur_dir_path))
+    if (file_manager->delete_json_node_from_tree(cur_dir_path) && remove_all(cur_dir_path))
         return true;
     
     return false;
