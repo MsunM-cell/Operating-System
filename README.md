@@ -112,6 +112,33 @@ class FileManager {
     +delete_json_node_from_tree(string path) bool
     +get_file(string file_path, string mode, string seek_algo) json
 }
+
+class Block {
+    -int total_space
+    -int free_space
+    -int track
+    -int sector
+    -string fp
+
+    +set_free_space(int free_space) void
+    +set_fp(string fp) void
+    +get_location() pair<int, int>
+}
+
+class Disk {
+    -int sector_size
+    -int track_num
+    -int track_size
+    -int head_pointer
+    -double seek_speed
+    -double rotate_speed
+    -int slow_ratio
+
+    +set_head_pointer(int head_pointer) void
+    +seek_by_queue(vector<pair<int, int>> seek_queue) void
+    +FCFS(vector<pair<int, int>> seek_queue) void
+    +SSTF(vector<pair<int, int>> seek_queue) void
+}
 ```
 
 ## 存在的问题
