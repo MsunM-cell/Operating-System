@@ -113,6 +113,16 @@ class FileManager {
     +get_file(string file_path, string mode, string seek_algo) json
 }
 
+class FileOperation {
+    -FileManager* file_manager
+
+    +create_file(string current_dir, string file_name) bool
+    +delete_file(string current_dir, string file_name) bool
+    +create_dir(string currenet_dir, string dir_name) bool
+    +delete_dir(string current_dir, string dir_name) bool
+    +tree(string dir, int layer = 0) void
+}
+
 class Block {
     -int total_space
     -int free_space
@@ -142,7 +152,11 @@ class Disk {
 
 FileManager *-- Disk
 FileManager *-- Block
+FileManager *-- FileOperation
+FileOperation ..> Disk
+FileOperation ..> Block
 Disk ..> Block
+
 ```
 
 ## 存在的问题
