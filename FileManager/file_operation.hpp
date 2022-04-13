@@ -196,7 +196,7 @@ bool FileOperation::delete_dir(string current_dir, string dir_name)
     }
     
     if (file_manager->delete_json_node_from_tree(cur_dir_path) && remove_all(cur_dir_path)) {
-        printf("Remove directory '%s' failed.\n", dir_name.c_str());
+        printf("Remove directory '%s' success.\n", dir_name.c_str());
         return true;
     }
     
