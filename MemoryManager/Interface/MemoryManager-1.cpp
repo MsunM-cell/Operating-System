@@ -9,7 +9,7 @@ class MemoryManager
 {
 
 public:
-    virtual int memoryAlloc(unsigned int pid, long long length) = 0;
+    virtual int createProcess(unsigned int pid, long long length) = 0;
     virtual bool memoryFree(unsigned int pid, long long address, long long length) = 0;
     virtual bool freeAll(unsigned int pid) = 0;
     virtual char accessMemory(unsigned int pid, long long address) = 0; 

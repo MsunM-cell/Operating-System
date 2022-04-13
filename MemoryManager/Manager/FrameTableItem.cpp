@@ -1,13 +1,13 @@
 /*
  * @Date: 2022-04-01 16:56:42
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-09 18:56:37
+ * @LastEditTime: 2022-04-13 15:04:24
  * @FilePath: \Operating-System\MemoryManager\Manager\FrameTableItem.cpp
  */
 #include "../include/FrameTableItem.h"
 
 /**
- * @brief: 初始化帧表项
+ * @brief  初始化帧表项
  * @param {long long} frameAddress
  * @param {unsigned int} frameNo
  * @return {*}
