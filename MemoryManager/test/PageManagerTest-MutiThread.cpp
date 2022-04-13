@@ -1,23 +1,39 @@
 /*
- * @Date: 2022-04-08 15:22:17
+ * @Date: 2022-04-13 15:22:51
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-13 21:30:19
- * @FilePath: \Operating-System\MemoryManager\test\PageMenagerTest.cpp
+ * @LastEditTime: 2022-04-13 21:31:01
+ * @FilePath: \Operating-System\MemoryManager\test\PageManagerTest-MutiThread.cpp
+ * @copyright: Copyright (C) 2022 shimaoZeng. All rights reserved.
  */
-#include "../Manager/PageMemoryManager.cpp"
-#include <iostream>
+
 #include <fstream>
-using namespace std;
+#include "../Manager/PageMemoryManager.cpp"
+#include <thread>
+#include <iomanip>
 
-int main(int argc, char const *argv[])
+void test();
+void monitor();
+
+int STOP = 0;
+
+int main()
 {
+    thread testThread(test);
+    thread monitorThread(monitor);
+    testThread.join();
+    monitorThread.join();
+    return 0;
+}
 
+void test()
+{
     ifstream file;
     file.open("testProgram.txt", ios::in);
     char *buffer = new char[256];
     string TAG = "TestShell";
     while (!file.eof())
     {
+
         file.getline(buffer, 256);
         int pid = buffer[0] - '0';
         char move = buffer[2];
@@ -98,7 +114,6 @@ int main(int argc, char const *argv[])
 
         case 's':
         {
-
             stringstream ss;
             ss << "stuff all pages of process " << pid << endl;
             Log::logI(TAG, ss.str());
@@ -108,7 +123,7 @@ int main(int argc, char const *argv[])
         case 'f':
         {
             stringstream ss;
-            ss << "delete process " << pid << endl;
+            ss << "delete process  " << pid << endl;
             Log::logI(TAG, ss.str());
             PageMemoryManager::getInstance()->freeAll(pid);
             break;
@@ -120,6 +135,28 @@ int main(int argc, char const *argv[])
             break;
         }
     }
+    STOP = 1;
+}
 
-    return 0;
+void monitor()
+{
+
+    ofstream log;
+    log.open("MemoryUsage.txt", ios::out);
+    log << setw(12) << left << "time"
+        << " "
+        << setw(6) << "submit"
+        << " "
+        << setw(9) << "usedFrame"
+        << " "
+        << setw(7) << "swapped"
+        << " " << endl;
+    PageMemoryManager *manager = PageMemoryManager::getInstance();
+    while (!STOP)
+    {
+        log << setw(12) << Log::getTimeString() << " "
+            << setw(6) << manager->getOccupiedPageNum() << " "
+            << setw(9) << manager->getUsedFrameNum() << " "
+            << setw(7) << manager->getSwapPageNum() << endl;
+    }
 }

@@ -34,6 +34,7 @@ private:
     PageTableItem *LRU_StackHead, *LRU_StackTail;
 
 public:
+
     PageTable(/* args */);
     ~PageTable();
 };
