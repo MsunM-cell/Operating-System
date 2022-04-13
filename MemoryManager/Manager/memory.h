@@ -5,13 +5,24 @@
 #include <utility>
 #include <cstdio>
 #include <map>
+#include <math.h>
+#include <string.h>
 #include "../../lib/sys.h"
 using namespace std;
 
 typedef pair<int, int> PII;
 
+//页表寄存器
+#define start_addr first
+#define table_len second
+//页表项长度(字节)
+#define PageTableItem_Byte 1
+
 //内存大小
 const int memory_size = 32 * 1024;
+
+//模拟内存
+char memory[memory_size];
 
 //空闲分区链的node
 typedef struct free_block_node
@@ -21,14 +32,6 @@ typedef struct free_block_node
   free_block_node *next;
 } free_block, *free_list;
 
-typedef struct pagetable
-{
-  int start_page;//起始页表号
-  int length;//table表项数量
-  int size;//占用页表数量
-  vector<int> table;//页表内容
-}pagetable;
-
 //容量递增排序方法
 bool cmp1(PII x, PII y) { return x.second == y.second ? x.first < y.first : x.second < y.second; }
 //地址递增排序方法
@@ -37,11 +40,9 @@ bool cmp2(PII x, PII y) { return x.first < y.first; }
 class MemoryManager
 {
 public:
-  virtual void adjust_list(int type) = 0;
-  virtual void search_free_block(const PCB &p) = 0;
-  virtual void deallocate_process_mem(const PCB &p) = 0;
-  virtual void init_list() = 0;
-  virtual void print_list() = 0;
+  virtual void allocate_proc_mem(PCB &p) = 0;
+  virtual void deallocate_proc_mem(PCB &p) = 0;
+  virtual void init_manager() = 0;
 };
 
 class BlockMemoryManager : public MemoryManager
@@ -66,9 +67,9 @@ public:
   //空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
   void adjust_list(int type);
   //搜索满足条件的空闲块，并返回空闲块首地址
-  void search_free_block(const PCB &p);
+  void allocate_proc_mem(PCB &p);
   //释放内存，传入参数pcb
-  void deallocate_process_mem(const PCB &p);
+  void deallocate_proc_mem(PCB &p);
   //初始化空闲分区链表
   void init_list();
   //打印空闲分区链
@@ -78,11 +79,11 @@ public:
 class BasicPageManager : public MemoryManager
 {
 private:
-  //所有程序页表:pid->页表
-  map<int, pagetable> pagetablemanager;
-  //帧的使用情况
+  //页表寄存器
+  PII PTR;
+  //帧的使用情况位图
   unsigned int bitmap;
-  //页大小，1-4KB之间
+  //页大小，1、2、4KB
   int page_size = 1024;
   //总页数
   int total_page_num = memory_size / page_size;
@@ -99,12 +100,22 @@ public:
   //构造函数和析构函数
   BasicPageManager() { init_manager(); }
   ~BasicPageManager() { puts("Exit the basic page system"); }
+  //分配页表内存
+  void create_pagetable(PCB &p);
+  //回收页表内存
+  void delete_pagetable(PCB &p);
   //分配进程内存
-  void allocate_proc_mem(const PCB &p);
+  void allocate_proc_mem(PCB &p);
   //释放内存
-  void deallocate_proc_mem(const PCB &p);
+  void deallocate_proc_mem(PCB &p);
+  //获取当前进程页表地址
+  void set_PTR(const PCB &p)
+  {
+    PTR.start_addr = p.pagetable_addr;
+    PTR.table_len = p.pagetable_len;
+  }
   //打印帧使用情况
   void print_frame();
   //打印进程页表
-  void print_pagetable(int pid);
-}
+  void print_pagetable(const PCB &p);
+};

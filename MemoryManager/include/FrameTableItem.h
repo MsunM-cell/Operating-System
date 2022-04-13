@@ -28,7 +28,7 @@ public:
     void setPid(unsigned int pid) { this->pid = pid; }
     void setLogicalPage(tableItem *ti) { this->logicalPage = ti; }
     /**
-     * @description: 
+     * @brief 
      * @return {该帧对应的页}
      */    
     tableItem *getLogicalPage() { return logicalPage; }
