@@ -89,6 +89,7 @@ bool FileOperation::create_file(string current_dir, string file_name)
     ifstream input;
     input.open(cur_file_path, ios::in);
     if (input.is_open()) {
+        input.close();
         printf("Existed! Please try again.\n");
         return false;
     }
@@ -112,7 +113,8 @@ bool FileOperation::create_file(string current_dir, string file_name)
             printf("Success: make file %s\n", file_name.c_str());
             return true;
         }
-        
+        input.close();
+        printf("open file failed or add json failed !\n");
     }
     else
         printf("disk storage error: no enough space\n");
