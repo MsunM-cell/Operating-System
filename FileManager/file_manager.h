@@ -244,6 +244,13 @@ public:
      */
     bool add_json_node_to_tree(string path, json node);
     /**
+     * @brief delete the json node from the file_system_tree
+     * 
+     * @param path the path of the file (absolute)
+     * @return bool
+     */
+    bool delete_json_node_from_tree(string path);
+    /**
      * @brief set disk's head pointer new position
      *
      * @param head_pointer

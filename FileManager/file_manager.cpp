@@ -443,13 +443,55 @@ bool FileManager::add_json_node_to_tree(string path, json node)
     if (exists(path) && is_directory(path))
     {
         (*temp)[(string)node["name"]] = nlohmann::detail::value_t::null; // This is a new directory.
-        cout << setw(4) << this->file_system_tree << endl;               // debug
+        // cout << setw(4) << this->file_system_tree << endl;               // debug
         return true;
     }
     else if (exists(path))
     {
         (*temp)[(string)node["name"]] = node["type"]; // This is a new file.
-        // cout << setw(4) << this->file_system_tree << endl;   // debug
+        // cout << setw(4) << this->file_system_tree << endl;               // debug
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief delete the json node from the file_system_tree
+ * 
+ * @param path the path of the file (absolute)
+ * @return bool
+ */
+bool FileManager::delete_json_node_from_tree(string path)
+{
+    json *temp = &(this->file_system_tree); // the temporary pointer to the file_system_tree
+
+    string relative_path = path.substr(this->home_path.size() + 1); // get the path relative to the home
+    // cout << relative_path << endl;
+
+    int index = -1; // -1 means not exists file_separator, >= 0 means exists.
+    while ((index = relative_path.find('/')) != -1)
+    {
+        string temp_dir = relative_path.substr(0, index); // get the next directory name
+        relative_path = relative_path.substr(index + 1);  // get the next path of the next directory
+
+        // if not contains the directory name, maybe there is a fault.
+        if ((*temp).contains(temp_dir) == false)
+            return false;
+        temp = &(*temp)[temp_dir]; // 'temp' points to the next directory
+    }
+
+    string file_name = relative_path;
+
+    if (exists(path) && is_directory(path))
+    {
+        (*temp).erase(file_name);
+        // cout << setw(4) << this->file_system_tree << endl;               // debug
+        return true;
+    }
+    else if (exists(path))
+    {
+        (*temp).erase(file_name);
+        // cout << setw(4) << this->file_system_tree << endl;               // debug
         return true;
     }
     return false;
