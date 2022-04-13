@@ -614,8 +614,8 @@ Disk::Disk(int block_size, int track_num, int sector_num)
     this->track_size = sector_num;  // default 12
     this->head_pointer = 12;        // default 12
 
-    this->seek_speed = 0.0001;  // default 0.1 ms
-    this->rotate_speed = 0.004; // default 4 ms
+    this->seek_speed = 0.1;  // default 0.1 ms
+    this->rotate_speed = 4; // default 4 ms
     // for Windows, it is Sleep function
     // for Linux and Unix, it is usleep function
     // accurate to 1 ms, so need to multiply by 10
@@ -669,7 +669,7 @@ void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
         // record read-write bytes
         seek_byte += this->sector_size;
     }
-    printf("disk access success: time used: %.5lf ms\n", seek_time * 1000);
+    printf("disk access success: time used: %.5lf ms\n", seek_time);
 }
 
 /**
@@ -723,12 +723,12 @@ int main()
     // fm.get_file_demo("FCFS");
     // fm.set_disk_head_pointer(12);
     // fm.get_file_demo("SSTF");
-    // Disk d(512, 200, 12);
-    // vector<pair<int, int>> seek_queue;
-    // seek_queue.push_back({100, 1});
-    // seek_queue.push_back({40, 1});
-    // seek_queue.push_back({60, 1});
-    // seek_queue.push_back({10, 1});
-    // d.SSTF(seek_queue);
+    Disk d(512, 200, 12);
+    vector<pair<int, int>> seek_queue;
+    seek_queue.push_back({100, 1});
+    seek_queue.push_back({40, 1});
+    seek_queue.push_back({60, 1});
+    seek_queue.push_back({10, 1});
+    d.SSTF(seek_queue);
     return 0;
 }
