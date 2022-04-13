@@ -139,6 +139,10 @@ class Disk {
     +FCFS(vector<pair<int, int>> seek_queue) void
     +SSTF(vector<pair<int, int>> seek_queue) void
 }
+
+FileManager *-- Disk
+FileManager *-- Block
+Disk ..> Block
 ```
 
 ## 存在的问题
