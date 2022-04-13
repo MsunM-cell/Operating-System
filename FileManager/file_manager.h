@@ -12,10 +12,6 @@
 #include <chrono>
 #include <thread>
 
-using namespace std;
-using namespace std::filesystem; // filesystem and their components
-using nlohmann::json;
-
 // cross platform
 // fit to Windows, Linux and Unix
 #ifdef _WIN64
@@ -31,6 +27,10 @@ using nlohmann::json;
 #define STRING(s) (string) s
 #define SLEEP(t) usleep(1000 * t)
 #endif
+
+using namespace std;
+using namespace std::filesystem; // filesystem and their components
+using nlohmann::json;
 
 // compare each other on the basis of 2nd element of pairs
 // in ascending order
