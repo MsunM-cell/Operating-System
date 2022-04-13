@@ -33,6 +33,10 @@ typedef struct PCB
     int pc;
     // 块大小
     int size;
+    //页表首地址
+    int pagetable_addr;
+    //页表长度
+    int pagetable_len;
 } PCB;
 
 //文件结构体

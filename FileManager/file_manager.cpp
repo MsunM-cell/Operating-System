@@ -443,13 +443,55 @@ bool FileManager::add_json_node_to_tree(string path, json node)
     if (exists(path) && is_directory(path))
     {
         (*temp)[(string)node["name"]] = nlohmann::detail::value_t::null; // This is a new directory.
-        cout << setw(4) << this->file_system_tree << endl;               // debug
+        // cout << setw(4) << this->file_system_tree << endl;               // debug
         return true;
     }
     else if (exists(path))
     {
         (*temp)[(string)node["name"]] = node["type"]; // This is a new file.
-        // cout << setw(4) << this->file_system_tree << endl;   // debug
+        // cout << setw(4) << this->file_system_tree << endl;               // debug
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief delete the json node from the file_system_tree
+ * 
+ * @param path the path of the file (absolute)
+ * @return bool
+ */
+bool FileManager::delete_json_node_from_tree(string path)
+{
+    json *temp = &(this->file_system_tree); // the temporary pointer to the file_system_tree
+
+    string relative_path = path.substr(this->home_path.size() + 1); // get the path relative to the home
+    // cout << relative_path << endl;
+
+    int index = -1; // -1 means not exists file_separator, >= 0 means exists.
+    while ((index = relative_path.find('/')) != -1)
+    {
+        string temp_dir = relative_path.substr(0, index); // get the next directory name
+        relative_path = relative_path.substr(index + 1);  // get the next path of the next directory
+
+        // if not contains the directory name, maybe there is a fault.
+        if ((*temp).contains(temp_dir) == false)
+            return false;
+        temp = &(*temp)[temp_dir]; // 'temp' points to the next directory
+    }
+
+    string file_name = relative_path;
+
+    if (exists(path) && is_directory(path))
+    {
+        (*temp).erase(file_name);
+        // cout << setw(4) << this->file_system_tree << endl;               // debug
+        return true;
+    }
+    else if (exists(path))
+    {
+        (*temp).erase(file_name);
+        // cout << setw(4) << this->file_system_tree << endl;               // debug
         return true;
     }
     return false;
@@ -572,8 +614,8 @@ Disk::Disk(int block_size, int track_num, int sector_num)
     this->track_size = sector_num;  // default 12
     this->head_pointer = 12;        // default 12
 
-    this->seek_speed = 0.0001;  // default 0.1 ms
-    this->rotate_speed = 0.004; // default 4 ms
+    this->seek_speed = 0.1;  // default 0.1 ms
+    this->rotate_speed = 4; // default 4 ms
     // for Windows, it is Sleep function
     // for Linux and Unix, it is usleep function
     // accurate to 1 ms, so need to multiply by 10
@@ -627,7 +669,7 @@ void Disk::seek_by_queue(vector<pair<int, int>> seek_queue)
         // record read-write bytes
         seek_byte += this->sector_size;
     }
-    printf("disk access success: time used: %.5lf ms\n", seek_time * 1000);
+    printf("disk access success: time used: %.5lf ms\n", seek_time);
 }
 
 /**
@@ -681,12 +723,12 @@ int main()
     // fm.get_file_demo("FCFS");
     // fm.set_disk_head_pointer(12);
     // fm.get_file_demo("SSTF");
-    // Disk d(512, 200, 12);
-    // vector<pair<int, int>> seek_queue;
-    // seek_queue.push_back({100, 1});
-    // seek_queue.push_back({40, 1});
-    // seek_queue.push_back({60, 1});
-    // seek_queue.push_back({10, 1});
-    // d.SSTF(seek_queue);
+    Disk d(512, 200, 12);
+    vector<pair<int, int>> seek_queue;
+    seek_queue.push_back({100, 1});
+    seek_queue.push_back({40, 1});
+    seek_queue.push_back({60, 1});
+    seek_queue.push_back({10, 1});
+    d.SSTF(seek_queue);
     return 0;
 }
