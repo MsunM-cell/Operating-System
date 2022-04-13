@@ -89,6 +89,31 @@ ProcManager *-- ProcManagerFCFS
 RRQueue ..>ProcManagerFCFS 
 ```
 
+```mermaid
+classDiagram
+class FileManager {
+    +string home_path
+    +string working_path
+    -Disk disk
+    -vector~Block~ blocks
+    -vector~int~ bitmap
+    -json file_system_tree
+    -json file_blocks
+
+    +init_blocks() void
+    +init_file_system_tree(string current_path) json
+    +fill_file_into_blocks(json file_info, string file_path, int method) bool
+    +delete_file_from_blocks(string file_path) bool
+    +find_idle_blocks(int num, int method) int
+    +first_fit(string target_str) int
+    +best_fit(string target_str) int
+    +worst_fit(string target_str) int
+    +add_json_node_to_tree(string path, json node) bool
+    +delete_json_node_from_tree(string path) bool
+    +get_file(string file_path, string mode, string seek_algo) json
+}
+```
+
 ## 存在的问题
 
 ### 内存
