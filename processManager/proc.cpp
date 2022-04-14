@@ -317,6 +317,7 @@ ProcManager::ProcManager(int n_size, int x_size)
     this->rr_queue = new RRQueue();
     this->fcfsProcManager = new ProcManagerFCFS();
     cout << "ProcManager is running!\n";
+    srand(time(NULL));
     // 不会被降级的PCB
     for (int i = 0; i < n_size; i++)
     {
@@ -326,7 +327,7 @@ ProcManager::ProcManager(int n_size, int x_size)
         new_pcb->status = READY;
         new_pcb->pri = HIGH_PRI;
         new_pcb->slice_cnt = 0;
-        new_pcb->time_need = rand() % 30 * 100;
+        new_pcb->time_need = rand() % 20 * 100;
         active_pcb.push_back(new_pcb);
     }
     // 降级测试
@@ -559,7 +560,7 @@ int main()
     // 系统开始计时，实际应该更早
     system_start = clock();
     cout << setiosflags(ios::left);
-    printf("[%ld]This is a RR test\n", clock() - system_start);
+    printf("[%ld]This is a test\n", clock() - system_start);
 
 
     cout << "ps all" << endl;
