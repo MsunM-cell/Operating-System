@@ -117,6 +117,9 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
                 ProcManager::getInstance().freePCB(cur_pcb);
                 it = this->rr_que.erase(it);
             }
+
+            // 维护队列
+            ProcManager::getInstance().maintain();
         }
     }
     return 0;
@@ -336,9 +339,9 @@ ProcManager::ProcManager(int n_size, int x_size)
         new_pcb->pri = HIGH_PRI;
         new_pcb->slice_cnt = 0;
         new_pcb->time_need = rand() % 10 * 100 + TIME_SLICE * MAX_CNT;
-        active_pcb.push_back(new_pcb);
+        waiting_pcb.push_back(new_pcb);
     }
-    this->cpid = 7;
+    this->cpid = n_size+x_size;
 
     // 向rr添加pcb，之后可重用
     for (PCB* pcb : this->active_pcb)
@@ -378,6 +381,7 @@ void ProcManager::kill(int pid)
     if (is_found)
     {
         printf("[%ld]Active pid=%d is killed.\n", clock() - system_start, pid);
+        this->maintain();
         return;
     }
 
@@ -392,6 +396,7 @@ void ProcManager::kill(int pid)
             this->freePCB(*it);
             this->waiting_pcb.erase(it);
             printf("[%ld]Waiting pid=%d is killed.\n", clock() - system_start, pid);
+            return;
         }
     }
     printf("[%ld]Can't find pid=%d.\n", clock() - system_start, pid);
@@ -401,11 +406,18 @@ void ProcManager::kill(int pid)
  * 列出当前所有存在的pcb
  */
 void ProcManager::ps()
-{
-    cout << "All: " << this->getActiveNum() << endl;
+{  
+    cout << "Waiting:" << this->waiting_pcb.size() << endl;
+    for (PCB* pcb : waiting_pcb)
+    {
+        cout << "pid: " << pcb->id << " name:" << pcb->name ;
+        cout << " pri: " << pcb->pri << " need: " << pcb->time_need << endl;
+    }
+    cout << "Running: " << this->getActiveNum() << endl;
     cout << "RR: " << this->rr_queue->getSize() << endl;
     cout << "FCFS: " << this->fcfsProcManager->getQueueSize() << endl;
     rr_queue->getInfo();
+    fcfsProcManager->getFcfsInfo();
 }
 
 /**
@@ -426,26 +438,38 @@ void ProcManager::run(string file_name)
     // 从其他模块获取文件的有关信息，这里模拟一下
     PCB* new_pcb = new PCB;
     new_pcb->id = this->cpid;
+    this->cpid = (this->cpid + 1) % 65536;
     new_pcb->name = file_name;
     new_pcb->status = NEW;
     new_pcb->pri = HIGH_PRI;
     new_pcb->time_need = 1888;
     new_pcb->slice_cnt = 0;
-    this->cpid = (this->cpid + 1) % 65536;
     PCB* pcb = new_pcb;
 
     // 判断是否需要加入到等待队列
-    if (this->getActiveNum() < MAX_PROC)
+    // if (this->getActiveNum() < MAX_PROC)
+    // {
+    //     pcb->status = READY;
+    //     if (pcb->pri == HIGH_PRI)
+    //     {
+    //         this->rr_queue->addPCB(pcb);
+    //     }
+    //     else if (pcb->pri == LOW_PRI)
+    //     {
+    //         this->fcfsProcManager->addToQueue(pcb);
+    //     }
+    //     printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
+    // }
+    if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
     {
         pcb->status = READY;
-        if (pcb->pri == HIGH_PRI)
-        {
-            this->rr_queue->addPCB(pcb);
-        }
-        else if (pcb->pri == LOW_PRI)
-        {
-            this->fcfsProcManager->addToQueue(pcb);
-        }
+        this->rr_queue->addPCB(pcb);
+        printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
+    }
+    else if (pcb->pri == LOW_PRI && this->fcfsProcManager->getQueueSize() < MAX_PROC)
+    {
+        pcb->status = READY;
+        this->fcfsProcManager->addToQueue(pcb);
         printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
     }
     else
@@ -479,6 +503,44 @@ bool ProcManager::freePCB(PCB* target)
 }
 
 /**
+ * @brief 维护调度队列
+ * 
+ */
+void ProcManager::maintain()
+{
+    // 维护RR队列
+    if (rr_queue->getSize() < MAX_PROC && waiting_pcb.size() > 0)
+    {
+        for (auto it = waiting_pcb.begin(); it != waiting_pcb.end(); it++)
+        {
+            PCB* new_pcb = *it;
+            if (new_pcb->pri == HIGH_PRI)
+            {
+                waiting_pcb.erase(it);
+                rr_queue->addPCB(new_pcb);
+                printf("[%ld]Pid %d is running.\n", clock() - system_start, new_pcb->id);
+                break;
+            }
+        }
+    }
+    // 维护fcfs队列
+    if (fcfsProcManager->getQueueSize() < MAX_PROC && waiting_pcb.size() > 0)
+    {
+        for (auto it = waiting_pcb.begin(); it != waiting_pcb.end(); it++)
+        {
+            PCB* new_pcb = *it;
+            if (new_pcb->pri == LOW_PRI)
+            {
+                waiting_pcb.erase(it);
+                fcfsProcManager->addToQueue(new_pcb);
+                printf("[%ld]Pid %d is running.\n", clock() - system_start, new_pcb->id);
+                break;
+            }
+        }
+    }
+}
+
+/**
  * @brief 可以返回单例的函数
  * 
  * @return ProcManager& 
@@ -486,7 +548,7 @@ bool ProcManager::freePCB(PCB* target)
 ProcManager& ProcManager::getInstance() 
 {
     // 测试用
-    static ProcManager instance(5,2);
+    static ProcManager instance(5,3);
     // static ProcManager instance;
     return instance;
 }
@@ -514,6 +576,6 @@ int main()
     ProcManager::getInstance().ps();
 
 
-    system("pause");
+    // system("pause");
     return 0;
 }

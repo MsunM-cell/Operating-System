@@ -1,5 +1,54 @@
 # Operating System
 
+## 文件结构
+``` text
+|-- os-sys
+    |-- README.md
+    |-- run.sh
+    |-- FileManager
+    |   |-- file_manager.cpp
+    |   |-- file_manager.h
+    |   |-- file_operation.hpp
+    |   |-- json.hpp
+    |-- lib 系统共用头文件目录
+    |   |-- sys.h
+    |-- MemoryManager
+    |   |-- README.txt
+    |   |-- include
+    |   |   |-- config.h
+    |   |   |-- FrameTableItem.h
+    |   |   |-- PageMemoryManager.h
+    |   |   |-- PageTable.h
+    |   |   |-- PageTableItem.h
+    |   |   |-- ProcessTableItem.h
+    |   |   |-- tableItem.h
+    |   |-- Interface
+    |   |   |-- FileManager.cpp
+    |   |   |-- MemoryManager-1.cpp
+    |   |   |-- MemoryManager.cpp
+    |   |-- Manager
+    |   |   |-- BasicPageManager.cpp
+    |   |   |-- DynamicBlockManager.cpp
+    |   |   |-- FrameTableItem.cpp
+    |   |   |-- Log.cpp
+    |   |   |-- memory.h
+    |   |   |-- MyFileManager.cpp
+    |   |   |-- PageMemoryManager.cpp
+    |   |-- test
+    |       |-- MemoryUsage.txt
+    |       |-- MyFileManagerTest.cpp
+    |       |-- MyFileManagerTest.exe
+    |       |-- PageManagerTest-MutiThread.cpp
+    |       |-- PageManagerTest-MutiThread.exe
+    |       |-- PageMenagerTest.cpp
+    |       |-- PageMenagerTest.exe
+    |       |-- testProgram.txt
+    |-- processManager 进程管理器
+        |-- proc.cpp
+        |-- proc.h
+
+```
+
 ## 类图
 
 ```mermaid
@@ -38,50 +87,8 @@ class ProcManager {
     +ps() void
     +ps(int pid) void
     +scheduling() void
-    +getInstance()$
-}
-ProcManager *-- RRQueue
-ProcManager *-- ProcManagerFCFS
-RRQueue ..>ProcManagerFCFS 
-```
-
-
-```mermaid
-classDiagram
-class RRQueue {
-    -vector~PCB*~ rr_que
-    +getSize() int 
-    +addPCB(PCB* target) bool
-    +removePCB(int pid) bool
-    +downLevel(PCB* target,ProcManagerFCFS*fcfs) +void 
-    +scheduling(ProcManagerFCFS* fcfs) int
-    +getInfo() void
-    +getInfo(int pid) void
-}
-class ProcManagerFCFS {
-    -vector ~PCB~ fcfsQueue
-    +addToQueue(PCB p) void
-    +runProcManager() void
-    +removeProc(int pid) bool
-    +getFcfsInfo() void
-    +getFcfsInfo(int pid) void
-    +getQueueSize() int
-    -run(PCB p) void
-    -getCommand() string
-}
-class ProcManager {
-    -int cpid
-    -vector~PCB*~ active_pcb
-    -vector~PCB*~ waiting_pcb
-    -RRQueue* rr_queue
-    -ProcManagerFCFS* fcfsProcManager
-
-    +getActiveNum() int
-    +kill(int pid) void
-    +run(string file_name) void
-    +ps() void
-    +ps(int pid) void
-    +scheduling() void
+    +freePCB(PCB* target) bool
+    +maintain() void
     +getInstance()$
 }
 ProcManager *-- RRQueue
