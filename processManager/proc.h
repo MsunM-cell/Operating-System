@@ -100,6 +100,7 @@ public:
     void ps();
     void ps(int pid);
     void scheduling();
+    bool freePCB(PCB* target);
     static ProcManager& getInstance();
 };
 

@@ -62,7 +62,7 @@ bool RRQueue::removePCB(int pid)
         if (pcb->id == pid)
         {
             pcb->status = DEAD;
-            delete pcb;
+            ProcManager::getInstance().freePCB(pcb);
             this->rr_que.erase(it);
             return true;
         }
@@ -113,7 +113,8 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
                 // cur_pcb->time_need = -1;
                 cur_pcb->status = DEAD;
                 printf("[%ld]Pid %d time out! No time need.\n", clock() - system_start, cur_pcb->id);
-                delete cur_pcb;
+                // delete cur_pcb;
+                ProcManager::getInstance().freePCB(cur_pcb);
                 it = this->rr_que.erase(it);
             }
         }
@@ -189,7 +190,8 @@ void ProcManagerFCFS::runProcManager(){
             PCB *p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
             run(p);
-            delete p;
+            // delete p;
+            ProcManager::getInstance().freePCB(p);
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
         }
@@ -232,7 +234,8 @@ void ProcManagerFCFS::run(PCB *p){
 bool ProcManagerFCFS::removeProc(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
         if((*it)->id == pid){
-            delete *it;
+            // delete *it;
+            ProcManager::getInstance().freePCB(*it);
             it = fcfsQueue.erase(it);
             return true;
         }
@@ -385,7 +388,8 @@ void ProcManager::kill(int pid)
         if ((*it)->id == pid)
         {
             (*it)->status = DEAD;
-            delete *it;
+            // delete *it;
+            this->freePCB(*it);
             this->waiting_pcb.erase(it);
             printf("[%ld]Waiting pid=%d is killed.\n", clock() - system_start, pid);
         }
@@ -458,6 +462,20 @@ void ProcManager::scheduling()
 {
     rr_queue->scheduling(fcfsProcManager);
     fcfsProcManager->runProcManager();
+}
+
+/**
+ * @brief 释放pcb占用的空间
+ * 
+ * @param target 指向释放pcb的指针
+ * @return true 成功
+ * @return false 失败
+ */
+bool ProcManager::freePCB(PCB* target)
+{
+    // TODO 联动后需要添加释放其他资源的操作
+    delete target;
+    return true;
 }
 
 /**
