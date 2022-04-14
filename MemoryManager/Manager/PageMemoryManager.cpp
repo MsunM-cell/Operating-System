@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-13 20:23:47
+ * @LastEditTime: 2022-04-14 17:11:21
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -29,8 +29,8 @@ PageMemoryManager::PageMemoryManager()
     char *pointer = memory;
     for (int i = 0; i < FRAME_NUM; i++)
     {
-        FrameTableItem *fti = new FrameTableItem((long long)pointer, i);
-        frameTable.push_back(fti);
+        FrameTableItem *frameTableItem = new FrameTableItem((long long)pointer, i);
+        frameTable.push_back(frameTableItem);
         pointer += PAGE_SIZE;
     }
     usedFrameNum = 0;
@@ -85,7 +85,6 @@ int PageMemoryManager::createProcess(unsigned int pid, long long length)
         return -1;
     }
 
-    // TODO:bitmap不知道有没有存在的必要吼
 
     int findPage = 0;
 
@@ -121,6 +120,7 @@ int PageMemoryManager::createProcess(unsigned int pid, long long length)
  */
 bool PageMemoryManager::memoryFree(unsigned int pid, long long address, long long length)
 {
+    return false;
 }
 
 /**
@@ -138,8 +138,8 @@ bool PageMemoryManager::freeAll(unsigned int pid)
         //如果在内存中
         if (ti->isInMemory)
         {
-            FrameTableItem *fti = ti->frame;
-            fti->unUsed();
+            FrameTableItem *frameTableItem = ti->frame;
+            frameTableItem->unUsed();
             usedFrameNum--;
         }
         //如果在外存中
@@ -156,6 +156,7 @@ bool PageMemoryManager::freeAll(unsigned int pid)
         bitMap[ti->pageNo] = false;
         occupiedPageNum--;
     }
+    return true;
 }
 
 /**
@@ -165,10 +166,7 @@ bool PageMemoryManager::freeAll(unsigned int pid)
  * @return {一个字节}
  */
 char PageMemoryManager::accessMemory(unsigned int pid, long long address)
-{ //读一个字节？
-
-    // TODO:tableitem改成指针
-    // TODO:提示使用过该页
+{ 
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
     if (!pageTable)
     {
@@ -195,9 +193,9 @@ char PageMemoryManager::accessMemory(unsigned int pid, long long address)
             return 0;
         }
     }
-    FrameTableItem *fti = ti->frame;
-    long long realAddress = fti->getFrameAddress() + address % PAGE_SIZE;
-    useFrame(fti);
+    FrameTableItem *frameTableItem = ti->frame;
+    long long realAddress = frameTableItem->getFrameAddress() + address % PAGE_SIZE;
+    useFrame(frameTableItem);
     return *(char *)realAddress;
 }
 
@@ -238,10 +236,10 @@ bool PageMemoryManager::write(long long logicalAddress, const void *src, long lo
         }
     }
 
-    FrameTableItem *fti = ti->frame;
-    long long realAddress = fti->getFrameAddress() + logicalAddress % PAGE_SIZE;
+    FrameTableItem *frameTableItem = ti->frame;
+    long long realAddress = frameTableItem->getFrameAddress() + logicalAddress % PAGE_SIZE;
     memcpy((void *)realAddress, src, size);
-    useFrame(fti);
+    useFrame(frameTableItem);
     ti->isChange = true;
 
     stringstream logMsg;
@@ -291,18 +289,18 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
     //首先查看是否所有的帧都被使用，倘若存在帧未被使用，则直接使用该帧即可
     for (int i = 0; i < frameTable.size(); i++)
     {
-        FrameTableItem *fti = frameTable.at(i);
-        if (!fti->isOccupied())
+        FrameTableItem *frameTableItem = frameTable.at(i);
+        if (!frameTableItem->isOccupied())
         {
-            fti->setPid(pid);
-            fti->setLogicalPage(ti);
-            fti->setOccupied();
+            frameTableItem->setPid(pid);
+            frameTableItem->setLogicalPage(ti);
+            frameTableItem->setOccupied();
             usedFrameNum++;
-            ti->frame = fti;
+            ti->frame = frameTableItem;
             ti->isInMemory = true;
 
             stringstream ss;
-            ss << "move page " << ti->pageNo << " into memory , frame number " << fti->getFrameNo();
+            ss << "move page " << ti->pageNo << " into memory , frame number " << frameTableItem->getFrameNo();
             Log::logI(TAG, ss.str());
 
             return true;
@@ -345,7 +343,7 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
     {
 
         long long address = MyFileManager::getInstance()->write((char *)frameTableItem->getFrameAddress(), PAGE_SIZE);
-        if (address != 0)
+        if (address != -1)
         {
             oldTableItem->isInMemory = false;
             oldTableItem->swapAddress = address;
@@ -406,10 +404,10 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
  * @param {FrameTableItem*} fti要使用的帧
  * @return {*}
  */
-void PageMemoryManager::useFrame(FrameTableItem *fti)
+void PageMemoryManager::useFrame(FrameTableItem *frameTableItem)
 {
 
-    if (!fti)
+    if (!frameTableItem)
     {
         return;
     }
@@ -417,61 +415,61 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
     //假如链表中没有帧，这个是第一个
     if (LRU_StackHead == nullptr || LRU_StackTail == nullptr)
     {
-        LRU_StackHead = fti;
-        LRU_StackTail = fti;
+        LRU_StackHead = frameTableItem;
+        LRU_StackTail = frameTableItem;
         LRU_StackHead->pre = LRU_StackTail;
         LRU_StackTail->next = LRU_StackHead;
     }
     else
     {
         //如果这个帧之前没有添加进链表过
-        if (fti->pre == nullptr && fti->next == nullptr)
+        if (frameTableItem->pre == nullptr && frameTableItem->next == nullptr)
         {
-            fti->next = LRU_StackHead;
-            fti->pre = LRU_StackTail;
-            LRU_StackHead->pre = fti;
+            frameTableItem->next = LRU_StackHead;
+            frameTableItem->pre = LRU_StackTail;
+            LRU_StackHead->pre = frameTableItem;
 
-            LRU_StackTail->next = fti;
-            LRU_StackHead = fti;
+            LRU_StackTail->next = frameTableItem;
+            LRU_StackHead = frameTableItem;
         }
         //如果这个帧为帧头
-        else if (fti == LRU_StackHead)
+        else if (frameTableItem == LRU_StackHead)
         {
             return;
         }
         //如果这个帧为帧尾
-        else if (fti == LRU_StackTail)
+        else if (frameTableItem == LRU_StackTail)
         {
-            LRU_StackTail = fti->pre;
+            LRU_StackTail = frameTableItem->pre;
 
-            LRU_StackTail->next = fti;
-            LRU_StackHead->pre = fti;
+            LRU_StackTail->next = frameTableItem;
+            LRU_StackHead->pre = frameTableItem;
 
-            fti->next = LRU_StackHead;
-            fti->pre = LRU_StackTail;
+            frameTableItem->next = LRU_StackHead;
+            frameTableItem->pre = LRU_StackTail;
 
-            LRU_StackHead = fti;
+            LRU_StackHead = frameTableItem;
         }
         //这个帧在中间的情况
         else
         {
             //如果存在上一个
-            if (fti->pre)
+            if (frameTableItem->pre)
             {
-                fti->pre->next = fti->next;
+                frameTableItem->pre->next = frameTableItem->next;
             }
             //如果存在下一个
-            if (fti->next)
+            if (frameTableItem->next)
             {
-                fti->next->pre = fti->pre;
+                frameTableItem->next->pre = frameTableItem->pre;
             }
 
-            fti->next = LRU_StackHead;
+            frameTableItem->next = LRU_StackHead;
             if (LRU_StackHead)
             {
-                LRU_StackHead->pre = fti;
+                LRU_StackHead->pre = frameTableItem;
             }
-            LRU_StackHead = fti;
+            LRU_StackHead = frameTableItem;
         }
     }
 }

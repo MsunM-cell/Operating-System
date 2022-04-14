@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-13 16:27:27
+ * @LastEditTime: 2022-04-14 18:16:26
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #ifndef PAGE_MEMORY_MANAGER
@@ -35,7 +35,7 @@ private:
     int usedFrameNum;
 
     int swapPageNum;
-
+ 
     //使用getInstance可获得该实例
     static PageMemoryManager *instance;
 
@@ -51,7 +51,8 @@ private:
     vector<tableItem *> *getProcessPageTable(int pid);
 
     void useFrame(FrameTableItem *frameTableItem);
-
+    void initPageTable();
+    bool pageFault(unsigned int pid, tableItem *ti);
 public:
     static PageMemoryManager *getInstance();
     PageMemoryManager();
@@ -60,12 +61,10 @@ public:
     bool memoryFree(unsigned int pid, long long address, long long length);
     bool freeAll(unsigned int pid);
     char accessMemory(unsigned int pid, long long address);
-    void initPageTable();
     int getOccupiedPageNum();
     int getUsedFrameNum() { return usedFrameNum; };
     int getSwapPageNum() { return swapPageNum; };
     unsigned long getLogicalMemorySize() { return LOGICAL_MEMORY_SIZE; };
-    bool pageFault(unsigned int pid, tableItem *ti);
     bool write(long long logicalAddress, const void *src, long long size, unsigned int pid);
     void stuff(unsigned int pid);
 };

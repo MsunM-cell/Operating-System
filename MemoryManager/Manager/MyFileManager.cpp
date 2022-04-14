@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-08 15:46:36
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-09 15:37:58
+ * @LastEditTime: 2022-04-14 17:03:03
  * @FilePath: \Operating-System\MemoryManager\Manager\MyFileManager.cpp
  */
 #include "../Interface/FileManager.cpp"
@@ -71,6 +71,5 @@ long long MyFileManager::write(char *src, unsigned int length)
     char *temp = new char[length];
     memcpy(temp, src, length);
     myMap[addressCount] = temp;
-    addressCount++;
-    return addressCount-1;
+    return addressCount++;
 }
