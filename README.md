@@ -167,7 +167,6 @@ Disk ..> Block
 
 ### 进程
 
-- [ ] fcfs对pcb的释放问题
 
 ## TODO
 
