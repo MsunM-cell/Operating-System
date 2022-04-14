@@ -199,7 +199,12 @@ bool FileOperation::delete_dir(string current_dir, string dir_name)
         printf("Cannot delete directory '%s': File not exists\n", dir_name.c_str());
         return false;
     }
-    
+
+    if (!filesystem::is_empty(cur_dir_path)) {
+        printf("rmdir: failed to remove '%s': Directory not empty\n", dir_name.c_str());
+        return false;
+    }
+
     if (file_manager->delete_json_node_from_tree(cur_dir_path) && remove_all(cur_dir_path)) {
         printf("Remove directory '%s' success.\n", dir_name.c_str());
         return true;
