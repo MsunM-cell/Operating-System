@@ -89,6 +89,7 @@ bool FileOperation::create_file(string current_dir, string file_name)
     ifstream input;
     input.open(cur_file_path, ios::in);
     if (input.is_open()) {
+        input.close();
         printf("Existed! Please try again.\n");
         return false;
     }
@@ -112,7 +113,8 @@ bool FileOperation::create_file(string current_dir, string file_name)
             printf("Success: make file %s\n", file_name.c_str());
             return true;
         }
-        
+        input.close();
+        printf("open file failed or add json failed !\n");
     }
     else
         printf("disk storage error: no enough space\n");
@@ -139,10 +141,13 @@ bool FileOperation::delete_file(string current_dir, string file_name)
         printf("rm: cannot remove '%s': is a directory\n", file_name.c_str());
         return false;
     }
+    string relative_path = cur_file_path.substr(file_manager->home_path.size());
 
-    if (file_manager->delete_json_node_from_tree(cur_file_path) && remove(cur_file_path)) {
-        printf("Success: %s deleted\n", file_name.c_str());
-        return true;
+    if (file_manager->delete_json_node_from_tree(cur_file_path)) {
+        if (file_manager->delete_file_from_blocks(relative_path) && remove(cur_file_path)) {
+            printf("Success: %s deleted\n", file_name.c_str());
+            return true;
+        }
     }
 
     return false;
@@ -194,7 +199,12 @@ bool FileOperation::delete_dir(string current_dir, string dir_name)
         printf("Cannot delete directory '%s': File not exists\n", dir_name.c_str());
         return false;
     }
-    
+
+    if (!filesystem::is_empty(cur_dir_path)) {
+        printf("rmdir: failed to remove '%s': Directory not empty\n", dir_name.c_str());
+        return false;
+    }
+
     if (file_manager->delete_json_node_from_tree(cur_dir_path) && remove_all(cur_dir_path)) {
         printf("Remove directory '%s' success.\n", dir_name.c_str());
         return true;

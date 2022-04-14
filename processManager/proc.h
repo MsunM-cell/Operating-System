@@ -27,7 +27,7 @@ using namespace std;
 // 最大占用的时间片数量
 #define MAX_CNT 10
 // 最大可调度的进程数量
-#define MAX_PROC 10
+#define MAX_PROC 5
 
 
 // CPU是否在使用，可扩展为数组
@@ -100,6 +100,8 @@ public:
     void ps();
     void ps(int pid);
     void scheduling();
+    bool freePCB(PCB* target);
+    void maintain();
     static ProcManager& getInstance();
 };
 
