@@ -50,7 +50,7 @@ public:
     ProcManagerFCFS() = default;
     ~ProcManagerFCFS();
     void getFcfsInfo();
-    void getFcfsInfo(int pid);
+    PCB* getFcfsInfo(int pid);
     int getQueueSize();
 private:
     vector <PCB*> fcfsQueue;
@@ -73,7 +73,7 @@ public:
     void downLevel(PCB* target,ProcManagerFCFS* fcfs);
     int scheduling(ProcManagerFCFS* fcfs);
     void getInfo();
-    void getInfo(int pid);
+    PCB* getInfo(int pid);
 };
 
 

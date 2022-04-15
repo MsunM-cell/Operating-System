@@ -141,21 +141,19 @@ void RRQueue::getInfo()
 /**
  * 获取RR队列中指定pcb的信息
  * @param pid 指定pcb的id
- * @return 指向其的迭代器，没找到就返回空
+ * @return 返回指向目标的指针
  */
-void RRQueue::getInfo(int pid)
+PCB* RRQueue::getInfo(int pid)
 {
     for (auto it=this->rr_que.begin(); it != rr_que.end(); it++)
     {
         PCB* pcb = *it;
         if (pcb->id == pid)
         {
-            cout << "pid: " << pcb->id << " name:" << pcb->name ;
-            cout << " pri: " << pcb->pri << " need: " << pcb->time_need << endl;
-            return;
+            return pcb;
         }
     }
-    cout << "Can't find pid " << pid << endl;
+    return nullptr;
 }
 
 /*****************************************************************************************
@@ -266,17 +264,15 @@ void ProcManagerFCFS::getFcfsInfo(){
 /*** 
  * @brief get selected process information in the fcfs queue
  * @param {int} pid
- * @return {NULL}
+ * @return 指向目标的指针
  */
-void ProcManagerFCFS::getFcfsInfo(int pid){
+PCB* ProcManagerFCFS::getFcfsInfo(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
         if((*it)->id == pid){
-            cout << (*it)->id << " " << endl;
-            return ;
+            return *it;
         }
     }
-    cout << "no such process" << endl;
-    return ;
+    return nullptr;
 }
 
 
@@ -427,7 +423,32 @@ void ProcManager::ps()
  */
 void ProcManager::ps(int pid)
 {
-    rr_queue->getInfo(pid);
+    PCB* target=nullptr;
+    for (auto pcb:this->waiting_pcb)
+    {
+        if (pcb->id == pid)
+        {
+            target = pcb;
+            break;
+        }
+    }
+    if(target == nullptr)
+    {
+        target = rr_queue->getInfo(pid);
+        if (target == nullptr)
+        {
+            target = fcfsProcManager->getFcfsInfo(pid);
+        }
+    }
+    if (target != nullptr)
+    {
+        cout << "pid: " << target->id << " name:" << target->name ;
+        cout << " pri: " << target->pri << " need: " << target->time_need << endl;
+    }
+    else
+    {
+        cout << "Can't find pid " << pid << endl;
+    }
 }
 
 /**
@@ -448,19 +469,6 @@ void ProcManager::run(string file_name)
     PCB* pcb = new_pcb;
 
     // 判断是否需要加入到等待队列
-    // if (this->getActiveNum() < MAX_PROC)
-    // {
-    //     pcb->status = READY;
-    //     if (pcb->pri == HIGH_PRI)
-    //     {
-    //         this->rr_queue->addPCB(pcb);
-    //     }
-    //     else if (pcb->pri == LOW_PRI)
-    //     {
-    //         this->fcfsProcManager->addToQueue(pcb);
-    //     }
-    //     printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
-    // }
     if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
     {
         pcb->status = READY;
