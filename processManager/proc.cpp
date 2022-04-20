@@ -205,7 +205,7 @@ void ProcManagerFCFS::runProcManager(){
  * @param {NULL}
  * @return {NULL}
  */
-string ProcManagerFCFS::getCommand(){
+string ProcManagerFCFS::getCommand(PCB *p){
     return "aaa";
 }
 
@@ -219,9 +219,21 @@ string ProcManagerFCFS::getCommand(){
  */
 void ProcManagerFCFS::run(PCB *p){
     // 因为还没定文件格式，run函数暂时没有办法写
-    cout << "process " << p->id << " is running," << " will use " << p->time_need << " ms."<< endl;
-    Sleep(p->time_need);
-    cout << "process " << p->id << " is terminated" << endl;
+    string command = getCommand(p);
+    int time = 10;
+    switch(this->commandMap[command]){
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            useCPU(time);
+            break;
+        case 4:
+            useIO(time);
+            break;
+
+    }
     return ;
 }
 
@@ -283,6 +295,44 @@ PCB* ProcManagerFCFS::getFcfsInfo(int pid){
  */
 int ProcManagerFCFS::getQueueSize(){
     return fcfsQueue.size();
+}
+
+void ProcManagerFCFS::initCmdMap(){
+    commandMap["WriteMemory"] = 0;
+    commandMap["AccessMemory"] = 1;
+    commandMap["IO"] = 2;
+    commandMap["CPU"] = 3;
+    return ;
+}
+
+void ProcManagerFCFS::useCPU(int time){
+    if(CPU){
+        CPU = false;
+        Sleep(time);
+        CPU = true;
+    }
+    else{
+        while(!CPU);
+        CPU = false;
+        Sleep(time);
+        CPU = true;
+    }
+    return ;
+}
+
+void ProcManagerFCFS::useIO(int time){
+    if(IO){
+        IO = false;
+        Sleep(time);
+        IO = true;
+    }
+    else{
+        while(!IO);
+        IO = false;
+        Sleep(time);
+        IO = true;
+    }
+    return ;
 }
 
 
