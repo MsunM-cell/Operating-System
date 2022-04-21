@@ -59,6 +59,54 @@ public:
      */
     void tree(string dir, int layer = 0);
 
+    /**
+     * @brief return the size of the file, -1 means 'a existed path', -2 means 'is a directroy', 
+     *        -3 means 'file open error', else means the size of the file.
+     * 
+     * @param path the absolute of the file
+     * @return int 
+     */
+    int file_size(string path);
+
+    /**
+     * @brief modify the type of the file
+     * 
+     * @param file_path the absolute path of the file
+     * @param mode use a decimal number for a three-bit binary, 1 means the permission is not available. 
+     *             From the left to right is to read, write and execute.
+     * @return bool
+     */
+    bool modify_file_type(string file_path, unsigned int mode);
+
+    /**
+     * @brief rename the file
+     * 
+     * @param file_path the absolute file path
+     * @param new_name the new name of the file
+     * @return bool
+     */
+    bool rename_file(string file_path, string new_name);
+
+    /**
+     * @brief move a file from the src_path to the dst_path
+     * 
+     * @param src_path the source path of a file
+     * @param dst_path the destination path of the file
+     * @return bool
+     */
+    bool move_file(string src_path, string dst_path);
+
+    /**
+     * @brief copy a file from the src_path to the dst_path
+     * 
+     * @param src_path the source path of a file
+     * @param dst_path the destination path of the file
+     * @return bool
+     */
+    bool copy_file(string src_path, string dst_path);
+
+
+
 private:
     FileManager* file_manager;  // The pointer to a FileManager instance
 
@@ -221,6 +269,323 @@ bool FileOperation::delete_dir(string current_dir, string dir_name)
  */
 void FileOperation::tree(string dir, int layer) {
     file_manager->print_file_system_tree(dir, layer);
+}
+
+/**
+ * @brief return the size of the file, -1 means 'a existed path', -2 means 'is a directroy', 
+ *         -3 means 'file open error', else means the size of the file. 
+ * @param path the absolute of the file
+ * @return  int
+ */
+int FileOperation::file_size(string path) {
+    string file_name = path.substr(path.find_last_of((char)path::preferred_separator) + 1);
+
+    if (!exists(path)) {
+        printf("'%s': Not such file.\n", file_name.c_str());
+        return -1;
+    }
+
+    if (is_directory(path)) {
+        printf("'%s': is a directory.\n", file_name.c_str());
+        return -2;
+    }
+
+    json temp;
+    ifstream input(path);
+    if (!input.is_open()) {
+        printf("'%s' open failed.\n", file_name.c_str());
+        input.close();
+        return -3;
+    }
+    input >> temp;
+    input.close();
+    
+    return temp["size"];
+}
+
+/**
+ * @brief modify the type of the file
+ * 
+ * @param file_path the absolute path of the file
+ * @param mode use a decimal number for a three-bit binary, 1 means the permission is not available. 
+ *             From the left to right is to read, write and execute.
+ * @return bool
+ */
+bool FileOperation::modify_file_type(string file_path, unsigned int mode) {
+    if (!exists(file_path)) {
+        printf("Cannot find the file whose type will be modified.\n");
+        return false;
+    }
+    string file_name = file_path.substr(file_path.find_last_of((char)path::preferred_separator) + 1);
+
+    if (is_directory(file_path)) {
+        printf("'%s' is a directory.\n", file_name.c_str());
+        return false;
+    }
+
+    if (!is_regular_file(file_path)) {
+        printf("'%s' is not a regular file.\n", file_name.c_str());
+        return false;
+    } 
+
+    json temp;
+    ifstream input(file_path);
+    if (!input.is_open()) {
+        printf("'%s' file open failed.\n", file_name.c_str());
+        input.close();
+        return false;
+    }
+    input >> temp;
+    input.close();
+
+    string type = temp["type"];
+    // cout << "debug: " << type << endl;
+    type = type.substr(0, 1);
+    // cout << "debug: " << type << endl;
+
+    for (int i = 2; i >= 0; i--) {
+        if ((mode >> i) & 1) {
+            if (i == 2) type += "r";
+            else if (i == 1) type += "w";
+            else type += "x";
+        }
+        else {
+            if (i == 2) type += "-";
+            else if (i == 1) type += "-";
+            else type += "-";
+        }
+    }
+    temp["type"] = type;
+
+    ofstream output(file_path, ios::out);
+    if (!output.is_open()) {
+        printf("'%s' file open failed.\n", file_name.c_str());
+        output.close();
+        return false;
+    }
+    output << setw(4) << temp;
+    output.close();
+
+    printf("chmod '%s' success.\n", file_name.c_str());
+
+    return true;
+}
+
+/**
+ * @brief rename the file
+ * 
+ * @param file_path the absolute file path
+ * @param new_name the new name of the file
+ * @return bool
+ */
+bool FileOperation::rename_file(string file_path, string new_name) {
+    if (!exists(file_path)) {
+        printf("Cannot find the file which will be renamed.\n");
+        return false;
+    }
+    string file_name = file_path.substr(file_path.find_last_of((char)path::preferred_separator) + 1);
+
+    if (is_directory(file_path)) {
+        printf("'%s' is a directory.\n", file_name.c_str());
+        return false;
+    }
+
+    if (!is_regular_file(file_path)) {
+        printf("'%s' is not a regular file.\n", file_name.c_str());
+        return false;
+    }
+
+    json temp;
+    ifstream input(file_path);
+    if (!input.is_open()) {
+        printf("'%s' file open failed.\n", file_name.c_str());
+        input.close();
+        return false;
+    }
+
+    input >> temp;
+    input.close();
+    temp["name"] = new_name;
+    
+    ofstream output(file_path);
+    if (!output.is_open()) {
+        printf("'%s' file open failed.\n", file_name.c_str());
+        output.close();
+        return false;
+    }
+
+    output << setw(4) << temp;
+    output.close();
+
+    string file_dir = file_path.substr(0, file_path.find_last_of((char)path::preferred_separator) + 1);
+    // cout << "debug: " << file_dir << endl;
+    rename(file_path, file_dir + new_name);
+    
+    return true;
+}
+
+/**
+ * @brief move a file from the src_path to the dst_path
+ * 
+ * @param src_path the source path of a file
+ * @param dst_path the destination path of the file
+ * @return bool
+ */
+bool FileOperation::move_file(string src_path, string dst_path) {
+    if (!exists(src_path)) {
+        printf("mv: Cannot find the source file.\n");
+        return false;
+    }
+    string file_name = src_path.substr(src_path.find_last_of((char)path::preferred_separator) + 1);
+
+    if (is_directory(src_path)) {
+        printf("mv: '%s' is a directory.\n", file_name.c_str());
+        return false;
+    }
+
+    if (!is_regular_file(src_path)) {
+        printf("mv: '%s' is not a regular file.\n", file_name.c_str());
+        return false;
+    }
+
+    // if dst_path is a existed directroy, move directly.
+    if (exists(dst_path) && is_directory(dst_path)) {
+        if (dst_path.back() != path::preferred_separator)  dst_path += path::preferred_separator;
+        rename(src_path, dst_path + file_name);
+        printf("mv: Success.\n");
+        return true;
+    }
+
+    if (src_path == dst_path) {
+        printf("mv: '%s' and '%s' are the same file.\n", file_name.c_str(), file_name.c_str());
+        return false;
+    } 
+
+    // if the directory is not existed
+    if (dst_path.back() == path::preferred_separator) {
+        if (!exists(dst_path)) {
+            printf("mv: '%s': Not a directory.\n", dst_path.c_str());
+            return false;
+        }
+    }    
+
+    string new_name = dst_path.substr(dst_path.find_last_of((char)path::preferred_separator) + 1);
+    // cout << "debug: " << new_name << endl;
+    dst_path.erase(dst_path.find_last_of((char)path::preferred_separator) + 1);
+    // cout << "debug: " << dst_path << endl;
+    if (exists(dst_path)) {
+        json temp;
+        ifstream input(src_path);
+        if (!input.is_open()) {
+            printf("mv: '%s' file open failed.\n", file_name.c_str());
+            input.close();
+            return false;
+        }
+        input >> temp;
+        input.close();
+
+        temp["name"] = new_name;
+        ofstream output(src_path);
+        if (!output.is_open()) {
+            printf("mv: '%s' file open failed.\n", file_name.c_str());
+            output.close();
+            return false;
+        }
+        output << setw(4) << temp;
+        output.close();
+
+        rename(src_path, dst_path + new_name);
+        printf("mv: Success.\n");
+        return true;
+    }
+    else {
+        printf("mv: '%s': Not a directory.\n", dst_path.c_str());
+        return false;
+    }
+
+}
+
+ /**
+ * @brief copy a file from the src_path to the dst_path
+ * 
+ * @param src_path the source path of a file
+ * @param dst_path the destination path of the file
+ * @return bool
+ */
+bool FileOperation::copy_file(string src_path, string dst_path) {
+    if (!exists(src_path)) {
+        printf("cp: Cannot find the source file.\n");
+        return false;
+    }
+    string file_name = src_path.substr(src_path.find_last_of((char)path::preferred_separator) + 1);
+
+    if (is_directory(src_path)) {
+        printf("cp: '%s' is a directory.\n", file_name.c_str());
+        return false;
+    }
+
+    if (!is_regular_file(src_path)) {
+        printf("cp: '%s' is not a regular file.\n", file_name.c_str());
+        return false;
+    }
+
+    // if dst_path is a existed directroy, move directly.
+    if (exists(dst_path) && is_directory(dst_path)) {
+        if (dst_path.back() != path::preferred_separator)  dst_path += path::preferred_separator;
+        if (src_path == dst_path + file_name) {
+            printf("cp: '%s' and '%s' are the same file.\n", file_name.c_str(), (dst_path + file_name).c_str());
+            return false;
+        }
+        copy(src_path, dst_path + file_name);
+        printf("cp: Success.\n");
+        return true;
+    }
+
+    if (src_path == dst_path) {
+        printf("cp: '%s' and '%s' are the same file.\n", file_name.c_str(), file_name.c_str());
+        return false;
+    } 
+
+    // if the directory is not existed
+    if (dst_path.back() == path::preferred_separator) {
+        if (!exists(dst_path)) {
+            printf("cp: '%s': Not a directory.\n", dst_path.c_str());
+            return false;
+        }
+    }    
+
+    string new_name = dst_path.substr(dst_path.find_last_of((char)path::preferred_separator) + 1);
+    // cout << "debug: " << new_name << endl;
+    dst_path.erase(dst_path.find_last_of((char)path::preferred_separator) + 1);
+    // cout << "debug: " << dst_path << endl;
+    if (exists(dst_path)) {
+        json temp;
+        ifstream input(src_path);
+        if (!input.is_open()) {
+            printf("cp: '%s' file open failed.\n", file_name.c_str());
+            input.close();
+            return false;
+        }
+        input >> temp;
+        input.close();
+
+        temp["name"] = new_name;
+        ofstream output(dst_path + new_name);
+        if (!output.is_open()) {
+            printf("cp: '%s' file open failed.\n", file_name.c_str());
+            output.close();
+            return false;
+        }
+        output << setw(4) << temp;
+        output.close();
+
+        printf("cp: Success.\n");
+        return true;
+    }
+    else {
+        printf("cp: '%s': Not a directory.\n", dst_path.c_str());
+        return false;
+    }
 }
 
 #endif
