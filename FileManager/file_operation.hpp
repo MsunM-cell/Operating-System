@@ -105,7 +105,13 @@ public:
      */
     bool copy_file(string src_path, string dst_path);
 
-
+    /**
+     * @brief chang the directory command (like 'cd' in the Linux)
+     * 
+     * @param dir_path the target dir_path (absolute or relative)
+     * @return void
+     */
+    void cd_command(string dir_path);
 
 private:
     FileManager* file_manager;  // The pointer to a FileManager instance
@@ -588,4 +594,62 @@ bool FileOperation::copy_file(string src_path, string dst_path) {
     }
 }
 
+/**
+ * @brief chang the directory command (like 'cd' in the Linux)
+ * 
+ * @param dir_path the target dir_path (absolute or relative)
+ * @return void
+ */
+void FileOperation::cd_command(string dir_path) {
+    string tmp = dir_path;
+    if (tmp.front() == (char)path::preferred_separator) 
+        tmp.erase(0, 1);
+    tmp = file_manager->get_absolute_working_path() + tmp;
+    if (!exists(tmp)) {
+        printf("cd: '%s' Not such directory.\n", dir_path.c_str());
+        return;
+    }
+    if (string::npos == STRING(canonical((path)tmp)).find(file_manager->home_path))
+        return;
+
+    // if the dir_path is absolute
+    if (dir_path.front() == (char)path::preferred_separator) {
+        string target_path = file_manager->home_path + dir_path;
+        if (exists(target_path)) {
+            if (is_directory(target_path)) {
+                file_manager->working_path = dir_path;
+                if (dir_path.back() != (char)path::preferred_separator)
+                    file_manager->working_path += (char)path::preferred_separator;
+                return;
+            }
+            else {
+                printf("cd: '%s' is not a directory.\n", dir_path.c_str());
+                return;
+            }
+        }
+        else {
+            printf("cd: '%s' Not such directory.\n", dir_path.c_str());
+            return;
+        }
+    }
+
+    // if the dir_path is relative
+    string target_path = file_manager->get_absolute_working_path() + dir_path;
+    if (exists(target_path)) {
+        if (is_directory(target_path)) {
+            path p = target_path;
+            // cout << "DEBUG: " << STRING(p) << endl;
+            file_manager->working_path = STRING(canonical(p)).substr(file_manager->home_path.size());
+            // cout << "DEBUG: " << file_manager->working_path << endl;
+            if (dir_path.back() != (char)path::preferred_separator)
+                file_manager->working_path += (char)path::preferred_separator;
+        }
+        else {
+            printf("cd: '%s' is not a directory.\n", dir_path.c_str());
+        }
+    }
+    else {
+        printf("cd: '%s' Not such directory.\n", dir_path.c_str());
+    } 
+}
 #endif
