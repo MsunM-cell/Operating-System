@@ -21,9 +21,6 @@ typedef pair<int, int> PII;
 //内存大小
 const int memory_size = 32 * 1024;
 
-//模拟内存
-char memory[memory_size];
-
 //空闲分区链的node
 typedef struct free_block_node
 {
@@ -37,14 +34,18 @@ bool cmp1(PII x, PII y) { return x.second == y.second ? x.first < y.first : x.se
 //地址递增排序方法
 bool cmp2(PII x, PII y) { return x.first < y.first; }
 
+//内存管理主类
 class MemoryManager
 {
 public:
+  //模拟内存
+  char memory[memory_size];
   virtual void allocate_proc_mem(PCB &p) = 0;
   virtual void deallocate_proc_mem(PCB &p) = 0;
   virtual void init_manager() = 0;
 };
 
+//动态分区分配管理
 class BlockMemoryManager : public MemoryManager
 {
 private:
@@ -53,7 +54,7 @@ private:
   //进程和首地址对应表
   map<int, int> pid2addr;
   //当前分配策略，0为首次适应，1为最佳适应
-  int adjust_mode = 0;
+  int adjust_mode = 1;
   //读取配置文件，修改分配策略
   void modify_tactic(int new_mode) { adjust_mode = new_mode; }
   //初始化该内存管理系统
@@ -76,6 +77,8 @@ public:
   void print_list();
 };
 
+
+//基本分页管理
 class BasicPageManager : public MemoryManager
 {
 private:
@@ -101,7 +104,7 @@ public:
   BasicPageManager() { init_manager(); }
   ~BasicPageManager() { puts("Exit the basic page system"); }
   //分配页表内存
-  void create_pagetable(PCB &p);
+  int create_pagetable(PCB &p);
   //回收页表内存
   void delete_pagetable(PCB &p);
   //分配进程内存

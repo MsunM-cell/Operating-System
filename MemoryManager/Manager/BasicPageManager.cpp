@@ -16,7 +16,7 @@ void BasicPageManager::init_manager()
 }
 
 //分配页表内存
-void BasicPageManager::create_pagetable(PCB &p)
+int BasicPageManager::create_pagetable(PCB &p)
 {
   int size = p.size;
   int itemnum = ceil((double)size / page_size);        //页表项数目=程序逻辑页数
@@ -49,10 +49,12 @@ void BasicPageManager::create_pagetable(PCB &p)
     }
     p.pagetable_addr = s_idle * page_size;
     p.pagetable_len = itemnum;
+    return 0;
   }
   else
   {
     printf("%d : process is too large to load in memory!\n\n", p.id);
+    return -1;
   }
 }
 
@@ -63,6 +65,9 @@ void BasicPageManager::delete_pagetable(PCB &p)
   {
     //页表内存清零
     memset(memory + p.pagetable_addr, 0, sizeof(char) * p.pagetable_len * PageTableItem_Byte); //
+    int t = ceil((double)p.pagetable_len * PageTableItem_Byte / page_size);
+    for (int i = 0; i < t; ++i)
+      bitmap ^= 1 << (i + p.pagetable_addr / page_size); // bitmap也要修改
     p.pagetable_addr = -1;
     p.pagetable_len = 0;
   }
@@ -75,7 +80,12 @@ void BasicPageManager::delete_pagetable(PCB &p)
 //为进程分配内存，注意页表也放在内存中
 void BasicPageManager::allocate_proc_mem(PCB &p)
 {
-  create_pagetable(p);
+  int ret = create_pagetable(p);
+  if (ret == -1)
+  {
+    printf("%d : process has no pagetable in memory!\n\n", p.id);
+    return;
+  }
   int cnt = 0;
   for (int i = 0; i < total_page_num; ++i)
     if (!((bitmap >> i) & 1))
@@ -107,7 +117,7 @@ void BasicPageManager::deallocate_proc_mem(PCB &p)
   for (int i = 0; i < m; ++i)
   {
     int j = f + i * PageTableItem_Byte;
-    char *temp_chr;
+    //char *temp_chr;
     //从页表中提取一个页表项
     // strncpy(temp_chr, memory + j, PageTableItem_Byte);
     int pageid = memory[j];
@@ -121,7 +131,7 @@ void BasicPageManager::print_frame()
 {
   puts("**********Here's the use table of memory frame**********");
   for (int i = 0; i < total_page_num; i++)
-    printf("%d ", (bitmap >> i) & 1); // 1表示使用，0表示未使用
+    printf("block #%d    %d\n", i, (bitmap >> i) & 1); // 1表示使用，0表示未使用
   puts("\n*************************end***************************\n");
 }
 
@@ -177,8 +187,13 @@ int main()
   test(bpm, q);
   test(bpm, u);
   bpm.deallocate_proc_mem(q);
+  bpm.print_frame();
   test(bpm, v);
   test(bpm, q);
+  bpm.deallocate_proc_mem(p);
+  bpm.deallocate_proc_mem(u);
+  bpm.deallocate_proc_mem(v);
+  bpm.print_frame();
 
   return 0;
 }

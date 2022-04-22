@@ -11,6 +11,7 @@
 #include <cmath>
 #include <windows.h>
 #include <string>
+#include <map>
 
 #include "../lib/sys.h"
 using namespace std;
@@ -31,9 +32,9 @@ using namespace std;
 
 
 // CPU是否在使用，可扩展为数组
-bool CPU[2];
+bool CPU;
 // IO设备是否在使用，可扩展为数组
-bool IO[2];
+bool IO;
 
 // 全局变量
 // 保存目前活跃的PCB
@@ -50,12 +51,16 @@ public:
     ProcManagerFCFS() = default;
     ~ProcManagerFCFS();
     void getFcfsInfo();
-    void getFcfsInfo(int pid);
+    PCB* getFcfsInfo(int pid);
     int getQueueSize();
 private:
     vector <PCB*> fcfsQueue;
+    map<string,int> commandMap;
     void run(PCB *p);
-    string getCommand();
+    string getCommand(PCB *p);
+    void initCmdMap();
+    void useCPU(int time);
+    void useIO(int time);
 };
 
 // RR队列类
@@ -73,7 +78,7 @@ public:
     void downLevel(PCB* target,ProcManagerFCFS* fcfs);
     int scheduling(ProcManagerFCFS* fcfs);
     void getInfo();
-    void getInfo(int pid);
+    PCB* getInfo(int pid);
 };
 
 
