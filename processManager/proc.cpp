@@ -210,7 +210,7 @@ string ProcManagerFCFS::getCommand(PCB *p){
     p->pc += 1;
     char tmp = accessMemory(p->id,p->pc);
     if(tmp == '#'){
-        return ;
+        return command;
     }
     while(tmp != '\n' && tmp != '#'){
         command += tmp;
