@@ -201,12 +201,23 @@ void ProcManagerFCFS::runProcManager(){
 }
 
 /*** 
- * @brief not written yet
+ * @brief 获得下一条指令
  * @param {NULL}
  * @return {NULL}
  */
 string ProcManagerFCFS::getCommand(PCB *p){
-    return "aaa";
+    p->pc += 1;
+    string command = "";
+    char tmp = accessMemory(p->id,p->pc);
+    if(tmp == '#'){
+        return ;
+    }
+    while(tmp != '\n' && tmp != '#'){
+        command += tmp;
+        char tmp = accessMemory(p->id,p->pc);
+        p->pc += 1;
+    }
+    return command;
 }
 
 
@@ -218,21 +229,25 @@ string ProcManagerFCFS::getCommand(PCB *p){
  * @return {NULL}
  */
 void ProcManagerFCFS::run(PCB *p){
-    // 因为还没定文件格式，run函数暂时没有办法写
-    string command = getCommand(p);
-    int time = 10;
-    switch(this->commandMap[command]){
-        case 1:
-            break;
-        case 2:
-            break;
-        case 3:
-            useCPU(time);
-            break;
-        case 4:
-            useIO(time);
-            break;
-
+    // 目前就是等一个内存接口了
+    while(true){
+        string command = getCommand(p);
+        if(command == ""){
+            return ;
+        }
+        int time = 10;
+        switch(this->commandMap[command]){
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                useCPU(time);
+                break;
+            case 4:
+                useIO(time);
+                break;
+        }
     }
     return ;
 }
