@@ -94,8 +94,8 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
                 // 时间片到
                 cur_pcb->status = READY;
                 cur_pcb->time_need -= TIME_SLICE;
-                printf("[%ld]Pid %d time out! Still need %d.\n", clock() - system_start, cur_pcb->id,
-                       cur_pcb->time_need);
+                // printf("[%ld]Pid %d time out! Still need %d.\n", clock() - system_start, cur_pcb->id,
+                    //    cur_pcb->time_need);
                 // 判断一下是否使用了过多的时间片,是则降级
                 cur_pcb->slice_cnt++;
                 if (cur_pcb->slice_cnt == MAX_CNT)
@@ -110,10 +110,8 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
             {
                 // 需要的时间小于完整的时间片，完成后从队列中删除该项
                 Sleep(cur_pcb->time_need);
-                // cur_pcb->time_need = -1;
                 cur_pcb->status = DEAD;
-                printf("[%ld]Pid %d time out! No time need.\n", clock() - system_start, cur_pcb->id);
-                // delete cur_pcb;
+                // printf("[%ld]Pid %d time out! No time need.\n", clock() - system_start, cur_pcb->id);
                 ProcManager::getInstance().freePCB(cur_pcb);
                 it = this->rr_que.erase(it);
             }
@@ -221,6 +219,7 @@ void ProcManagerFCFS::run(PCB *p){
     // 因为还没定文件格式，run函数暂时没有办法写
     string command = getCommand(p);
     int time = 10;
+    
     switch(this->commandMap[command]){
         case 1:
             break;
@@ -612,29 +611,29 @@ ProcManager& ProcManager::getInstance()
     return instance;
 }
 
-int main()
-{
-    // RRQueue test_queue(5,2);
-    // 系统开始计时，实际应该更早
-    system_start = clock();
-    cout << setiosflags(ios::left);
-    printf("[%ld]This is a test\n", clock() - system_start);
+// int main()
+// {
+//     // RRQueue test_queue(5,2);
+//     // 系统开始计时，实际应该更早
+//     system_start = clock();
+//     cout << setiosflags(ios::left);
+//     printf("[%ld]This is a test\n", clock() - system_start);
 
 
-    cout << "ps all" << endl;
-    ProcManager::getInstance().ps();
-    cout << "ps 3" << endl;
-    ProcManager::getInstance().ps(3);
-    cout <<"kill test\n";
-    ProcManager::getInstance().kill(3);
-    ProcManager::getInstance().ps();
-    cout <<"run test\n";
-    ProcManager::getInstance().run("run_test");
-    ProcManager::getInstance().ps();
-    ProcManager::getInstance().scheduling();
-    ProcManager::getInstance().ps();
+//     cout << "ps all" << endl;
+//     ProcManager::getInstance().ps();
+//     cout << "ps 3" << endl;
+//     ProcManager::getInstance().ps(3);
+//     cout <<"kill test\n";
+//     ProcManager::getInstance().kill(3);
+//     ProcManager::getInstance().ps();
+//     cout <<"run test\n";
+//     ProcManager::getInstance().run("run_test");
+//     ProcManager::getInstance().ps();
+//     ProcManager::getInstance().scheduling();
+//     ProcManager::getInstance().ps();
 
 
-    // system("pause");
-    return 0;
-}
+//     // system("pause");
+//     return 0;
+// }
