@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-14 17:11:21
+ * @LastEditTime: 2022-04-14 19:53:59
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -48,16 +48,16 @@ PageMemoryManager::~PageMemoryManager()
  * @param {int} pid
  * @return {该进程对应的页表}
  */
-vector<tableItem *> *PageMemoryManager::getProcessPageTable(int pid)
+vector<PageTableItem *> *PageMemoryManager::getProcessPageTable(int pid)
 {
     auto iter = tableMap.find(pid);
-    vector<tableItem *> *pageTable;
+    vector<PageTableItem *> *pageTable;
     if (iter == tableMap.end())
     {
         return nullptr;
-        // pageTable = new vector<tableItem *>;
+        // pageTable = new vector<PageTableItem *>;
         // tableMap[pid] = pageTable;
-        // // tableMap.insert(pair<int, vector<tableItem *> *>(pid, pageTable));
+        // // tableMap.insert(pair<int, vector<PageTableItem *> *>(pid, pageTable));
     }
     else
     {
@@ -74,8 +74,9 @@ vector<tableItem *> *PageMemoryManager::getProcessPageTable(int pid)
  */
 int PageMemoryManager::createProcess(unsigned int pid, long long length)
 {
-    vector<tableItem *> *pageTable = new vector<tableItem *>;
+    vector<PageTableItem *> *pageTable = new vector<PageTableItem *>;
     tableMap[pid] = pageTable;
+    
     int allocPageNum = length % PAGE_SIZE == 0 ? length / PAGE_SIZE : length / PAGE_SIZE + 1;
     if (PAGE_NUM - occupiedPageNum < allocPageNum) //剩余内存不足
     {
@@ -97,7 +98,7 @@ int PageMemoryManager::createProcess(unsigned int pid, long long length)
         if (!bitMap[i])
         {
             bitMap[i] = true;
-            tableItem *item = new tableItem;
+            PageTableItem *item = new PageTableItem;
             item->pageNo = i;
             item->isChange = 0;
             item->isInMemory = false;
@@ -131,10 +132,10 @@ bool PageMemoryManager::memoryFree(unsigned int pid, long long address, long lon
 bool PageMemoryManager::freeAll(unsigned int pid)
 {
     MyFileManager *fileManager = MyFileManager::getInstance();
-    vector<tableItem *> *mPageTable = getProcessPageTable(pid);
+    vector<PageTableItem *> *mPageTable = getProcessPageTable(pid);
     for (int i = 0; i < mPageTable->size(); i++)
     {
-        tableItem *ti = mPageTable->at(i);
+        PageTableItem *ti = mPageTable->at(i);
         //如果在内存中
         if (ti->isInMemory)
         {
@@ -167,7 +168,7 @@ bool PageMemoryManager::freeAll(unsigned int pid)
  */
 char PageMemoryManager::accessMemory(unsigned int pid, long long address)
 { 
-    vector<tableItem *> *pageTable = getProcessPageTable(pid);
+    vector<PageTableItem *> *pageTable = getProcessPageTable(pid);
     if (!pageTable)
     {
         stringstream ss;
@@ -183,7 +184,7 @@ char PageMemoryManager::accessMemory(unsigned int pid, long long address)
         Log::logI(TAG, ss.str());
         return 0;
     }
-    tableItem *ti = pageTable->at(temp);
+    PageTableItem *ti = pageTable->at(temp);
     //如果不在内存中
     if (!ti->isInMemory)
     {
@@ -210,7 +211,7 @@ char PageMemoryManager::accessMemory(unsigned int pid, long long address)
 bool PageMemoryManager::write(long long logicalAddress, const void *src, long long size, unsigned int pid)
 {
 
-    vector<tableItem *> *pageTable = getProcessPageTable(pid);
+    vector<PageTableItem *> *pageTable = getProcessPageTable(pid);
 
     if (!pageTable)
     {
@@ -227,7 +228,7 @@ bool PageMemoryManager::write(long long logicalAddress, const void *src, long lo
         Log::logE(TAG, ss.str());
         return false;
     }
-    tableItem *ti = pageTable->at(logicalAddress / PAGE_SIZE);
+    PageTableItem *ti = pageTable->at(logicalAddress / PAGE_SIZE);
     if (!ti->isInMemory)
     {
         if (!pageFault(pid, ti))
@@ -276,10 +277,10 @@ int PageMemoryManager::getOccupiedPageNum()
 /**
  * @brief 申请进行LRU换页
  * @param {unsigned int} pid 进程pid
- * @param {tableItem*} 需要访问页表项
+ * @param {PageTableItem*} 需要访问页表项
  * @return {true为成功}
  */
-bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
+bool PageMemoryManager::pageFault(unsigned int pid, PageTableItem *ti)
 {
 
     stringstream logMSG;
@@ -335,7 +336,7 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
         return false;
     }
 
-    tableItem *oldTableItem = frameTableItem->getLogicalPage();
+    PageTableItem *oldTableItem = frameTableItem->getLogicalPage();
     oldTableItem->isInMemory = false;
 
     //被修改过，或者没有换出过，需要写入文件中
@@ -489,7 +490,7 @@ void PageMemoryManager::stuff(unsigned int pid)
         src[i] = c;
     }
     Log::stopLog(); //暂时将日志输出阈值调到最高，以防stuff过程中输出太多信息
-    vector<tableItem *> *table = getProcessPageTable(pid);
+    vector<PageTableItem *> *table = getProcessPageTable(pid);
     for (int i = 0; i < table->size(); i++)
     {
         write(i * PAGE_SIZE, src, PAGE_SIZE, pid);

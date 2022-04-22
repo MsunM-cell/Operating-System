@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-08 17:19:30
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-13 16:17:25
+ * @LastEditTime: 2022-04-14 19:46:25
  * @FilePath: \Operating-System\MemoryManager\include\tableItem.h
  */
 
@@ -9,16 +9,13 @@
 #define TABLEITEM
 
 class FrameTableItem;
-struct tableItem
+struct PageTableItem
 {
     FrameTableItem *frame;
-    // TODO:有没有必要？
-    long long pageNo;
-    bool isInMemory;
-    bool isChange;
-    //等于-1则表示不在外存中
-    long long swapAddress;
-    bool isLock;
+    long long pageNo;      // TODO:有没有必要？
+    bool isInMemory;       //是否在内存中
+    bool isChange;         //修改位
+    long long swapAddress; //等于-1则表示不在外存中
 };
 
 #endif

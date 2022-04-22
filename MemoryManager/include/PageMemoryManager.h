@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-14 18:16:26
+ * @LastEditTime: 2022-04-14 19:49:06
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #ifndef PAGE_MEMORY_MANAGER
@@ -25,6 +25,7 @@ private:
 
     //逻辑页的使用位图
     bool *bitMap;
+    
     //物理内存
     char *memory;
 
@@ -39,20 +40,20 @@ private:
     //使用getInstance可获得该实例
     static PageMemoryManager *instance;
 
-    //记录帧使用情况，双向的...循环的...
+    //LRU链表头及尾
     FrameTableItem *LRU_StackHead, *LRU_StackTail;
 
     // pid--页表映射
-    map<int, vector<tableItem *> *> tableMap;
+    map<int, vector<PageTableItem *> *> tableMap;
 
     //帧表
     vector<FrameTableItem *> frameTable;
 
-    vector<tableItem *> *getProcessPageTable(int pid);
+    vector<PageTableItem *> *getProcessPageTable(int pid);
 
     void useFrame(FrameTableItem *frameTableItem);
     void initPageTable();
-    bool pageFault(unsigned int pid, tableItem *ti);
+    bool pageFault(unsigned int pid, PageTableItem *ti);
 public:
     static PageMemoryManager *getInstance();
     PageMemoryManager();
