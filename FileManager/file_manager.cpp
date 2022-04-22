@@ -457,7 +457,7 @@ bool FileManager::add_json_node_to_tree(string path, json node)
 
 /**
  * @brief delete the json node from the file_system_tree
- * 
+ *
  * @param path the path of the file (absolute)
  * @return bool
  */
@@ -529,8 +529,8 @@ json FileManager::path2dict(string file_path)
 
 /**
  * @brief just a demo for disk seek
- * 
- * @param seek_algo 
+ *
+ * @param seek_algo
  */
 void FileManager::get_file_demo(string seek_algo)
 {
@@ -540,15 +540,17 @@ void FileManager::get_file_demo(string seek_algo)
         this->disk.FCFS(seek_queue);
     else if (seek_algo == "SSTF")
         this->disk.SSTF(seek_queue);
+    else if (seek_algo == "SCAN")
+        this->disk.SCAN(seek_queue);
 }
 
 /**
  * @brief get file info
- * 
+ *
  * @param file_path file path relative to home
  * @param mode read or write
  * @param seek_algo seek algorithm
- * @return json 
+ * @return json
  */
 json FileManager::get_file(string file_path, string mode, string seek_algo)
 {
@@ -596,7 +598,7 @@ json FileManager::get_file(string file_path, string mode, string seek_algo)
     }
     else // file not exist
         printf("file: cannot access '%s': No such file or directory\n", file_name.c_str());
-    
+
     return {};
 }
 
@@ -614,7 +616,7 @@ Disk::Disk(int block_size, int track_num, int sector_num)
     this->track_size = sector_num;  // default 12
     this->head_pointer = 12;        // default 12
 
-    this->seek_speed = 0.1;  // default 0.1 ms
+    this->seek_speed = 0.1; // default 0.1 ms
     this->rotate_speed = 4; // default 4 ms
     // for Windows, it is Sleep function
     // for Linux and Unix, it is usleep function
@@ -714,21 +716,49 @@ void Disk::SSTF(vector<pair<int, int>> seek_queue)
     this->seek_by_queue(seek_queue);
 }
 
+/**
+ * @brief SCAN
+ *
+ * @param seek_queue
+ */
+void Disk::SCAN(vector<pair<int, int>> seek_queue)
+{
+    vector<pair<int, int>> temp_seek_queue;
+    sort(seek_queue.begin(), seek_queue.end());
+    int first_location = -1;
+    for (int i = 0; i < seek_queue.size(); i++)
+        if (seek_queue[i].first >= this->head_pointer)
+        {
+            first_location = i;
+            break;
+        }
+    temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin() + first_location, seek_queue.end());
+
+    if (temp_seek_queue != seek_queue)
+    {
+        temp_seek_queue.push_back({this->track_num, -1});
+        reverse(seek_queue.begin(), seek_queue.begin() + first_location);
+        temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin(), seek_queue.begin() + first_location);
+        seek_queue = temp_seek_queue;
+    }
+
+    this->seek_by_queue(seek_queue);
+}
+
 int main()
 {
     FileManager fm(512, 200, 12);
-    // json a = fm.get_file("/a.txt", "r", "FCFS");
-    // cout << setw(4) << a << endl;
-    // fm.set_disk_head_pointer(12);
-    // fm.get_file_demo("FCFS");
+    // fm.print_file_system_tree(fm.home_path);
+    fm.set_disk_head_pointer(50);
+    fm.get_file_demo("SCAN");
     // fm.set_disk_head_pointer(12);
     // fm.get_file_demo("SSTF");
-    Disk d(512, 200, 12);
-    vector<pair<int, int>> seek_queue;
-    seek_queue.push_back({100, 1});
-    seek_queue.push_back({40, 1});
-    seek_queue.push_back({60, 1});
-    seek_queue.push_back({10, 1});
-    d.SSTF(seek_queue);
+    // Disk d(512, 200, 12);
+    // vector<pair<int, int>> seek_queue;
+    // seek_queue.push_back({100, 1});
+    // seek_queue.push_back({40, 1});
+    // seek_queue.push_back({60, 1});
+    // seek_queue.push_back({10, 1});
+    // d.SSTF(seek_queue);
     return 0;
 }
