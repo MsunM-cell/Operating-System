@@ -329,6 +329,7 @@ void ProcManagerFCFS::initCmdMap(){
 
 void ProcManagerFCFS::useCPU(string command){
     int time = atoi(command.c_str());
+    cout << "use CPU " << time << endl;
     if(CPU){
         CPU = false;
         Sleep(time);
