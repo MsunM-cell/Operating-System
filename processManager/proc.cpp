@@ -206,8 +206,8 @@ void ProcManagerFCFS::runProcManager(){
  * @return {NULL}
  */
 string ProcManagerFCFS::getCommand(PCB *p){
-    p->pc += 1;
     string command = "";
+    p->pc += 1;
     char tmp = accessMemory(p->id,p->pc);
     if(tmp == '#'){
         return ;
