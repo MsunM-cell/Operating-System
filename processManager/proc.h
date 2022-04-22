@@ -48,7 +48,7 @@ public:
     void addToQueue(PCB *p);
     void runProcManager();
     bool removeProc(int pid);
-    ProcManagerFCFS() = default;
+    ProcManagerFCFS();
     ~ProcManagerFCFS();
     void getFcfsInfo();
     PCB* getFcfsInfo(int pid);
@@ -59,8 +59,9 @@ private:
     void run(PCB *p);
     string getCommand(PCB *p);
     void initCmdMap();
-    void useCPU(int time);
-    void useIO(int time);
+    void useCPU(string command);
+    void useIO(string command);
+    string splitCommand(string command);
 };
 
 // RR队列类

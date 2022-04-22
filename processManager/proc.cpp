@@ -208,16 +208,22 @@ void ProcManagerFCFS::runProcManager(){
 string ProcManagerFCFS::getCommand(PCB *p){
     string command = "";
     p->pc += 1;
-    char tmp = accessMemory(p->id,p->pc);
-    if(tmp == '#'){
-        return command;
-    }
-    while(tmp != '\n' && tmp != '#'){
-        command += tmp;
-        char tmp = accessMemory(p->id,p->pc);
-        p->pc += 1;
-    }
-    return command;
+    // char tmp = accessMemory(p->id,p->pc);
+    // if(tmp == '#'){
+    //     return command;
+    // }
+    // while(tmp != '\n' && tmp != '#'){
+    //     command += tmp;
+    //     char tmp = accessMemory(p->id,p->pc);
+    //     p->pc += 1;
+    // }
+    // return command;
+    return "IO 50";
+}
+
+string ProcManagerFCFS::splitCommand(string command){
+    int pos = command.find(' ');
+    return command.substr(0,pos);
 }
 
 
@@ -235,17 +241,18 @@ void ProcManagerFCFS::run(PCB *p){
         if(command == ""){
             return ;
         }
-        int time = 10;
-        switch(this->commandMap[command]){
+        string cmd = splitCommand(command);
+        command = command.substr(cmd.length() + 1,command.length());
+        switch(this->commandMap[cmd]){
+            case 0:
+                break;
             case 1:
                 break;
             case 2:
+                useCPU(command);
                 break;
             case 3:
-                useCPU(time);
-                break;
-            case 4:
-                useIO(time);
+                useIO(command);
                 break;
         }
     }
@@ -315,12 +322,13 @@ int ProcManagerFCFS::getQueueSize(){
 void ProcManagerFCFS::initCmdMap(){
     commandMap["WriteMemory"] = 0;
     commandMap["AccessMemory"] = 1;
-    commandMap["IO"] = 2;
-    commandMap["CPU"] = 3;
+    commandMap["CPU"] = 2;
+    commandMap["IO"] = 3;
     return ;
 }
 
-void ProcManagerFCFS::useCPU(int time){
+void ProcManagerFCFS::useCPU(string command){
+    int time = atoi(command.c_str());
     if(CPU){
         CPU = false;
         Sleep(time);
@@ -335,7 +343,9 @@ void ProcManagerFCFS::useCPU(int time){
     return ;
 }
 
-void ProcManagerFCFS::useIO(int time){
+void ProcManagerFCFS::useIO(string command){
+    int time = atoi(command.c_str());
+    cout << "IO Time" << " " << time << endl;
     if(IO){
         IO = false;
         Sleep(time);
@@ -348,6 +358,10 @@ void ProcManagerFCFS::useIO(int time){
         IO = true;
     }
     return ;
+}
+
+ProcManagerFCFS::ProcManagerFCFS(){
+    initCmdMap();
 }
 
 
