@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 16:54:08
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-14 19:47:07
+ * @LastEditTime: 2022-04-09 13:52:05
  * @FilePath: \Operating-System\MemoryManager\include\FrameTableItem.h
  */
 
@@ -12,12 +12,12 @@ class FrameTableItem
 {
 private:
     long long frameAddress; //该帧的真实物理地址，可以通过Memory[frameAddress]直接访问
-    PageTableItem *logicalPage;
+    tableItem *logicalPage;
     unsigned int frameNo;
     unsigned int pid;
     // TODO:是否删除occupied
     bool occupied; //是否被某个进程占用 ， 或者说直接使用pid来判断
-    bool locked;//禁止换出
+    bool locked;
 
 public:
     FrameTableItem *next, *pre;
@@ -26,12 +26,12 @@ public:
     void setFrameAddress(long long frameAddress) { this->frameAddress = frameAddress; }
     long long getFrameAddress() { return frameAddress; }
     void setPid(unsigned int pid) { this->pid = pid; }
-    void setLogicalPage(PageTableItem *ti) { this->logicalPage = ti; }
+    void setLogicalPage(tableItem *ti) { this->logicalPage = ti; }
     /**
      * @brief 
      * @return {该帧对应的页}
      */    
-    PageTableItem *getLogicalPage() { return logicalPage; }
+    tableItem *getLogicalPage() { return logicalPage; }
     bool isOccupied() { return occupied; }
     void unUsed()
     {

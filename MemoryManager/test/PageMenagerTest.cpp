@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-08 15:22:17
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-14 16:52:00
+ * @LastEditTime: 2022-04-13 21:30:19
  * @FilePath: \Operating-System\MemoryManager\test\PageMenagerTest.cpp
  */
 #include "../Manager/PageMemoryManager.cpp"
@@ -13,7 +13,7 @@ int main(int argc, char const *argv[])
 {
 
     ifstream file;
-    file.open("testProgram2.txt", ios::in);
+    file.open("testProgram.txt", ios::in);
     char *buffer = new char[256];
     string TAG = "TestShell";
     while (!file.eof())

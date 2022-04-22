@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-13 15:22:51
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-14 17:34:31
+ * @LastEditTime: 2022-04-13 21:31:01
  * @FilePath: \Operating-System\MemoryManager\test\PageManagerTest-MutiThread.cpp
  * @copyright: Copyright (C) 2022 shimaoZeng. All rights reserved.
  */
@@ -115,7 +115,7 @@ void test()
         case 's':
         {
             stringstream ss;
-            ss << "stuff all pages of process " << pid;
+            ss << "stuff all pages of process " << pid << endl;
             Log::logI(TAG, ss.str());
             PageMemoryManager::getInstance()->stuff(pid);
             break;
@@ -123,7 +123,7 @@ void test()
         case 'f':
         {
             stringstream ss;
-            ss << "delete process  " << pid;
+            ss << "delete process  " << pid << endl;
             Log::logI(TAG, ss.str());
             PageMemoryManager::getInstance()->freeAll(pid);
             break;
@@ -135,13 +135,12 @@ void test()
             break;
         }
     }
-    Sleep(3);
     STOP = 1;
 }
 
 void monitor()
 {
-    string lastMsg = "..";
+
     ofstream log;
     log.open("MemoryUsage.txt", ios::out);
     log << setw(12) << left << "time"
@@ -155,17 +154,9 @@ void monitor()
     PageMemoryManager *manager = PageMemoryManager::getInstance();
     while (!STOP)
     {
-        stringstream ss;
-        ss  << setw(12) << Log::getTimeString()  << " "
+        log << setw(12) << Log::getTimeString() << " "
             << setw(6) << manager->getOccupiedPageNum() << " "
             << setw(9) << manager->getUsedFrameNum() << " "
             << setw(7) << manager->getSwapPageNum() << endl;
-        
-        if(ss.str()==lastMsg){
-            continue;
-        }else{
-            lastMsg = ss.str();
-            log <<ss.str();
-        }
     }
 }
