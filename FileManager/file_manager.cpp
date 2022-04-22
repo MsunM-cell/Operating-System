@@ -542,6 +542,8 @@ void FileManager::get_file_demo(string seek_algo)
         this->disk.SSTF(seek_queue);
     else if (seek_algo == "SCAN")
         this->disk.SCAN(seek_queue);
+    else if (seek_algo == "C-SCAN")
+        this->disk.C_SCAN(seek_queue);
 }
 
 /**
@@ -736,7 +738,7 @@ void Disk::SCAN(vector<pair<int, int>> seek_queue)
 
     if (temp_seek_queue != seek_queue)
     {
-        temp_seek_queue.push_back({this->track_num, -1});
+        temp_seek_queue.push_back({this->track_num - 1, -1});
         reverse(seek_queue.begin(), seek_queue.begin() + first_location);
         temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin(), seek_queue.begin() + first_location);
         seek_queue = temp_seek_queue;
@@ -745,12 +747,45 @@ void Disk::SCAN(vector<pair<int, int>> seek_queue)
     this->seek_by_queue(seek_queue);
 }
 
+/**
+ * @brief C-SCAN
+ *
+ * @param seek_queue
+ */
+void Disk::C_SCAN(vector<pair<int, int>> seek_queue)
+{
+    vector<pair<int, int>> temp_seek_queue;
+    sort(seek_queue.begin(), seek_queue.end());
+    int first_location = -1;
+    for (int i = 0; i < seek_queue.size(); i++)
+        if (seek_queue[i].first >= this->head_pointer)
+        {
+            first_location = i;
+            break;
+        }
+    temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin() + first_location, seek_queue.end());
+
+    if (temp_seek_queue != seek_queue)
+    {
+        temp_seek_queue.push_back({this->track_num - 1, -1});
+        temp_seek_queue.push_back({0, -1});
+        temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin(), seek_queue.begin() + first_location);
+        seek_queue = temp_seek_queue;
+    }
+
+    for (auto i : seek_queue)
+        cout << i.first << " ";
+    cout << endl;
+
+    this->seek_by_queue(seek_queue);
+}
+
 int main()
 {
     FileManager fm(512, 200, 12);
     // fm.print_file_system_tree(fm.home_path);
-    fm.set_disk_head_pointer(50);
-    fm.get_file_demo("SCAN");
+    fm.set_disk_head_pointer(110);
+    fm.get_file_demo("C-SCAN");
     // fm.set_disk_head_pointer(12);
     // fm.get_file_demo("SSTF");
     // Disk d(512, 200, 12);
