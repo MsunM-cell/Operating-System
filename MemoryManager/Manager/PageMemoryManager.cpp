@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-14 19:53:59
+ * @LastEditTime: 2022-04-22 19:14:10
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -25,13 +25,12 @@ PageMemoryManager::PageMemoryManager()
 {
     LRU_StackHead = nullptr;
     LRU_StackTail = nullptr;
-    memory = new char[PHYSICAL_MEMORY_SIZE];
     char *pointer = memory;
-    for (int i = 0; i < FRAME_NUM; i++)
+    for (int i = 0; i < mem_config.FRAME_NUM; i++)
     {
         FrameTableItem *frameTableItem = new FrameTableItem((long long)pointer, i);
         frameTable.push_back(frameTableItem);
-        pointer += PAGE_SIZE;
+        pointer += mem_config.PAGE_SIZE;
     }
     usedFrameNum = 0;
     swapPageNum = 0;
@@ -72,25 +71,25 @@ vector<PageTableItem *> *PageMemoryManager::getProcessPageTable(int pid)
  * @param {long long} length
  * @return {1为成功，否则失败}
  */
-int PageMemoryManager::createProcess(unsigned int pid, long long length)
+int PageMemoryManager::createProcess(PCB &p)
 {
     vector<PageTableItem *> *pageTable = new vector<PageTableItem *>;
-    tableMap[pid] = pageTable;
-    
-    int allocPageNum = length % PAGE_SIZE == 0 ? length / PAGE_SIZE : length / PAGE_SIZE + 1;
+    tableMap[p.id] = pageTable;
+
+    int allocPageNum = p.size % mem_config.PAGE_SIZE == 0 ? p.size / mem_config.PAGE_SIZE : p.size / mem_config.PAGE_SIZE + 1;
+    int PAGE_NUM = mem_config.FRAME_NUM + mem_config.SWAP_MEMORY_SIZE / mem_config.PAGE_SIZE;
     if (PAGE_NUM - occupiedPageNum < allocPageNum) //剩余内存不足
     {
         stringstream ss;
-        ss << "There is no enough Memory(" << (PAGE_NUM - occupiedPageNum) * PAGE_SIZE << ") for " << length;
+        ss << "There is no enough Memory(" << (PAGE_NUM - occupiedPageNum) * mem_config.PAGE_SIZE << ") for " << p.size;
         Log::logE(TAG, ss.str());
         return -1;
     }
 
-
     int findPage = 0;
 
     stringstream ss;
-    ss << "process " << pid << " ask for " << allocPageNum << " pages";
+    ss << "process " << p.id << " ask for " << allocPageNum << " pages";
     Log::logV(TAG, ss.str());
 
     for (int i = 0; i < PAGE_NUM && findPage < allocPageNum; i++)
@@ -113,52 +112,61 @@ int PageMemoryManager::createProcess(unsigned int pid, long long length)
 }
 
 /**
- * @brief 释放内存，目前暂时未想好释放内存的操作，可能只能从末尾释放
- * @param {int} pid
- * @param {int} address，释放开始地址，暂时无法实现
- * @param {int} length 单位为 B
- * @return {1为成功，否则失败}
+ * @brief : 释放进程
+ * @param {PCB} &p
+ * @return {*}
  */
-bool PageMemoryManager::memoryFree(unsigned int pid, long long address, long long length)
-{
-    return false;
+int PageMemoryManager::freeProcess(PCB &p){
+
 }
 
-/**
- * @brief 进程结束时，释放该进程所有的内存
- * @param {int} pid
- * @return {true为成功}
- */
-bool PageMemoryManager::freeAll(unsigned int pid)
-{
-    MyFileManager *fileManager = MyFileManager::getInstance();
-    vector<PageTableItem *> *mPageTable = getProcessPageTable(pid);
-    for (int i = 0; i < mPageTable->size(); i++)
-    {
-        PageTableItem *ti = mPageTable->at(i);
-        //如果在内存中
-        if (ti->isInMemory)
-        {
-            FrameTableItem *frameTableItem = ti->frame;
-            frameTableItem->unUsed();
-            usedFrameNum--;
-        }
-        //如果在外存中
-        else if (ti->swapAddress != 0)
-        {
-            char *res = fileManager->readData(ti->swapAddress, PAGE_SIZE);
-            delete res;
-            swapPageNum--;
-        }
-        //如果根本没有分配过内存
-        else
-        {
-        }
-        bitMap[ti->pageNo] = false;
-        occupiedPageNum--;
-    }
-    return true;
-}
+// /**
+//  * @brief 释放内存，目前暂时未想好释放内存的操作，可能只能从末尾释放
+//  * @param {int} pid
+//  * @param {int} address，释放开始地址，暂时无法实现
+//  * @param {int} length 单位为 B
+//  * @return {1为成功，否则失败}
+//  */
+// bool PageMemoryManager::memoryFree(unsigned int pid, long long address, long long length)
+// {
+//     return false;
+// }
+
+// /**
+//  * @brief 进程结束时，释放该进程所有的内存
+//  * @param {int} pid
+//  * @return {true为成功}
+//  */
+// bool PageMemoryManager::freeAll(unsigned int pid)
+// {
+//     MyFileManager *fileManager = MyFileManager::getInstance();
+//     vector<PageTableItem *> *mPageTable = getProcessPageTable(pid);
+//     for (int i = 0; i < mPageTable->size(); i++)
+//     {
+//         PageTableItem *ti = mPageTable->at(i);
+//         //如果在内存中
+//         if (ti->isInMemory)
+//         {
+//             FrameTableItem *frameTableItem = ti->frame;
+//             frameTableItem->unUsed();
+//             usedFrameNum--;
+//         }
+//         //如果在外存中
+//         else if (ti->swapAddress != 0)
+//         {
+//             char *res = fileManager->readData(ti->swapAddress,mem_config.PAGE_SIZE);
+//             delete res;
+//             swapPageNum--;
+//         }
+//         //如果根本没有分配过内存
+//         else
+//         {
+//         }
+//         bitMap[ti->pageNo] = false;
+//         occupiedPageNum--;
+//     }
+//     return true;
+// }
 
 /**
  * @brief 从指定地址读取一个字节
@@ -166,8 +174,8 @@ bool PageMemoryManager::freeAll(unsigned int pid)
  * @param {int} address
  * @return {一个字节}
  */
-char PageMemoryManager::accessMemory(unsigned int pid, long long address)
-{ 
+char PageMemoryManager::accessMemory(int pid, long long address)
+{
     vector<PageTableItem *> *pageTable = getProcessPageTable(pid);
     if (!pageTable)
     {
@@ -176,11 +184,11 @@ char PageMemoryManager::accessMemory(unsigned int pid, long long address)
         Log::logE(TAG, ss.str());
         return 0;
     }
-    int temp = address / PAGE_SIZE;
+    int temp = address / mem_config.PAGE_SIZE;
     if (temp + 1 > pageTable->size())
     {
         stringstream ss;
-        ss << "process " << pid << " asscess memory address " << address << " out of bound (" << pageTable->size() * PAGE_SIZE << ")";
+        ss << "process " << pid << " asscess memory address " << address << " out of bound (" << pageTable->size() * mem_config.PAGE_SIZE << ")";
         Log::logI(TAG, ss.str());
         return 0;
     }
@@ -195,7 +203,7 @@ char PageMemoryManager::accessMemory(unsigned int pid, long long address)
         }
     }
     FrameTableItem *frameTableItem = ti->frame;
-    long long realAddress = frameTableItem->getFrameAddress() + address % PAGE_SIZE;
+    long long realAddress = frameTableItem->getFrameAddress() + address % mem_config.PAGE_SIZE;
     useFrame(frameTableItem);
     return *(char *)realAddress;
 }
@@ -208,7 +216,7 @@ char PageMemoryManager::accessMemory(unsigned int pid, long long address)
  * @param {unsigned int} pid
  * @return {true为成功}
  */
-bool PageMemoryManager::write(long long logicalAddress, const void *src, long long size, unsigned int pid)
+int PageMemoryManager::writeMemory(long long logicalAddress, const void *src, long long size, unsigned int pid)
 {
 
     vector<PageTableItem *> *pageTable = getProcessPageTable(pid);
@@ -220,15 +228,15 @@ bool PageMemoryManager::write(long long logicalAddress, const void *src, long lo
         Log::logE(TAG, ss.str());
         return 0;
     }
-    
-    if (logicalAddress + size > pageTable->size() * PAGE_SIZE)
+
+    if (logicalAddress + size > pageTable->size() * mem_config.PAGE_SIZE)
     {
         stringstream ss;
-        ss << "process " << pid << " write logical address [" << logicalAddress << " - " << logicalAddress + size << "] out of bound (" << pageTable->size() * PAGE_SIZE - 1 << ")!";
+        ss << "process " << pid << " write logical address [" << logicalAddress << " - " << logicalAddress + size << "] out of bound (" << pageTable->size() *mem_config.PAGE_SIZE - 1 << ")!";
         Log::logE(TAG, ss.str());
         return false;
     }
-    PageTableItem *ti = pageTable->at(logicalAddress / PAGE_SIZE);
+    PageTableItem *ti = pageTable->at(logicalAddress /mem_config.PAGE_SIZE);
     if (!ti->isInMemory)
     {
         if (!pageFault(pid, ti))
@@ -238,7 +246,7 @@ bool PageMemoryManager::write(long long logicalAddress, const void *src, long lo
     }
 
     FrameTableItem *frameTableItem = ti->frame;
-    long long realAddress = frameTableItem->getFrameAddress() + logicalAddress % PAGE_SIZE;
+    long long realAddress = frameTableItem->getFrameAddress() + logicalAddress %mem_config.PAGE_SIZE;
     memcpy((void *)realAddress, src, size);
     useFrame(frameTableItem);
     ti->isChange = true;
@@ -256,6 +264,7 @@ bool PageMemoryManager::write(long long logicalAddress, const void *src, long lo
 void PageMemoryManager::initPageTable()
 {
     occupiedPageNum = 0;
+    int PAGE_NUM = mem_config.FRAME_NUM + mem_config.SWAP_MEMORY_SIZE/mem_config.PAGE_SIZE;
     bitMap = new bool[PAGE_NUM];
     for (int i = 0; i < PAGE_NUM; i++)
     {
@@ -343,7 +352,7 @@ bool PageMemoryManager::pageFault(unsigned int pid, PageTableItem *ti)
     if (oldTableItem->isChange || oldTableItem->swapAddress == -1)
     {
 
-        long long address = MyFileManager::getInstance()->write((char *)frameTableItem->getFrameAddress(), PAGE_SIZE);
+        long long address = MyFileManager::getInstance()->write((char *)frameTableItem->getFrameAddress(),mem_config.PAGE_SIZE);
         if (address != -1)
         {
             oldTableItem->isInMemory = false;
@@ -361,11 +370,11 @@ bool PageMemoryManager::pageFault(unsigned int pid, PageTableItem *ti)
     //否则需要换入
     if (ti->swapAddress != -1)
     {
-        char *data = MyFileManager::getInstance()->readData(ti->swapAddress, PAGE_SIZE);
+        char *data = MyFileManager::getInstance()->readData(ti->swapAddress,mem_config.PAGE_SIZE);
         if (data)
         {
 
-            memcpy((char *)frameTableItem->getFrameAddress(), data, PAGE_SIZE);
+            memcpy((char *)frameTableItem->getFrameAddress(), data,mem_config.PAGE_SIZE);
             delete data;
             swapPageNum--;
 
@@ -483,9 +492,9 @@ void PageMemoryManager::useFrame(FrameTableItem *frameTableItem)
  */
 void PageMemoryManager::stuff(unsigned int pid)
 {
-    char *src = new char[PAGE_SIZE];
+    char *src = new char[mem_config.PAGE_SIZE];
     char c = -1;
-    for (int i = 0; i < PAGE_SIZE; i++)
+    for (int i = 0; i <mem_config.PAGE_SIZE; i++)
     {
         src[i] = c;
     }
@@ -493,7 +502,7 @@ void PageMemoryManager::stuff(unsigned int pid)
     vector<PageTableItem *> *table = getProcessPageTable(pid);
     for (int i = 0; i < table->size(); i++)
     {
-        write(i * PAGE_SIZE, src, PAGE_SIZE, pid);
+        writeMemory(i *mem_config.PAGE_SIZE, src,mem_config.PAGE_SIZE, pid);
     }
     Log::continueLog();
     delete src;

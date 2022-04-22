@@ -1,0 +1,13 @@
+
+{
+  "content": {
+    "Page_size": 1024,
+    "Virtual_memory": "yes",
+    "Block_algorithm": "FF",
+    "Swap_memory_size":4194304
+  },
+  "name": "config_file",
+  "priority": 1,
+  "size": 500,
+  "type": "erwx"
+}
