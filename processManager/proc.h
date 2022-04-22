@@ -32,9 +32,9 @@ using namespace std;
 
 
 // CPU是否在使用，可扩展为数组
-bool CPU;
+bool CPU = true;
 // IO设备是否在使用，可扩展为数组
-bool IO;
+bool IO = true;
 
 // 全局变量
 // 保存目前活跃的PCB
