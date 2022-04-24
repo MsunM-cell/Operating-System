@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include <filesystem>
+#include <algorithm>
 #include <cmath>
 #include "json.hpp" // JSON for Modern C++
 #include <chrono>
@@ -122,6 +123,18 @@ public:
      * @param seek_queue
      */
     void SSTF(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief SCAN
+     * 
+     * @param seek_queue 
+     */
+    void SCAN(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief C-SCAN
+     * 
+     * @param seek_queue 
+     */
+    void C_SCAN(vector<pair<int, int>> seek_queue);
 
 private:
     int sector_size;     // the size of a sector

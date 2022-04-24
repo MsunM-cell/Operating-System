@@ -371,10 +371,15 @@ bool FileOperation::modify_file_type(string file_path, unsigned int mode) {
     }
     output << setw(4) << temp;
     output.close();
-
-    printf("chmod '%s' success.\n", file_name.c_str());
-
-    return true;
+    if (file_manager->delete_json_node_from_tree(file_path)) {
+        if (file_manager->add_json_node_to_tree(file_path, temp)) {
+            printf("chmod '%s' success.\n", file_name.c_str());
+            return true;
+        }
+    }
+    
+    printf("chmod: opearte the system tree failed.\n");
+    return false;
 }
 
 /**
@@ -425,9 +430,14 @@ bool FileOperation::rename_file(string file_path, string new_name) {
 
     string file_dir = file_path.substr(0, file_path.find_last_of((char)path::preferred_separator) + 1);
     // cout << "debug: " << file_dir << endl;
-    rename(file_path, file_dir + new_name);
+    if (file_manager->delete_json_node_from_tree(file_path)) {
+        rename(file_path, file_dir + new_name);
+        if (file_manager->add_json_node_to_tree(file_dir + new_name, temp))
+            return true;
+    }
     
-    return true;
+    printf("rename: operate the system tree failed.\n");
+    return false;
 }
 
 /**
