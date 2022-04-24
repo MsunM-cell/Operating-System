@@ -429,7 +429,7 @@ bool FileManager::add_json_node_to_tree(string path, json node)
     // cout << relative_path << endl;
 
     int index = -1; // -1 means not exists file_separator, >= 0 means exists.
-    while ((index = relative_path.find('/')) != -1)
+    while ((index = relative_path.find(path::preferred_separator)) != -1)
     {
         string temp_dir = relative_path.substr(0, index); // get the next directory name
         relative_path = relative_path.substr(index + 1);  // get the next path of the next directory
@@ -469,7 +469,7 @@ bool FileManager::delete_json_node_from_tree(string path)
     // cout << relative_path << endl;
 
     int index = -1; // -1 means not exists file_separator, >= 0 means exists.
-    while ((index = relative_path.find('/')) != -1)
+    while ((index = relative_path.find(path::preferred_separator)) != -1)
     {
         string temp_dir = relative_path.substr(0, index); // get the next directory name
         relative_path = relative_path.substr(index + 1);  // get the next path of the next directory
