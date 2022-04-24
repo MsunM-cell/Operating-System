@@ -252,7 +252,7 @@ public:
     /**
      * @brief add the json node to the file_system_tree
      *
-     * @param path the path of the file
+     * @param path the path of the file(absolute)
      * @return bool
      */
     bool add_json_node_to_tree(string path, json node);
