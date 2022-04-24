@@ -79,15 +79,6 @@ public:
     bool modify_file_type(string file_path, unsigned int mode);
 
     /**
-     * @brief rename the file
-     * 
-     * @param file_path the absolute file path
-     * @param new_name the new name of the file
-     * @return bool
-     */
-    bool rename_file(string file_path, string new_name);
-
-    /**
      * @brief move a file from the src_path to the dst_path
      * 
      * @param src_path the source path of a file
@@ -156,6 +147,7 @@ bool FileOperation::create_file(string current_dir, string file_name)
     new_file["content"] = "";
 
     string relative_path = cur_file_path.substr(file_manager->home_path.size());
+    cout << relative_path << endl;
     if (file_manager->fill_file_into_blocks(new_file, relative_path, 0)) {
         ofstream outfile(cur_file_path, ios::out);
         outfile << std::setw(4) << new_file;
@@ -372,7 +364,9 @@ bool FileOperation::modify_file_type(string file_path, unsigned int mode) {
     output << setw(4) << temp;
     output.close();
     if (file_manager->delete_json_node_from_tree(file_path)) {
+        puts("DEBUG: delete_json_node done!");
         if (file_manager->add_json_node_to_tree(file_path, temp)) {
+            puts("DEBUG: add_json_node done!");
             printf("chmod '%s' success.\n", file_name.c_str());
             return true;
         }
@@ -382,63 +376,6 @@ bool FileOperation::modify_file_type(string file_path, unsigned int mode) {
     return false;
 }
 
-/**
- * @brief rename the file
- * 
- * @param file_path the absolute file path
- * @param new_name the new name of the file
- * @return bool
- */
-bool FileOperation::rename_file(string file_path, string new_name) {
-    if (!exists(file_path)) {
-        printf("Cannot find the file which will be renamed.\n");
-        return false;
-    }
-    string file_name = file_path.substr(file_path.find_last_of((char)path::preferred_separator) + 1);
-
-    if (is_directory(file_path)) {
-        printf("'%s' is a directory.\n", file_name.c_str());
-        return false;
-    }
-
-    if (!is_regular_file(file_path)) {
-        printf("'%s' is not a regular file.\n", file_name.c_str());
-        return false;
-    }
-
-    json temp;
-    ifstream input(file_path);
-    if (!input.is_open()) {
-        printf("'%s' file open failed.\n", file_name.c_str());
-        input.close();
-        return false;
-    }
-
-    input >> temp;
-    input.close();
-    temp["name"] = new_name;
-    
-    ofstream output(file_path);
-    if (!output.is_open()) {
-        printf("'%s' file open failed.\n", file_name.c_str());
-        output.close();
-        return false;
-    }
-
-    output << setw(4) << temp;
-    output.close();
-
-    string file_dir = file_path.substr(0, file_path.find_last_of((char)path::preferred_separator) + 1);
-    // cout << "debug: " << file_dir << endl;
-    if (file_manager->delete_json_node_from_tree(file_path)) {
-        rename(file_path, file_dir + new_name);
-        if (file_manager->add_json_node_to_tree(file_dir + new_name, temp))
-            return true;
-    }
-    
-    printf("rename: operate the system tree failed.\n");
-    return false;
-}
 
 /**
  * @brief move a file from the src_path to the dst_path
@@ -448,10 +385,23 @@ bool FileOperation::rename_file(string file_path, string new_name) {
  * @return bool
  */
 bool FileOperation::move_file(string src_path, string dst_path) {
+    string relative_src_path = src_path.substr(file_manager->home_path.size());
+
     if (!exists(src_path)) {
         printf("mv: Cannot find the source file.\n");
         return false;
     }
+
+    json temp;
+    ifstream input(src_path);
+    if (!input.is_open()) {
+        printf("mv: Cannot open the source file.\n");
+        input.close();
+        return false;
+    }
+    input >> temp;
+    input.close();
+
     string file_name = src_path.substr(src_path.find_last_of((char)path::preferred_separator) + 1);
 
     if (is_directory(src_path)) {
@@ -467,15 +417,26 @@ bool FileOperation::move_file(string src_path, string dst_path) {
     // if dst_path is a existed directroy, move directly.
     if (exists(dst_path) && is_directory(dst_path)) {
         if (dst_path.back() != path::preferred_separator)  dst_path += path::preferred_separator;
-        rename(src_path, dst_path + file_name);
-        printf("mv: Success.\n");
-        return true;
+        if (file_manager->delete_json_node_from_tree(src_path) && file_manager->delete_file_from_blocks(relative_src_path)) {
+            puts("DEBUG: delete_json_node done!");
+            puts("DEBUG: delete_file_blocks done!");
+            rename(src_path, dst_path + file_name);
+            if (file_manager->add_json_node_to_tree(dst_path + file_name, temp) 
+                    && file_manager->fill_file_into_blocks(temp, dst_path.substr(file_manager->home_path.size()), 0)) {
+                puts("DEBUG: add_json_node done!");
+                printf("mv: Success.\n");
+                return true;
+            }
+            else {
+                printf("mv: add json or fill blocks error.\n");
+                return false;
+            }
+        }
+        else {
+            printf("mv: delete json error.\n");
+            return false;
+        }
     }
-
-    if (src_path == dst_path) {
-        printf("mv: '%s' and '%s' are the same file.\n", file_name.c_str(), file_name.c_str());
-        return false;
-    } 
 
     // if the directory is not existed
     if (dst_path.back() == path::preferred_separator) {
@@ -483,23 +444,21 @@ bool FileOperation::move_file(string src_path, string dst_path) {
             printf("mv: '%s': Not a directory.\n", dst_path.c_str());
             return false;
         }
-    }    
+    } 
+
+    // if src_path is the same as the dst_path, return.
+    if (src_path == dst_path) {
+        printf("mv: '%s' and '%s' are the same file.\n", file_name.c_str(), file_name.c_str());
+        return false;
+    } 
 
     string new_name = dst_path.substr(dst_path.find_last_of((char)path::preferred_separator) + 1);
     // cout << "debug: " << new_name << endl;
+
+    // the dst_path turns to the dst_path's dir
     dst_path.erase(dst_path.find_last_of((char)path::preferred_separator) + 1);
     // cout << "debug: " << dst_path << endl;
     if (exists(dst_path)) {
-        json temp;
-        ifstream input(src_path);
-        if (!input.is_open()) {
-            printf("mv: '%s' file open failed.\n", file_name.c_str());
-            input.close();
-            return false;
-        }
-        input >> temp;
-        input.close();
-
         temp["name"] = new_name;
         ofstream output(src_path);
         if (!output.is_open()) {
@@ -510,15 +469,32 @@ bool FileOperation::move_file(string src_path, string dst_path) {
         output << setw(4) << temp;
         output.close();
 
-        rename(src_path, dst_path + new_name);
-        printf("mv: Success.\n");
-        return true;
+        if (file_manager->delete_json_node_from_tree(src_path) && file_manager->delete_file_from_blocks(relative_src_path)) {
+            puts("DEBUG: delete_json_node done!");
+            puts("DEBUG: delete_file_blocks done!");
+            rename(src_path, dst_path + new_name);
+            if (file_manager->add_json_node_to_tree(dst_path + new_name, temp) 
+                    && file_manager->fill_file_into_blocks(temp, dst_path.substr(file_manager->home_path.size()) + new_name, 0)) {
+                puts("DEBUG: add_json_node done!");
+                puts("DEBUG: fill_file_blocks done!");
+                printf("mv: Success.\n");
+                return true;
+            }
+            else {
+                printf("mv: add json or fill blocks error.\n");
+                return false;
+            }
+        }
+        else {
+            printf("mv: delete json error.\n");
+            return false;
+        } 
     }
     else {
         printf("mv: '%s': Not a directory.\n", dst_path.c_str());
         return false;
     }
-
+    return false;
 }
 
  /**
@@ -545,6 +521,10 @@ bool FileOperation::copy_file(string src_path, string dst_path) {
         return false;
     }
 
+    if (src_path == dst_path) {
+        printf("cp: '%s' and '%s' are the same file.\n", file_name.c_str(), file_name.c_str());
+        return false;
+    } 
     // if dst_path is a existed directroy, move directly.
     if (exists(dst_path) && is_directory(dst_path)) {
         if (dst_path.back() != path::preferred_separator)  dst_path += path::preferred_separator;
@@ -553,14 +533,29 @@ bool FileOperation::copy_file(string src_path, string dst_path) {
             return false;
         }
         copy(src_path, dst_path + file_name);
-        printf("cp: Success.\n");
-        return true;
-    }
+        string relative_path = (dst_path + file_name).substr(file_manager->home_path.size());
 
-    if (src_path == dst_path) {
-        printf("cp: '%s' and '%s' are the same file.\n", file_name.c_str(), file_name.c_str());
-        return false;
-    } 
+        ifstream input(src_path);
+        if (!input.is_open()) {
+            printf("cp: open file failed.\n");
+            input.close();
+        }
+        json temp;
+        input >> temp;
+        input.close();
+
+        if (file_manager->add_json_node_to_tree(dst_path + file_name, temp) 
+                && file_manager->fill_file_into_blocks(temp, relative_path, 0)) {
+            puts("DEBUG: add_json_node done!");
+            puts("DEBUG: fill_file_blocks done!");
+            printf("cp: Success.\n");
+            return true;
+        }
+        else {
+            printf("cp: add json or fill blocks error.\n");
+            return false;
+        }
+    }
 
     // if the directory is not existed
     if (dst_path.back() == path::preferred_separator) {
@@ -568,10 +563,11 @@ bool FileOperation::copy_file(string src_path, string dst_path) {
             printf("cp: '%s': Not a directory.\n", dst_path.c_str());
             return false;
         }
-    }    
+    }  
 
     string new_name = dst_path.substr(dst_path.find_last_of((char)path::preferred_separator) + 1);
     // cout << "debug: " << new_name << endl;
+
     dst_path.erase(dst_path.find_last_of((char)path::preferred_separator) + 1);
     // cout << "debug: " << dst_path << endl;
     if (exists(dst_path)) {
@@ -595,13 +591,19 @@ bool FileOperation::copy_file(string src_path, string dst_path) {
         output << setw(4) << temp;
         output.close();
 
-        printf("cp: Success.\n");
-        return true;
+        if (file_manager->add_json_node_to_tree(dst_path + new_name, temp)
+                && file_manager->fill_file_into_blocks(temp, (dst_path + new_name).substr(file_manager->home_path.size()), 0)) {
+            puts("DEBUG: add_json_node done!");
+            puts("DEBUG: fill_file_blocks done!");
+            printf("cp: Success.\n");
+            return true;
+        }
     }
     else {
         printf("cp: '%s': Not a directory.\n", dst_path.c_str());
         return false;
     }
+    return false;
 }
 
 /**
