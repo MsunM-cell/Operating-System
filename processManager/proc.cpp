@@ -218,7 +218,7 @@ string ProcManagerFCFS::getCommand(PCB *p){
     //     p->pc += 1;
     // }
     // return command;
-    return "IO 50";
+    return "WriteMemory 100 5";
 }
 
 string ProcManagerFCFS::splitCommand(string command){
@@ -245,8 +245,10 @@ void ProcManagerFCFS::run(PCB *p){
         command = command.substr(cmd.length() + 1,command.length());
         switch(this->commandMap[cmd]){
             case 0:
+                writeMem(command);
                 break;
             case 1:
+                accessMem(command);
                 break;
             case 2:
                 useCPU(command);
@@ -358,6 +360,22 @@ void ProcManagerFCFS::useIO(string command){
         Sleep(time);
         IO = true;
     }
+    return ;
+}
+
+void ProcManagerFCFS::accessMem(string command){
+    int addr = atoi(command.c_str());
+    cout << "access Memory at addr" << " " << addr << endl;
+    return ;
+}
+
+void ProcManagerFCFS::writeMem(string command){
+    int pos = command.find(' ');
+    string addr = command.substr(0,pos);
+    string num = command.substr(pos + 1,command.length());
+    int number = atoi(num.c_str());
+    int address = atoi(addr.c_str());
+    cout << "write Memory at addr" << " " << addr << " with number " << number << endl;
     return ;
 }
 
