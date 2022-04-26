@@ -218,6 +218,7 @@ string ProcManagerFCFS::getCommand(PCB *p){
     //     p->pc += 1;
     // }
     // return command;
+    
     return "WriteMemory 100 5";
 }
 
