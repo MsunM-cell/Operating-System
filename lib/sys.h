@@ -2,6 +2,8 @@
  * 系统共用头文件
  */
 
+#include<ctime>
+
 #ifndef SYS_H
 #define SYS_H
 

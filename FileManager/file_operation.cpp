@@ -1,113 +1,4 @@
-
-#ifndef FILE_OPERATION_HPP
-#define FILE_OPERATION_HPP
-
-#include "file_manager.h"
-
-// FileOperaion class
-class FileOperation
-{
-public:
-    /**
-     * @brief construct a new FileOperation object with a FileManager pointer
-     * 
-     * @param fm a pointer to FileManager instance
-     */
-    FileOperation(FileManager* fm);
-
-    /**
-     * @brief create a new file
-     * 
-     * @param current_dir the working directory (absolute)
-     * @param file_name the name of the file
-     * @return bool
-     */
-    bool create_file(string current_dir, string file_name);
-    
-    /**
-     * @brief delete a new file
-     * 
-     * @param current_dir the working directory (absolute)
-     * @param file_name the name of the file
-     * @return bool
-     */
-    bool delete_file(string current_dir, string file_name);
-
-    /**
-     * @brief create a new directory
-     * 
-     * @param current_dir the working directory (absolute)
-     * @param dir_name the name of the directory
-     * @return bool
-     */
-    bool create_dir(string currenet_dir, string dir_name);
-
-    /**
-     * @brief delete a new directory
-     * 
-     * @param current_dir the working directory (absolute)
-     * @param dir_name the name of the directory
-     * @return bool
-     */
-    bool delete_dir(string current_dir, string dir_name);
-
-    /**
-     * @brief traverse a directory recursively (make direct use of the public function in the FileManager)
-     * 
-     * @param dir the directory which needs to be traversed
-     * @param layer 
-     */
-    void tree(string dir, int layer = 0);
-
-    /**
-     * @brief return the size of the file, -1 means 'a existed path', -2 means 'is a directroy', 
-     *        -3 means 'file open error', else means the size of the file.
-     * 
-     * @param path the absolute of the file
-     * @return int 
-     */
-    int file_size(string path);
-
-    /**
-     * @brief modify the type of the file
-     * 
-     * @param file_path the absolute path of the file
-     * @param mode use a decimal number for a three-bit binary, 1 means the permission is not available. 
-     *             From the left to right is to read, write and execute.
-     * @return bool
-     */
-    bool modify_file_type(string file_path, unsigned int mode);
-
-    /**
-     * @brief move a file from the src_path to the dst_path
-     * 
-     * @param src_path the source path of a file
-     * @param dst_path the destination path of the file
-     * @return bool
-     */
-    bool move_file(string src_path, string dst_path);
-
-    /**
-     * @brief copy a file from the src_path to the dst_path
-     * 
-     * @param src_path the source path of a file
-     * @param dst_path the destination path of the file
-     * @return bool
-     */
-    bool copy_file(string src_path, string dst_path);
-
-    /**
-     * @brief chang the directory command (like 'cd' in the Linux)
-     * 
-     * @param dir_path the target dir_path (absolute or relative)
-     * @return void
-     */
-    void cd_command(string dir_path);
-
-private:
-    FileManager* file_manager;  // The pointer to a FileManager instance
-
-};
+#include "file_operation.h"
 
 /**
  * @brief construct a new FileOperation object with a FileManager pointer
@@ -177,6 +68,9 @@ bool FileOperation::create_file(string current_dir, string file_name)
  */
 bool FileOperation::delete_file(string current_dir, string file_name)
 {
+    if (current_dir.back() != path::preferred_separator)
+        current_dir.push_back(path::preferred_separator);
+
     string cur_file_path = current_dir + file_name;
     if (!exists(cur_file_path)) {
         printf("rm: '%s' No such file\n", file_name.c_str());
@@ -208,6 +102,9 @@ bool FileOperation::delete_file(string current_dir, string file_name)
  */
 bool FileOperation::create_dir(string current_dir, string dir_name)
 {
+    if (current_dir.back() != path::preferred_separator)
+        current_dir.push_back(path::preferred_separator);
+
     string cur_dir_path = current_dir + dir_name;
     if (exists(cur_dir_path)) {
         printf("Cannot create directory '%s': File exists\n", dir_name.c_str());
@@ -240,22 +137,30 @@ bool FileOperation::create_dir(string current_dir, string dir_name)
  */
 bool FileOperation::delete_dir(string current_dir, string dir_name)
 {
-    string cur_dir_path = current_dir + dir_name;
-    if (!exists(cur_dir_path)) {
-        printf("Cannot delete directory '%s': File not exists\n", dir_name.c_str());
+    if (current_dir.back() != path::preferred_separator)
+        current_dir.push_back(path::preferred_separator);
+    if (!exists(current_dir + dir_name)) {
+        printf("rm: '%s' No such directory.\n", dir_name.c_str());
         return false;
-    }
-
-    if (!filesystem::is_empty(cur_dir_path)) {
-        printf("rmdir: failed to remove '%s': Directory not empty\n", dir_name.c_str());
-        return false;
-    }
-
-    if (file_manager->delete_json_node_from_tree(cur_dir_path) && remove_all(cur_dir_path)) {
-        printf("Remove directory '%s' success.\n", dir_name.c_str());
-        return true;
     }
     
+    string cur_dir_path = current_dir + dir_name;
+    for (auto item: directory_iterator(path(cur_dir_path))) {
+        string file_path = STRING(item.path());
+        string file_name = STRING(item.path().filename());
+        
+        if (is_directory(file_path)) {
+            if (!delete_dir(cur_dir_path , file_name))   return false;
+        }
+        else {
+            if (!delete_file(cur_dir_path, file_name))  return false;
+        }
+    }
+    if (file_manager->delete_json_node_from_tree(cur_dir_path)) {
+        remove(cur_dir_path);
+        puts("DEBUG: delete dir");
+        return true;
+    }
     return false;
 }
 
@@ -621,7 +526,7 @@ void FileOperation::cd_command(string dir_path) {
         printf("cd: '%s' Not such directory.\n", dir_path.c_str());
         return;
     }
-    if (string::npos == (STRING(canonical((path)tmp))).find(file_manager->home_path))
+    if (string::npos == STRING(canonical((path)tmp)).find(file_manager->home_path))
         return;
 
     // if the dir_path is absolute
@@ -651,7 +556,7 @@ void FileOperation::cd_command(string dir_path) {
         if (is_directory(target_path)) {
             path p = target_path;
             // cout << "DEBUG: " << STRING(p) << endl;
-            file_manager->working_path = (STRING(canonical(p))).substr(file_manager->home_path.size());
+            file_manager->working_path = STRING(canonical(p)).substr(file_manager->home_path.size());
             // cout << "DEBUG: " << file_manager->working_path << endl;
             if (dir_path.back() != (char)path::preferred_separator)
                 file_manager->working_path += (char)path::preferred_separator;
@@ -664,4 +569,98 @@ void FileOperation::cd_command(string dir_path) {
         printf("cd: '%s' Not such directory.\n", dir_path.c_str());
     } 
 }
-#endif
+
+/**
+     * @brief move a directory from the src_path to the dst_path
+     * 
+     * @param src_path the absolute path of the directory
+     * @param dst_path the absolute path of the directory
+     * @return bool 
+     */
+bool FileOperation::move_dir(string src_path, string dst_path) {
+    if (!copy_dir(src_path, dst_path))
+        return false;
+    if (src_path.back() == path::preferred_separator)   src_path.pop_back();
+    string dir_name = src_path.substr(src_path.find_last_of(path::preferred_separator) + 1);
+    src_path.erase(src_path.find_last_of(path::preferred_separator));
+    if (!delete_dir(src_path, dir_name))
+        return false;
+    return true;
+}
+
+/**
+ * @brief copy a directory somewhere recursively
+ * 
+ * @param src_path the absolute source path of directory
+ * @param dst_path the absolute destination path of directory
+ * @return bool
+ */
+bool FileOperation::recursive_copy_dir(string src_path, string dst_path) {
+    if (dst_path.back() != path::preferred_separator)
+        dst_path.push_back(path::preferred_separator);
+
+    if (!exists(src_path)) {
+        printf("cp: '%s' No such directory\n", src_path.c_str());
+        return false;
+    }
+    for (auto item : directory_iterator(path(src_path))) {
+        string file_path = STRING(item.path());
+        string file_name = STRING(item.path().filename());
+        if (is_directory(file_path)) {
+            if (!create_dir(dst_path, file_name))   return false;
+            if (!recursive_copy_dir(file_path, dst_path + file_name))     return false;
+            puts("DEBUG: create dir.");
+        }
+        else {
+            copy_file(file_path, dst_path);
+            puts("DEBUG: copy file.");
+        }
+    }
+    return true;
+}
+
+/**
+ * @brief copy a directory somewhere safely
+ * 
+ * @param src_path the absolute source path of directory
+ * @param dst_path the absolute destination path of directory
+ * @return bool
+ */
+bool FileOperation::copy_dir(string src_path, string dst_path) {
+    if (!exists(src_path) || !is_directory(src_path)) {
+        printf("cp: '%s' No such directory.\n", src_path.c_str());
+        return false;
+    }
+    
+    if (src_path.back() == path::preferred_separator)   src_path.pop_back();
+    if (dst_path.back() == path::preferred_separator)   dst_path.pop_back();
+    if (!exists(dst_path)) {
+        if (!exists(dst_path.substr(0, dst_path.find_last_of(path::preferred_separator)))) {
+            printf("cp: '%s' No such directory.\n", dst_path.c_str());
+            return false;
+        }
+    }
+
+    string dst_dir_name = src_path.substr(src_path.find_last_of(path::preferred_separator) + 1);
+
+    if (!exists(dst_path)) {
+        dst_dir_name = dst_path.substr(dst_path.find_last_of(path::preferred_separator) + 1);
+        dst_path.erase(dst_path.find_last_of(path::preferred_separator));
+    } 
+    string tmp = file_manager->home_path + (char)path::preferred_separator + ".tmp";
+
+    if (!create_dir(file_manager->home_path + (char)path::preferred_separator, ".tmp"))
+        return false;
+    if (!recursive_copy_dir(src_path, tmp))
+        return false;
+    if (dst_path.back() != path::preferred_separator)
+        dst_path.push_back(path::preferred_separator);
+    if (!create_dir(dst_path, dst_dir_name))
+        return false;
+    if (!recursive_copy_dir(tmp, dst_path + dst_dir_name))
+        return false;
+    if (!delete_dir(file_manager->home_path + (char)path::preferred_separator, ".tmp"))
+        return false;
+
+    return true;
+}

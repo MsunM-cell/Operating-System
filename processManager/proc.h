@@ -61,6 +61,8 @@ private:
     void initCmdMap();
     void useCPU(string command);
     void useIO(string command);
+    void accessMem(string command);
+    void writeMem(string command);
     string splitCommand(string command);
 };
 

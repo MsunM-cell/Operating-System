@@ -1,8 +1,3 @@
-/**
- * @file testRR.cpp
- * @brief 有关于一级队列的一些尝试
- * @date 2022-03-25
- */
 #include "proc.h"
 using namespace std;
 
@@ -94,8 +89,8 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
                 // 时间片到
                 cur_pcb->status = READY;
                 cur_pcb->time_need -= TIME_SLICE;
-                printf("[%ld]Pid %d time out! Still need %d.\n", clock() - system_start, cur_pcb->id,
-                       cur_pcb->time_need);
+                // printf("[%ld]Pid %d time out! Still need %d.\n", clock() - system_start, cur_pcb->id,
+                //        cur_pcb->time_need);
                 // 判断一下是否使用了过多的时间片,是则降级
                 cur_pcb->slice_cnt++;
                 if (cur_pcb->slice_cnt == MAX_CNT)
@@ -190,8 +185,10 @@ void ProcManagerFCFS::runProcManager(){
         while(!fcfsQueue.empty()){
             PCB *p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
-            run(p);
-            // delete p;
+            // FIXME 无限循环，所以先注释掉了
+            // run(p);
+            Sleep(p->time_need);
+            cout << "pid:" << p->id << "shut in fcfs.\n";
             ProcManager::getInstance().freePCB(p);
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
@@ -202,8 +199,8 @@ void ProcManagerFCFS::runProcManager(){
 
 /*** 
  * @brief 获得下一条指令
- * @param {NULL}
- * @return {NULL}
+ * @param {PCB} p
+ * @return {string} command
  */
 string ProcManagerFCFS::getCommand(PCB *p){
     string command = "";
@@ -218,10 +215,13 @@ string ProcManagerFCFS::getCommand(PCB *p){
     //     p->pc += 1;
     // }
     // return command;
-    return "IO 50";
+    // 这个函数是用来取出内存中的一条指令
+    
+    return "WriteMemory 100 5";
 }
 
 string ProcManagerFCFS::splitCommand(string command){
+    // 这个函数用来取出指令字部分
     int pos = command.find(' ');
     return command.substr(0,pos);
 }
@@ -242,11 +242,14 @@ void ProcManagerFCFS::run(PCB *p){
             return ;
         }
         string cmd = splitCommand(command);
+        //剩下的是指令中的参数
         command = command.substr(cmd.length() + 1,command.length());
         switch(this->commandMap[cmd]){
             case 0:
+                writeMem(command);
                 break;
             case 1:
+                accessMem(command);
                 break;
             case 2:
                 useCPU(command);
@@ -319,6 +322,13 @@ int ProcManagerFCFS::getQueueSize(){
     return fcfsQueue.size();
 }
 
+
+
+/*** 
+ * @brief 
+ * @param {NULL}
+ * @return {NULL}
+ */
 void ProcManagerFCFS::initCmdMap(){
     commandMap["WriteMemory"] = 0;
     commandMap["AccessMemory"] = 1;
@@ -327,6 +337,13 @@ void ProcManagerFCFS::initCmdMap(){
     return ;
 }
 
+
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @return {NULL}
+ */
 void ProcManagerFCFS::useCPU(string command){
     int time = atoi(command.c_str());
     cout << "use CPU " << time << endl;
@@ -344,6 +361,13 @@ void ProcManagerFCFS::useCPU(string command){
     return ;
 }
 
+
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @return {NULL}
+ */
 void ProcManagerFCFS::useIO(string command){
     int time = atoi(command.c_str());
     cout << "IO Time" << " " << time << endl;
@@ -358,6 +382,37 @@ void ProcManagerFCFS::useIO(string command){
         Sleep(time);
         IO = true;
     }
+    return ;
+}
+
+
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @return {NULL}
+ */
+void ProcManagerFCFS::accessMem(string command){
+    int addr = atoi(command.c_str());
+    cout << "access Memory at addr" << " " << addr << endl;
+    return ;
+}
+
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @param {string} num
+ * @param {int} number
+ * @return {NULL}
+ */
+void ProcManagerFCFS::writeMem(string command){
+    int pos = command.find(' ');
+    string addr = command.substr(0,pos);
+    string num = command.substr(pos + 1,command.length());
+    int number = atoi(num.c_str());
+    int address = atoi(addr.c_str());
+    cout << "write Memory at addr" << " " << addr << " with number " << number << endl;
     return ;
 }
 
@@ -642,29 +697,29 @@ ProcManager& ProcManager::getInstance()
     return instance;
 }
 
-int main()
-{
-    // RRQueue test_queue(5,2);
-    // 系统开始计时，实际应该更早
-    system_start = clock();
-    cout << setiosflags(ios::left);
-    printf("[%ld]This is a test\n", clock() - system_start);
+// int main()
+// {
+//     // RRQueue test_queue(5,2);
+//     // 系统开始计时，实际应该更早
+//     system_start = clock();
+//     cout << setiosflags(ios::left);
+//     printf("[%ld]This is a test\n", clock() - system_start);
 
 
-    cout << "ps all" << endl;
-    ProcManager::getInstance().ps();
-    cout << "ps 3" << endl;
-    ProcManager::getInstance().ps(3);
-    cout <<"kill test\n";
-    ProcManager::getInstance().kill(3);
-    ProcManager::getInstance().ps();
-    cout <<"run test\n";
-    ProcManager::getInstance().run("run_test");
-    ProcManager::getInstance().ps();
-    ProcManager::getInstance().scheduling();
-    ProcManager::getInstance().ps();
+//     cout << "ps all" << endl;
+//     ProcManager::getInstance().ps();
+//     cout << "ps 3" << endl;
+//     ProcManager::getInstance().ps(3);
+//     cout <<"kill test\n";
+//     ProcManager::getInstance().kill(3);
+//     ProcManager::getInstance().ps();
+//     cout <<"run test\n";
+//     ProcManager::getInstance().run("run_test");
+//     ProcManager::getInstance().ps();
+//     ProcManager::getInstance().scheduling();
+//     ProcManager::getInstance().ps();
 
 
-    // system("pause");
-    return 0;
-}
+//     // system("pause");
+//     return 0;
+// }

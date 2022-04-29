@@ -1,5 +1,5 @@
 #include "file_manager.h"
-#include "file_operation.hpp"
+#include "file_operation.h"
 
 // compare each other on the basis of 2nd element of pairs
 // in ascending order
@@ -418,7 +418,7 @@ string FileManager::get_absolute_working_path()
 /**
  * @brief add the json node to the file_system_tree
  *
- * @param path the path of the file
+ * @param path the path of the file(absolute)
  * @return bool
  */
 bool FileManager::add_json_node_to_tree(string path, json node)
@@ -429,7 +429,7 @@ bool FileManager::add_json_node_to_tree(string path, json node)
     // cout << relative_path << endl;
 
     int index = -1; // -1 means not exists file_separator, >= 0 means exists.
-    while ((index = relative_path.find('/')) != -1)
+    while ((index = relative_path.find(path::preferred_separator)) != -1)
     {
         string temp_dir = relative_path.substr(0, index); // get the next directory name
         relative_path = relative_path.substr(index + 1);  // get the next path of the next directory
@@ -469,7 +469,7 @@ bool FileManager::delete_json_node_from_tree(string path)
     // cout << relative_path << endl;
 
     int index = -1; // -1 means not exists file_separator, >= 0 means exists.
-    while ((index = relative_path.find('/')) != -1)
+    while ((index = relative_path.find(path::preferred_separator)) != -1)
     {
         string temp_dir = relative_path.substr(0, index); // get the next directory name
         relative_path = relative_path.substr(index + 1);  // get the next path of the next directory
