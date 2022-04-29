@@ -1,8 +1,3 @@
-/**
- * @file testRR.cpp
- * @brief 有关于一级队列的一些尝试
- * @date 2022-03-25
- */
 #include "proc.h"
 using namespace std;
 
@@ -192,6 +187,7 @@ void ProcManagerFCFS::runProcManager(){
             //该函数是执行函数，暂时未定
             // FIXME 无限循环，所以先注释掉了
             // run(p);
+            Sleep(p->time_need);
             cout << "pid:" << p->id << "shut in fcfs.\n";
             ProcManager::getInstance().freePCB(p);
             auto it = fcfsQueue.begin();
@@ -203,8 +199,8 @@ void ProcManagerFCFS::runProcManager(){
 
 /*** 
  * @brief 获得下一条指令
- * @param {NULL}
- * @return {NULL}
+ * @param {PCB} p
+ * @return {string} command
  */
 string ProcManagerFCFS::getCommand(PCB *p){
     string command = "";
@@ -219,11 +215,13 @@ string ProcManagerFCFS::getCommand(PCB *p){
     //     p->pc += 1;
     // }
     // return command;
+    // 这个函数是用来取出内存中的一条指令
     
     return "WriteMemory 100 5";
 }
 
 string ProcManagerFCFS::splitCommand(string command){
+    // 这个函数用来取出指令字部分
     int pos = command.find(' ');
     return command.substr(0,pos);
 }
@@ -244,6 +242,7 @@ void ProcManagerFCFS::run(PCB *p){
             return ;
         }
         string cmd = splitCommand(command);
+        //剩下的是指令中的参数
         command = command.substr(cmd.length() + 1,command.length());
         switch(this->commandMap[cmd]){
             case 0:
@@ -323,6 +322,13 @@ int ProcManagerFCFS::getQueueSize(){
     return fcfsQueue.size();
 }
 
+
+
+/*** 
+ * @brief 
+ * @param {NULL}
+ * @return {NULL}
+ */
 void ProcManagerFCFS::initCmdMap(){
     commandMap["WriteMemory"] = 0;
     commandMap["AccessMemory"] = 1;
@@ -331,6 +337,13 @@ void ProcManagerFCFS::initCmdMap(){
     return ;
 }
 
+
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @return {NULL}
+ */
 void ProcManagerFCFS::useCPU(string command){
     int time = atoi(command.c_str());
     cout << "use CPU " << time << endl;
@@ -348,6 +361,13 @@ void ProcManagerFCFS::useCPU(string command){
     return ;
 }
 
+
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @return {NULL}
+ */
 void ProcManagerFCFS::useIO(string command){
     int time = atoi(command.c_str());
     cout << "IO Time" << " " << time << endl;
@@ -365,12 +385,27 @@ void ProcManagerFCFS::useIO(string command){
     return ;
 }
 
+
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @return {NULL}
+ */
 void ProcManagerFCFS::accessMem(string command){
     int addr = atoi(command.c_str());
     cout << "access Memory at addr" << " " << addr << endl;
     return ;
 }
 
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @param {string} num
+ * @param {int} number
+ * @return {NULL}
+ */
 void ProcManagerFCFS::writeMem(string command){
     int pos = command.find(' ');
     string addr = command.substr(0,pos);
