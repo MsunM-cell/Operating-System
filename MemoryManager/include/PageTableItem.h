@@ -1,13 +1,13 @@
 /*
  * @Date: 2022-04-01 15:07:33
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-01 15:28:02
- * @FilePath: \Operating-System\MemoryManager\Manager\pageTableItem.cpp
+ * @LastEditTime: 2022-04-28 20:02:27
+ * @FilePath: \Operating-System\MemoryManager\include\PageTableItem.h
  */
 class PageTableItem
 {
 private:
-    int pageNo;
+    int pageNo;//在进程逻辑空间内的页号
     bool isSwap;
     int accessTime;
     bool isChange;
@@ -15,7 +15,7 @@ private:
 
 public:
     PageTableItem *pre, *next;
-    PageTableItem(/* args */);
+    PageTableItem();
     ~PageTableItem();
 };
 
