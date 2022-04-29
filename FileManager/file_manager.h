@@ -291,6 +291,15 @@ public:
      * @return json
      */
     json get_file(string file_path, string mode, string seek_algo);
+    /**
+     * @brief simulate the paging process
+     * 
+     * @param file_path file path relative to home
+     * @param address starting address relative to file
+     * @param length the length of the data to be read
+     * @return bool
+     */
+    bool read_data(string file_path, int address, int length);
 
 private:
     Disk disk;             // disk

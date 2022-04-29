@@ -621,7 +621,7 @@ void FileOperation::cd_command(string dir_path) {
         printf("cd: '%s' Not such directory.\n", dir_path.c_str());
         return;
     }
-    if (string::npos == STRING(canonical((path)tmp)).find(file_manager->home_path))
+    if (string::npos == (STRING(canonical((path)tmp))).find(file_manager->home_path))
         return;
 
     // if the dir_path is absolute
@@ -651,7 +651,7 @@ void FileOperation::cd_command(string dir_path) {
         if (is_directory(target_path)) {
             path p = target_path;
             // cout << "DEBUG: " << STRING(p) << endl;
-            file_manager->working_path = STRING(canonical(p)).substr(file_manager->home_path.size());
+            file_manager->working_path = (STRING(canonical(p))).substr(file_manager->home_path.size());
             // cout << "DEBUG: " << file_manager->working_path << endl;
             if (dir_path.back() != (char)path::preferred_separator)
                 file_manager->working_path += (char)path::preferred_separator;

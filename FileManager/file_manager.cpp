@@ -605,6 +605,23 @@ json FileManager::get_file(string file_path, string mode, string seek_algo)
 }
 
 /**
+ * @brief simulate the paging process
+ *
+ * @param file_path file path relative to home
+ * @param address starting address relative to file
+ * @param length the length of the data to be read
+ * @return bool
+ */
+bool FileManager::read_data(string file_path, int address, int length)
+{
+    int last_address = address + length - 1;
+    int blocks_num = (int)this->file_blocks[file_path][1];
+    if (last_address < blocks_num * block_size)
+        return true;
+    return false;
+}
+
+/**
  * @brief Construct a new Disk object
  *
  * @param block_size the size of a block
@@ -773,10 +790,6 @@ void Disk::C_SCAN(vector<pair<int, int>> seek_queue)
         seek_queue = temp_seek_queue;
     }
 
-    for (auto i : seek_queue)
-        cout << i.first << " ";
-    cout << endl;
-
     this->seek_by_queue(seek_queue);
 }
 
@@ -784,8 +797,8 @@ int main()
 {
     FileManager fm(512, 200, 12);
     // fm.print_file_system_tree(fm.home_path);
-    fm.set_disk_head_pointer(110);
-    fm.get_file_demo("C-SCAN");
+    // fm.set_disk_head_pointer(110);
+    // fm.get_file_demo("C-SCAN");
     // fm.set_disk_head_pointer(12);
     // fm.get_file_demo("SSTF");
     // Disk d(512, 200, 12);

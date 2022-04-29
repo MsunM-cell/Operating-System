@@ -1,55 +1,84 @@
 /*
 @Author:Yuxing Long
-@Date:2022.4.13
+@Date:2022.4.28
 @Content:The basic page allocation
 */
 
-#include "memory.h"
+#include "page.h"
 #include "../../lib/sys.h"
 
 //初始化基本分页管理系统
 void BasicPageManager::init_manager()
 {
-  //读取配置文件，初始化页面大小和数量
-
-  bitmap = 0;
+  bitmap.resize(mem_config.FRAME_NUM, {-1, 0});
 }
 
-//分配页表内存
-int BasicPageManager::create_pagetable(PCB &p)
+//加载进程指令
+int BasicPageManager::load_ins(int pid)
 {
-  int size = p.size;
-  int itemnum = ceil((double)size / page_size);        //页表项数目=程序逻辑页数
-  int tablelength = ceil((double)itemnum / page_size); //页表占用页数
-  int succ_idle = 0;                                   //内存最大连续空闲页数
-  int s_idle = 0;                                      //最大连续空闲页数起始页
-  for (int i = 0, j = 0; i <= total_page_num; ++i)
+
+  json root;
+  ifstream in("git_main/Operating-System/MemoryManager/Manager/test", ios::binary);
+  if (!in.is_open())
   {
-    if (i < total_page_num && !((bitmap >> i) & 1))
-      j++;
+    cout << "Error opening file\n";
+    exit(1);
+  }
+  in >> root;
+  int addr = pagetable[pid][0] * mem_config.PAGE_SIZE;
+  int length = mem_config.PAGE_SIZE;
+  for (int i = 0, j = 0; i < root["content"].size(); ++i)
+  {
+    string s = root["content"][i];
+    if (length < s.size()) //帧边界处理
+    {
+      sprintf(memory + addr, "%s", s.substr(0, length).c_str());
+      addr = pagetable[pid][++j] * mem_config.PAGE_SIZE;
+      sprintf(memory + addr, "%s", s.substr(length).c_str());
+      length = s.size() - length;
+      addr += length;
+      length = mem_config.PAGE_SIZE - length;
+    }
     else
     {
-      if (j > succ_idle)
-      {
-        succ_idle = j;
-        s_idle = i - j;
-        if (succ_idle >= tablelength)
-          break;
-      }
-      j = 0;
+      sprintf(memory + addr, "%s", s.c_str());
+      length -= s.size();
+      addr += s.size();
     }
   }
-  //存在目标个数连续页
-  if (succ_idle >= tablelength)
-  {
-    for (int i = 0; i < tablelength; ++i)
+
+  in.close();
+  return 1;
+}
+
+//为进程分配内存
+int BasicPageManager::createProcess(PCB &p)
+{
+  int cnt = 0;                                                     //内存空闲帧数量
+  int pagetable_len = ceil((double)p.size / mem_config.PAGE_SIZE); //进程占用帧数
+  for (int i = 0; i < mem_config.FRAME_NUM; ++i)
+    if (bitmap[i].first == -1)
     {
-      int j = i + s_idle;
-      bitmap |= 1 << j; //该页标记为使用
+      cnt++;
+      if (cnt >= pagetable_len)
+        break;
     }
-    p.pagetable_addr = s_idle * page_size;
-    p.pagetable_len = itemnum;
-    return 0;
+  //有足够页供进程分配
+  if (cnt >= pagetable_len)
+  {
+    pagetable[p.id].resize(pagetable_len, -1);
+    for (int i = 0, j = 0; j < pagetable_len; ++i)
+      if (bitmap[i].first == -1)
+      {
+        int length = min(p.size - j * mem_config.PAGE_SIZE, mem_config.PAGE_SIZE);
+        bitmap[i].first = p.id;
+        bitmap[i].second = length;
+        pagetable[p.id][j] = i;
+        j++;
+      }
+
+    load_ins(p.id);
+    return 1;
   }
   else
   {
@@ -58,101 +87,48 @@ int BasicPageManager::create_pagetable(PCB &p)
   }
 }
 
-//释放页表内存
-void BasicPageManager::delete_pagetable(PCB &p)
-{
-  if (p.pagetable_addr >= 0)
-  {
-    //页表内存清零
-    memset(memory + p.pagetable_addr, 0, sizeof(char) * p.pagetable_len * PageTableItem_Byte); //
-    int t = ceil((double)p.pagetable_len * PageTableItem_Byte / page_size);
-    for (int i = 0; i < t; ++i)
-      bitmap ^= 1 << (i + p.pagetable_addr / page_size); // bitmap也要修改
-    p.pagetable_addr = -1;
-    p.pagetable_len = 0;
-  }
-  else
-  {
-    printf("%d : process has no pagetable in memory!\n\n", p.id);
-  }
-}
-
-//为进程分配内存，注意页表也放在内存中
-void BasicPageManager::allocate_proc_mem(PCB &p)
-{
-  int ret = create_pagetable(p);
-  if (ret == -1)
-  {
-    printf("%d : process has no pagetable in memory!\n\n", p.id);
-    return;
-  }
-  int cnt = 0;
-  for (int i = 0; i < total_page_num; ++i)
-    if (!((bitmap >> i) & 1))
-      cnt++;
-  //有足够页供进程分配
-  if (cnt >= p.pagetable_len)
-  {
-    for (int i = 0, j = 0; j < p.pagetable_len; ++i)
-      if (!((bitmap >> i) & 1))
-      {
-        bitmap |= 1 << i;
-        // snprintf(memory + p.pagetable_addr + j * PageTableItem_Byte, PageTableItem_Byte + 1, "%d", i);
-        memory[p.pagetable_addr + j * PageTableItem_Byte] = i;
-        // printf("%d ", memory[p.pagetable_addr + j * PageTableItem_Byte]);
-        j++;
-      }
-  }
-  else
-  {
-    printf("%d : process is too large to load in memory!\n\n", p.id);
-    delete_pagetable(p);
-  }
-}
-
 //释放内存
-void BasicPageManager::deallocate_proc_mem(PCB &p)
+int BasicPageManager::freeProcess(PCB &p)
 {
-  int f = p.pagetable_addr, m = p.pagetable_len;
+  if (pagetable.find(p.id) == pagetable.end())
+  {
+    puts("%d : process not in memory\n");
+    return -1;
+  }
+  int m = pagetable[p.id].size();
   for (int i = 0; i < m; ++i)
   {
-    int j = f + i * PageTableItem_Byte;
-    //char *temp_chr;
-    //从页表中提取一个页表项
-    // strncpy(temp_chr, memory + j, PageTableItem_Byte);
-    int pageid = memory[j];
-    bitmap ^= 1 << pageid; //异或和减都可以
+    int pageid = pagetable[p.id][i];
+    bitmap[pageid].first = -1;
+    bitmap[pageid].second = 0;
   }
-  delete_pagetable(p);
+  pagetable.erase(p.id);
+  return 1;
 }
 
 //打印帧使用情况
 void BasicPageManager::print_frame()
 {
   puts("**********Here's the use table of memory frame**********");
-  for (int i = 0; i < total_page_num; i++)
-    printf("block #%d    %d\n", i, (bitmap >> i) & 1); // 1表示使用，0表示未使用
+  for (int i = 0; i < 32; i++)
+    printf("block #%d    %d/%d    pid:%d\n", i, bitmap[i].second, mem_config.PAGE_SIZE, bitmap[i].first); // 1表示使用，0表示未使用
   puts("\n*************************end***************************\n");
 }
 
 //打印进程页表
 void BasicPageManager::print_pagetable(const PCB &p)
 {
-  if (p.pagetable_addr < 0)
+  if (pagetable.find(p.id) == pagetable.end())
   {
     printf("%d : process's pagetable is not in memory!\n\n", p.id);
   }
   else
   {
     printf("**********This is the pagetable of process %d**********\n", p.id);
-    puts("逻辑页号 : 物理帧号");
-    for (int i = 0; i < p.pagetable_len; i++)
+    puts("logical page id : physical frame id");
+    for (int i = 0; i < pagetable[p.id].size(); i++)
     {
-      int j = p.pagetable_addr + i * PageTableItem_Byte;
-      // char temp_chr[PageTableItem_Byte];
-      //从页表中提取一个页表项
-      // strncpy(temp_chr, memory + j, PageTableItem_Byte);
-      printf("%d : %d\n", i, memory[j]);
+      printf("%d : %d\n", i, pagetable[p.id][i]);
     }
     puts("***************************end**************************\n");
   }
@@ -168,7 +144,7 @@ void init_pcb(int id, int size, PCB &p)
 
 void test(BasicPageManager &bpm, PCB &p)
 {
-  bpm.allocate_proc_mem(p);
+  bpm.createProcess(p);
   bpm.print_frame();
   bpm.print_pagetable(p);
 }
@@ -186,13 +162,15 @@ int main()
   test(bpm, p);
   test(bpm, q);
   test(bpm, u);
-  bpm.deallocate_proc_mem(q);
+  bpm.freeProcess(q);
   bpm.print_frame();
   test(bpm, v);
   test(bpm, q);
-  bpm.deallocate_proc_mem(p);
-  bpm.deallocate_proc_mem(u);
-  bpm.deallocate_proc_mem(v);
+  bpm.freeProcess(p);
+  bpm.freeProcess(u);
+  bpm.freeProcess(v);
+  bpm.print_frame();
+  bpm.freeProcess(q);
   bpm.print_frame();
 
   return 0;
