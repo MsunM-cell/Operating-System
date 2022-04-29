@@ -104,8 +104,35 @@ public:
      */
     void cd_command(string dir_path);
 
+    /**
+     * @brief move a directory from the src_path to the dst_path
+     * 
+     * @param src_path the absolute path of the directory
+     * @param dst_path the absolute path of the directory
+     * @return bool 
+     */
+    bool move_dir(string src_path, string dst_path);
+    
+    /**
+     * @brief copy a directory somewhere safely
+     * 
+     * @param src_path the absolute source path of directory
+     * @param dst_path the absolute destination path of directory
+     * @return bool
+     */
+    bool copy_dir(string src_path, string dst_path);
+    
 private:
     FileManager* file_manager;  // The pointer to a FileManager instance
+    
+    /**
+     * @brief copy a directory somewhere recursively (maybe recursive repeat)
+     * 
+     * @param src_path the absolute source path of directory
+     * @param dst_path the absolute destination path of directory
+     * @return bool
+     */
+    bool recursive_copy_dir(string src_path, string dst_path);
 
 };
 
