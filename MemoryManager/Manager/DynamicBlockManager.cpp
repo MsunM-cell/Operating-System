@@ -21,7 +21,7 @@ int BlockMemoryManager::load_ins(int addr, int length)
 {
 
     json root;
-    ifstream in("git_main/Operating-System/MemoryManager/Manager/test", ios::binary);
+    ifstream in("E:/osDesign/OS/Operating-System/MemoryManager/Manager/test", ios::binary);
     if (!in.is_open())
     {
         cout << "Error opening file\n";
@@ -31,6 +31,7 @@ int BlockMemoryManager::load_ins(int addr, int length)
     for (int i = 0, j = addr; i < root["content"].size(); ++i)
     {
         string s = root["content"][i];
+        s += '\0';
         //s = s.substr(1, s.size() - 2);
         sprintf(memory + j, "%s", s.c_str());
         j += s.size();
@@ -79,7 +80,7 @@ int BlockMemoryManager::freeProcess(PCB &p)
     int addr = pid2addr[p.id].head_addr;
     int length = p.size;
 
-    adjust_list(0); //此处必须按地址排序是为了能够合并
+    adjust_list(0); //此处必须按地址排序是为了能够合�?
     int i = 0;
     while (i < free_block_table.size() && free_block_table[i].head_addr < addr)
         i++;
@@ -150,20 +151,20 @@ char BlockMemoryManager::accessMemory(int pid, int address)
     return memory[pid2addr[pid].head_addr + address];
 }
 
-//写内存
+//写内�?
 int BlockMemoryManager::writeMemory(int logicalAddress, long long src, int size, unsigned int pid)
 {
     return 1;
 }
 
-//初始化内存管理系统
+//初始化内存管理系�?
 void BlockMemoryManager::init_manager()
 {
     //初始化空闲分区表
     free_block_table.push_back({0, mem_config.MEM_SIZE});
 }
 
-//打印空闲分区链
+//打印空闲分区�?
 void BlockMemoryManager::print_list()
 {
     printf("**********Output the free block list**********\n");
@@ -174,35 +175,35 @@ void BlockMemoryManager::print_list()
     puts("**********************End*********************\n");
 }
 
-int main()
-{
-    PCB a, b, c, d;
-    a.id = 1001, a.size = 12 * 1024; // 12KB
-    b.id = 1002, b.size = 6 * 1024;  // 6KB
-    c.id = 1003, c.size = 10 * 1024; // 10KB
-    d.id = 1004, d.size = 4 * 1024;  // 4KB
+// int main()
+// {
+//     PCB a, b, c, d;
+//     a.id = 1001, a.size = 12 * 1024; // 12KB
+//     b.id = 1002, b.size = 6 * 1024;  // 6KB
+//     c.id = 1003, c.size = 10 * 1024; // 10KB
+//     d.id = 1004, d.size = 4 * 1024;  // 4KB
 
-    BlockMemoryManager bmm;
-    bmm.print_list();
-    bmm.createProcess(a);
-    bmm.createProcess(b);
-    bmm.createProcess(c);
-    cout << bmm.accessMemory(a.id, 1) << endl;
-    bmm.print_list();
-    bmm.freeProcess(b);
-    bmm.print_list();
-    bmm.compress_mem();
-    bmm.print_list();
-    bmm.createProcess(d);
-    bmm.print_list();
-    bmm.freeProcess(a);
-    bmm.createProcess(b);
-    bmm.print_list();
-    bmm.freeProcess(d);
-    bmm.print_list();
-    bmm.freeProcess(b);
-    bmm.print_list();
-    bmm.freeProcess(c);
-    bmm.print_list();
-    return 0;
-}
+//     BlockMemoryManager bmm;
+//     bmm.print_list();
+//     bmm.createProcess(a);
+//     bmm.createProcess(b);
+//     bmm.createProcess(c);
+//     cout << bmm.accessMemory(a.id, 1) << endl;
+//     bmm.print_list();
+//     bmm.freeProcess(b);
+//     bmm.print_list();
+//     bmm.compress_mem();
+//     bmm.print_list();
+//     bmm.createProcess(d);
+//     bmm.print_list();
+//     bmm.freeProcess(a);
+//     bmm.createProcess(b);
+//     bmm.print_list();
+//     bmm.freeProcess(d);
+//     bmm.print_list();
+//     bmm.freeProcess(b);
+//     bmm.print_list();
+//     bmm.freeProcess(c);
+//     bmm.print_list();
+//     return 0;
+// }

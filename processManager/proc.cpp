@@ -1,4 +1,5 @@
 #include "proc.h"
+#include "memtest.cpp"
 using namespace std;
 
 
@@ -186,9 +187,12 @@ void ProcManagerFCFS::runProcManager(){
             PCB *p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
             // FIXME 无限循环，所以先注释掉了
-            // run(p);
+            p->size = 4096;
+            p->pc = 5;
+            bmm->createProcess(*p);
+            run(p);
             Sleep(p->time_need);
-            cout << "pid:" << p->id << "shut in fcfs.\n";
+            // cout << "pid:" << p->id << "shut in fcfs.\n";
             ProcManager::getInstance().freePCB(p);
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
@@ -204,20 +208,20 @@ void ProcManagerFCFS::runProcManager(){
  */
 string ProcManagerFCFS::getCommand(PCB *p){
     string command = "";
+    char tmp = bmm->accessMemory(p->id,p->pc);
     p->pc += 1;
-    // char tmp = accessMemory(p->id,p->pc);
-    // if(tmp == '#'){
-    //     return command;
-    // }
-    // while(tmp != '\n' && tmp != '#'){
-    //     command += tmp;
-    //     char tmp = accessMemory(p->id,p->pc);
-    //     p->pc += 1;
-    // }
-    // return command;
+    if(tmp == '#'){
+        return command;
+    }
+    while(tmp != '\0' && tmp != '#'){
+        command += tmp;
+        tmp = bmm->accessMemory(p->id,p->pc);
+        p->pc += 1;
+    }
+    return command;
     // 这个函数是用来取出内存中的一条指令
     
-    return "WriteMemory 100 5";
+    // return "WriteMemory 100 5";
 }
 
 string ProcManagerFCFS::splitCommand(string command){
@@ -257,6 +261,8 @@ void ProcManagerFCFS::run(PCB *p){
             case 3:
                 useIO(command);
                 break;
+            default:
+                return ;
         }
     }
     return ;
@@ -331,8 +337,8 @@ int ProcManagerFCFS::getQueueSize(){
  */
 void ProcManagerFCFS::initCmdMap(){
     commandMap["WriteMemory"] = 0;
-    commandMap["AccessMemory"] = 1;
-    commandMap["CPU"] = 2;
+    commandMap["access"] = 1;
+    commandMap["cpu"] = 2;
     commandMap["IO"] = 3;
     return ;
 }
@@ -349,7 +355,7 @@ void ProcManagerFCFS::useCPU(string command){
     cout << "use CPU " << time << endl;
     if(CPU){
         CPU = false;
-        Sleep(time);
+        Sleep(time * 100);
         CPU = true;
     }
     else{
@@ -395,6 +401,7 @@ void ProcManagerFCFS::useIO(string command){
 void ProcManagerFCFS::accessMem(string command){
     int addr = atoi(command.c_str());
     cout << "access Memory at addr" << " " << addr << endl;
+    Sleep(1000);
     return ;
 }
 
