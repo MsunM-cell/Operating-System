@@ -1,3 +1,10 @@
+/*
+ * @Date: 2022-04-28 19:21:35
+ * @LastEditors: ShimaoZ
+ * @LastEditTime: 2022-04-28 19:56:07
+ * @FilePath: \Operating-System\MemoryManager\Manager\mem.h
+ * @copyright: Copyright (C) 2022 shimaoZeng. All rights reserved.
+ */
 #pragma once
 #include <iostream>
 #include <algorithm>
@@ -31,14 +38,13 @@ class MemoryManager
 {
 public:
     char* memory;//内存数组，动态申请4MB
-
     //初始配置文件
     MemoryManager();
     ~MemoryManager();
     virtual int createProcess(PCB& p) = 0;
     virtual int freeProcess(PCB& p) = 0;
-    virtual char accessMemory(int pid, int address) = 0;
-    virtual int writeMemory(int logicalAddress, long long src, int size, unsigned int pid) = 0;
+    virtual char accessMemory(int pid, long long  address) = 0;
+    virtual int writeMemory(long long  logicalAddress, const void* src, long long  size, unsigned int pid) = 0;
 
 };
 
