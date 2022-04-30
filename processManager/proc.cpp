@@ -211,6 +211,8 @@ string ProcManagerFCFS::getCommand(PCB *p){
     char tmp = bmm->accessMemory(p->id,p->pc);
     p->pc += 1;
     if(tmp == '#'){
+        Sleep(1000);
+        cout << "end of file" << endl;
         return command;
     }
     while(tmp != '\0' && tmp != '#'){
