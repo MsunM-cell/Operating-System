@@ -79,6 +79,26 @@ pair<int, int> Block::get_location()
 }
 
 /**
+ * @brief return free_space
+ *
+ * @return int
+ */
+int Block::get_free_space()
+{
+    return this->free_space;
+}
+
+/**
+ * @brief return fp
+ *
+ * @return string
+ */
+string Block::get_fp()
+{
+    return fp;
+}
+
+/**
  * @brief Construct a new File Manager object
  *
  * @param block_size block size (byte)
@@ -674,6 +694,32 @@ void FileManager::tidy_disk()
 }
 
 /**
+ * @brief print status of all blocks
+ *
+ */
+void FileManager::display_storage_status()
+{
+    int total_space = this->block_size * this->block_num;
+    int free_space = count(this->bitmap.begin(), this->bitmap.end(), 1) * this->block_size;
+    int occupy_space = total_space - free_space;
+    printf("total: %d B\n", total_space);
+    printf("allocated: %d B\n", occupy_space);
+    printf("free: %d B\n\n", free_space);
+
+    for (int i = 0; i < this->block_num; i++)
+    {
+        Block b = this->blocks[i];
+        int occupy = this->block_size - b.get_free_space();
+        if (occupy > 0)
+        {
+            printf("block #%-10d%3d / %d Byte(s)", i, occupy, this->block_size);
+            printf("%10c%s", ' ', b.get_fp().c_str());
+            printf("\n");
+        }
+    }
+}
+
+/**
  * @brief Construct a new Disk object
  *
  * @param block_size the size of a block
@@ -903,7 +949,8 @@ void Disk::C_LOOK(vector<pair<int, int>> seek_queue)
 int main()
 {
     FileManager fm(512, 200, 12);
-    fm.tidy_disk();
+    fm.display_storage_status();
+    // fm.tidy_disk();
     // fm.write_data("/a.txt", 120);
     // fm.print_file_system_tree(fm.home_path);
     // fm.set_disk_head_pointer(110);

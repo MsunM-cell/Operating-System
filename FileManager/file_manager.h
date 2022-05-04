@@ -73,6 +73,18 @@ public:
      * @return pair<int, int>
      */
     pair<int, int> get_location();
+    /**
+     * @brief return free_space
+     * 
+     * @return int 
+     */
+    int get_free_space();
+    /**
+     * @brief return fp
+     * 
+     * @return string 
+     */
+    string get_fp();
 
 private:
     int total_space; // total space of the Block (byte)
@@ -325,6 +337,11 @@ public:
      * 
      */
     void tidy_disk();
+    /**
+     * @brief print status of all blocks
+     * 
+     */
+    void display_storage_status();
 
 private:
     Disk disk;             // disk
