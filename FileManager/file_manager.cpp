@@ -544,6 +544,10 @@ void FileManager::get_file_demo(string seek_algo)
         this->disk.SCAN(seek_queue);
     else if (seek_algo == "C-SCAN")
         this->disk.C_SCAN(seek_queue);
+    else if (seek_algo == "LOOK")
+        this->disk.LOOK(seek_queue);
+    else if (seek_algo == "C-LOOK")
+        this->disk.C_LOOK(seek_queue);
 }
 
 /**
@@ -651,6 +655,22 @@ bool FileManager::write_data(string file_path, int length)
     }
 
     return false;
+}
+
+/**
+ * @brief tidy disk external fragmentation
+ *
+ */
+void FileManager::tidy_disk()
+{
+    json tmp_file_blocks = this->file_blocks;
+    this->init_blocks();
+    for (json::iterator it = tmp_file_blocks.begin(); it != tmp_file_blocks.end(); ++it)
+    {
+        json tmp;
+        tmp["size"] = it.value()[2];
+        this->fill_file_into_blocks(tmp, (string)it.key(), 0);
+    }
 }
 
 /**
@@ -883,7 +903,8 @@ void Disk::C_LOOK(vector<pair<int, int>> seek_queue)
 int main()
 {
     FileManager fm(512, 200, 12);
-    fm.write_data("/a.txt", 120);
+    fm.tidy_disk();
+    // fm.write_data("/a.txt", 120);
     // fm.print_file_system_tree(fm.home_path);
     // fm.set_disk_head_pointer(110);
     // fm.get_file_demo("C-SCAN");

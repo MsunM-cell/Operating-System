@@ -320,6 +320,11 @@ public:
      * @return bool 
      */
     bool write_data(string file_path, int length);
+    /**
+     * @brief tidy disk external fragmentation
+     * 
+     */
+    void tidy_disk();
 
 private:
     Disk disk;             // disk
