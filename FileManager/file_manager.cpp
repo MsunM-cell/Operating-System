@@ -605,7 +605,7 @@ json FileManager::get_file(string file_path, string mode, string seek_algo)
 }
 
 /**
- * @brief simulate the paging process
+ * @brief simulate the paging read process
  *
  * @param file_path file path relative to home
  * @param address starting address relative to file
@@ -618,6 +618,38 @@ bool FileManager::read_data(string file_path, int address, int length)
     int blocks_num = (int)this->file_blocks[file_path][1];
     if (last_address < blocks_num * block_size)
         return true;
+    return false;
+}
+
+/**
+ * @brief simulate the write process
+ *
+ * @param file_path file path relative to home
+ * @param length the length of the data to be write
+ * @return bool
+ */
+bool FileManager::write_data(string file_path, int length)
+{
+    int previous_first_idle_block = (int)this->file_blocks[file_path][0];
+    int previous_blocks_num = (int)this->file_blocks[file_path][1];
+
+    ifstream i(this->home_path + file_path);
+    json file_info;
+    i >> file_info;
+    i.close();
+    file_info["size"] = length;
+
+    if (this->fill_file_into_blocks(file_info, file_path, 0))
+    {
+        for (int j = 0; j < previous_blocks_num; j++)
+            this->bitmap[previous_first_idle_block + j] = 1;
+
+        ofstream i(this->home_path + file_path);
+        i << setw(4) << file_info;
+        i.close();
+        return true;
+    }
+
     return false;
 }
 
@@ -796,6 +828,7 @@ void Disk::C_SCAN(vector<pair<int, int>> seek_queue)
 int main()
 {
     FileManager fm(512, 200, 12);
+    fm.write_data("/a.txt", 120);
     // fm.print_file_system_tree(fm.home_path);
     // fm.set_disk_head_pointer(110);
     // fm.get_file_demo("C-SCAN");

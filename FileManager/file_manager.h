@@ -292,7 +292,7 @@ public:
      */
     json get_file(string file_path, string mode, string seek_algo);
     /**
-     * @brief simulate the paging process
+     * @brief simulate the paging read process
      * 
      * @param file_path file path relative to home
      * @param address starting address relative to file
@@ -300,6 +300,14 @@ public:
      * @return bool
      */
     bool read_data(string file_path, int address, int length);
+    /**
+     * @brief simulate the write process
+     * 
+     * @param file_path file path relative to home
+     * @param length the length of the data to be write
+     * @return bool 
+     */
+    bool write_data(string file_path, int length);
 
 private:
     Disk disk;             // disk
