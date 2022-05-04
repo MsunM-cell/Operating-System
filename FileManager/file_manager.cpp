@@ -825,6 +825,61 @@ void Disk::C_SCAN(vector<pair<int, int>> seek_queue)
     this->seek_by_queue(seek_queue);
 }
 
+/**
+ * @brief LOOK
+ *
+ * @param seek_queue
+ */
+void Disk::LOOK(vector<pair<int, int>> seek_queue)
+{
+    vector<pair<int, int>> temp_seek_queue;
+    sort(seek_queue.begin(), seek_queue.end());
+    int first_location = -1;
+    for (int i = 0; i < seek_queue.size(); i++)
+        if (seek_queue[i].first >= this->head_pointer)
+        {
+            first_location = i;
+            break;
+        }
+    temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin() + first_location, seek_queue.end());
+
+    if (temp_seek_queue != seek_queue)
+    {
+        reverse(seek_queue.begin(), seek_queue.begin() + first_location);
+        temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin(), seek_queue.begin() + first_location);
+        seek_queue = temp_seek_queue;
+    }
+
+    this->seek_by_queue(seek_queue);
+}
+
+/**
+ * @brief C-LOOK
+ *
+ * @param seek_queue
+ */
+void Disk::C_LOOK(vector<pair<int, int>> seek_queue)
+{
+    vector<pair<int, int>> temp_seek_queue;
+    sort(seek_queue.begin(), seek_queue.end());
+    int first_location = -1;
+    for (int i = 0; i < seek_queue.size(); i++)
+        if (seek_queue[i].first >= this->head_pointer)
+        {
+            first_location = i;
+            break;
+        }
+    temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin() + first_location, seek_queue.end());
+
+    if (temp_seek_queue != seek_queue)
+    {
+        temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin(), seek_queue.begin() + first_location);
+        seek_queue = temp_seek_queue;
+    }
+
+    this->seek_by_queue(seek_queue);
+}
+
 int main()
 {
     FileManager fm(512, 200, 12);

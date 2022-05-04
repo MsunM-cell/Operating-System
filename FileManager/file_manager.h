@@ -135,6 +135,18 @@ public:
      * @param seek_queue 
      */
     void C_SCAN(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief LOOK
+     * 
+     * @param seek_queue 
+     */
+    void LOOK(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief C-LOOK
+     * 
+     * @param seek_queue 
+     */
+    void C_LOOK(vector<pair<int, int>> seek_queue);
 
 private:
     int sector_size;     // the size of a sector
