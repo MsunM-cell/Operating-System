@@ -633,6 +633,45 @@ void ProcManager::run(string file_name)
 }
 
 /**
+ * @brief 测试用
+ * 
+ * @param file_name 文件名
+ * @param time 所需时间
+ */
+void ProcManager::run(string file_name, int time)
+{
+    // 从其他模块获取文件的有关信息，这里模拟一下
+    PCB* new_pcb = new PCB;
+    new_pcb->id = this->cpid;
+    this->cpid = (this->cpid + 1) % 65536;
+    new_pcb->name = file_name;
+    new_pcb->status = NEW;
+    new_pcb->pri = HIGH_PRI;
+    new_pcb->time_need = time;
+    new_pcb->slice_cnt = 0;
+    PCB* pcb = new_pcb;
+
+    // 判断是否需要加入到等待队列
+    if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
+    {
+        pcb->status = READY;
+        this->rr_queue->addPCB(pcb);
+        printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
+    }
+    else if (pcb->pri == LOW_PRI && this->fcfsProcManager->getQueueSize() < MAX_PROC)
+    {
+        pcb->status = READY;
+        this->fcfsProcManager->addToQueue(pcb);
+        printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
+    }
+    else
+    {
+        this->waiting_pcb.push_back(pcb);
+        printf("[%ld]Pid=%d is waiting.\n", clock() - system_start, pcb->id);
+    }
+}
+
+/**
  * 开始调度
  */
 void ProcManager::scheduling()
