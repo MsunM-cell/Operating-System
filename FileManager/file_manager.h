@@ -75,14 +75,14 @@ public:
     pair<int, int> get_location();
     /**
      * @brief return free_space
-     * 
-     * @return int 
+     *
+     * @return int
      */
     int get_free_space();
     /**
      * @brief return fp
-     * 
-     * @return string 
+     *
+     * @return string
      */
     string get_fp();
 
@@ -137,26 +137,26 @@ public:
     void SSTF(vector<pair<int, int>> seek_queue);
     /**
      * @brief SCAN
-     * 
-     * @param seek_queue 
+     *
+     * @param seek_queue
      */
     void SCAN(vector<pair<int, int>> seek_queue);
     /**
      * @brief C-SCAN
-     * 
-     * @param seek_queue 
+     *
+     * @param seek_queue
      */
     void C_SCAN(vector<pair<int, int>> seek_queue);
     /**
      * @brief LOOK
-     * 
-     * @param seek_queue 
+     *
+     * @param seek_queue
      */
     void LOOK(vector<pair<int, int>> seek_queue);
     /**
      * @brief C-LOOK
-     * 
-     * @param seek_queue 
+     *
+     * @param seek_queue
      */
     void C_LOOK(vector<pair<int, int>> seek_queue);
 
@@ -174,9 +174,9 @@ private:
 class FileManager
 {
 public:
-    char file_separator = (char)path::preferred_separator;               // directory separator
-    string home_path = STRING(current_path()) + file_separator + "home"; // absolute path of home directory
-    string working_path;                                                 // working directory
+    char file_separator = (char)path::preferred_separator;                             // directory separator
+    string home_path = STRING(current_path().parent_path()) + file_separator + "home"; // absolute path of home directory
+    string working_path;                                                               // working directory
 
     /**
      * @brief Construct a new File Manager object
@@ -282,7 +282,7 @@ public:
     bool add_json_node_to_tree(string path, json node);
     /**
      * @brief delete the json node from the file_system_tree
-     * 
+     *
      * @param path the path of the file (absolute)
      * @return bool
      */
@@ -317,7 +317,7 @@ public:
     json get_file(string file_path, string mode, string seek_algo);
     /**
      * @brief simulate the paging read process
-     * 
+     *
      * @param file_path file path relative to home
      * @param address starting address relative to file
      * @param length the length of the data to be read
@@ -326,20 +326,20 @@ public:
     bool read_data(string file_path, int address, int length);
     /**
      * @brief simulate the write process
-     * 
+     *
      * @param file_path file path relative to home
      * @param length the length of the data to be write
-     * @return bool 
+     * @return bool
      */
     bool write_data(string file_path, int length);
     /**
      * @brief tidy disk external fragmentation
-     * 
+     *
      */
     void tidy_disk();
     /**
      * @brief print status of all blocks
-     * 
+     *
      */
     void display_storage_status();
 

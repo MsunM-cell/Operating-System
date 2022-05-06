@@ -949,10 +949,10 @@ void Disk::C_LOOK(vector<pair<int, int>> seek_queue)
 int main()
 {
     FileManager fm(512, 200, 12);
-    fm.display_storage_status();
+    // fm.display_storage_status();
     // fm.tidy_disk();
     // fm.write_data("/a.txt", 120);
-    // fm.print_file_system_tree(fm.home_path);
+    fm.print_file_system_tree(fm.home_path);
     // fm.set_disk_head_pointer(110);
     // fm.get_file_demo("C-SCAN");
     // fm.set_disk_head_pointer(12);
