@@ -4,6 +4,8 @@
 
 
 #include "processManager\proc.cpp"
+#include "FileManager\file_manager.cpp"
+#include "FileManager\file_operation.cpp"
 #include "lib\sys.h"
 using namespace std;
 
@@ -71,6 +73,24 @@ int parse(string cmd, vector<string> &argv)
     return argv.size(); 
 }
 
+/**
+ * @brief 新建pcb
+ * 
+ * @param file 传入的文件
+ */
+PCB* createPCB(json file)
+{
+    PCB* ptr = new PCB;
+    // ptr->id=;
+    // ptr->name=;
+    // ptr->pc=0;
+    // ptr->pri=;
+    // ptr->size=;
+    // ptr->slice_cnt=0;
+    // ptr->time_need=;
+    return ptr;
+}
+
 
 int main(void)
 {
@@ -125,10 +145,21 @@ int main(void)
         }
         else if (argv[0] == "run")
         {
+            // 真实模式
             if (args == 2)
             {
+                json file;
+                PCB* pcb;
+                // TODO PCB pcbsd = PCB();
                 ProcManager::getInstance().run(argv[1]);
+                file = get_file(argv[1], "read", "FCFS");
+                // 判断有没有x
+                // TODO 怎么调用
+                pcb = createPCB(file);
+                // 怎么引用？
+                createProcess();
             }
+            // 测试用
             else if (args == 3)
             {
                 ProcManager::getInstance().run(argv[1], atoi(argv[2].c_str()));
@@ -137,6 +168,7 @@ int main(void)
             {
                 cout << "unknown cmd!\n";
             }
+
         }
         else if (argv[0] == "exit")
         {

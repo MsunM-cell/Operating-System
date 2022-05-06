@@ -1,5 +1,5 @@
 #include "proc.h"
-#include "memtest.cpp"
+// #include "memtest.cpp"
 using namespace std;
 
 
@@ -189,10 +189,10 @@ void ProcManagerFCFS::runProcManager(){
             // FIXME 无限循环，所以先注释掉了
             p->size = 4096;
             p->pc = 5;
-            bmm->createProcess(*p);
-            run(p);
+            // bmm->createProcess(*p);
+            // run(p);
             Sleep(p->time_need);
-            // cout << "pid:" << p->id << "shut in fcfs.\n";
+            cout << "pid:" << p->id << "shut in fcfs.\n";
             ProcManager::getInstance().freePCB(p);
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
@@ -208,18 +208,18 @@ void ProcManagerFCFS::runProcManager(){
  */
 string ProcManagerFCFS::getCommand(PCB *p){
     string command = "";
-    char tmp = bmm->accessMemory(p->id,p->pc);
+    // char tmp = bmm->accessMemory(p->id,p->pc);
     p->pc += 1;
-    if(tmp == '#'){
-        Sleep(1000);
-        cout << "end of file" << endl;
-        return command;
-    }
-    while(tmp != '\0' && tmp != '#'){
-        command += tmp;
-        tmp = bmm->accessMemory(p->id,p->pc);
-        p->pc += 1;
-    }
+    // if(tmp == '#'){
+    //     Sleep(1000);
+    //     cout << "end of file" << endl;
+    //     return command;
+    // }
+    // while(tmp != '\0' && tmp != '#'){
+    //     command += tmp;
+    //     tmp = bmm->accessMemory(p->id,p->pc);
+    //     p->pc += 1;
+    // }
     return command;
     // 这个函数是用来取出内存中的一条指令
     
