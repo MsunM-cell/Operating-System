@@ -21,7 +21,7 @@ int BlockMemoryManager::load_ins(int addr, int length)
 {
 
     json root;
-    ifstream in("E:/osDesign/OS/Operating-System/MemoryManager/Manager/test", ios::binary);
+    ifstream in("../MemoryManager/Manager/test", ios::binary);
     if (!in.is_open())
     {
         cout << "Error opening file\n";
