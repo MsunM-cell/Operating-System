@@ -79,6 +79,26 @@ pair<int, int> Block::get_location()
 }
 
 /**
+ * @brief return free_space
+ *
+ * @return int
+ */
+int Block::get_free_space()
+{
+    return this->free_space;
+}
+
+/**
+ * @brief return fp
+ *
+ * @return string
+ */
+string Block::get_fp()
+{
+    return fp;
+}
+
+/**
  * @brief Construct a new File Manager object
  *
  * @param block_size block size (byte)
@@ -544,6 +564,10 @@ void FileManager::get_file_demo(string seek_algo)
         this->disk.SCAN(seek_queue);
     else if (seek_algo == "C-SCAN")
         this->disk.C_SCAN(seek_queue);
+    else if (seek_algo == "LOOK")
+        this->disk.LOOK(seek_queue);
+    else if (seek_algo == "C-LOOK")
+        this->disk.C_LOOK(seek_queue);
 }
 
 /**
@@ -605,7 +629,7 @@ json FileManager::get_file(string file_path, string mode, string seek_algo)
 }
 
 /**
- * @brief simulate the paging process
+ * @brief simulate the paging read process
  *
  * @param file_path file path relative to home
  * @param address starting address relative to file
@@ -619,6 +643,80 @@ bool FileManager::read_data(string file_path, int address, int length)
     if (last_address < blocks_num * block_size)
         return true;
     return false;
+}
+
+/**
+ * @brief simulate the write process
+ *
+ * @param file_path file path relative to home
+ * @param length the length of the data to be write
+ * @return bool
+ */
+bool FileManager::write_data(string file_path, int length)
+{
+    int previous_first_idle_block = (int)this->file_blocks[file_path][0];
+    int previous_blocks_num = (int)this->file_blocks[file_path][1];
+
+    ifstream i(this->home_path + file_path);
+    json file_info;
+    i >> file_info;
+    i.close();
+    file_info["size"] = length;
+
+    if (this->fill_file_into_blocks(file_info, file_path, 0))
+    {
+        for (int j = 0; j < previous_blocks_num; j++)
+            this->bitmap[previous_first_idle_block + j] = 1;
+
+        ofstream i(this->home_path + file_path);
+        i << setw(4) << file_info;
+        i.close();
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * @brief tidy disk external fragmentation
+ *
+ */
+void FileManager::tidy_disk()
+{
+    json tmp_file_blocks = this->file_blocks;
+    this->init_blocks();
+    for (json::iterator it = tmp_file_blocks.begin(); it != tmp_file_blocks.end(); ++it)
+    {
+        json tmp;
+        tmp["size"] = it.value()[2];
+        this->fill_file_into_blocks(tmp, (string)it.key(), 0);
+    }
+}
+
+/**
+ * @brief print status of all blocks
+ *
+ */
+void FileManager::display_storage_status()
+{
+    int total_space = this->block_size * this->block_num;
+    int free_space = count(this->bitmap.begin(), this->bitmap.end(), 1) * this->block_size;
+    int occupy_space = total_space - free_space;
+    printf("total: %d B\n", total_space);
+    printf("allocated: %d B\n", occupy_space);
+    printf("free: %d B\n\n", free_space);
+
+    for (int i = 0; i < this->block_num; i++)
+    {
+        Block b = this->blocks[i];
+        int occupy = this->block_size - b.get_free_space();
+        if (occupy > 0)
+        {
+            printf("block #%-10d%3d / %d Byte(s)", i, occupy, this->block_size);
+            printf("%10c%s", ' ', b.get_fp().c_str());
+            printf("\n");
+        }
+    }
 }
 
 /**
@@ -793,9 +891,67 @@ void Disk::C_SCAN(vector<pair<int, int>> seek_queue)
     this->seek_by_queue(seek_queue);
 }
 
+/**
+ * @brief LOOK
+ *
+ * @param seek_queue
+ */
+void Disk::LOOK(vector<pair<int, int>> seek_queue)
+{
+    vector<pair<int, int>> temp_seek_queue;
+    sort(seek_queue.begin(), seek_queue.end());
+    int first_location = -1;
+    for (int i = 0; i < seek_queue.size(); i++)
+        if (seek_queue[i].first >= this->head_pointer)
+        {
+            first_location = i;
+            break;
+        }
+    temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin() + first_location, seek_queue.end());
+
+    if (temp_seek_queue != seek_queue)
+    {
+        reverse(seek_queue.begin(), seek_queue.begin() + first_location);
+        temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin(), seek_queue.begin() + first_location);
+        seek_queue = temp_seek_queue;
+    }
+
+    this->seek_by_queue(seek_queue);
+}
+
+/**
+ * @brief C-LOOK
+ *
+ * @param seek_queue
+ */
+void Disk::C_LOOK(vector<pair<int, int>> seek_queue)
+{
+    vector<pair<int, int>> temp_seek_queue;
+    sort(seek_queue.begin(), seek_queue.end());
+    int first_location = -1;
+    for (int i = 0; i < seek_queue.size(); i++)
+        if (seek_queue[i].first >= this->head_pointer)
+        {
+            first_location = i;
+            break;
+        }
+    temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin() + first_location, seek_queue.end());
+
+    if (temp_seek_queue != seek_queue)
+    {
+        temp_seek_queue.insert(temp_seek_queue.end(), seek_queue.begin(), seek_queue.begin() + first_location);
+        seek_queue = temp_seek_queue;
+    }
+
+    this->seek_by_queue(seek_queue);
+}
+
 int main()
 {
     FileManager fm(512, 200, 12);
+    fm.display_storage_status();
+    // fm.tidy_disk();
+    // fm.write_data("/a.txt", 120);
     // fm.print_file_system_tree(fm.home_path);
     // fm.set_disk_head_pointer(110);
     // fm.get_file_demo("C-SCAN");

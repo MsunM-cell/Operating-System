@@ -73,6 +73,18 @@ public:
      * @return pair<int, int>
      */
     pair<int, int> get_location();
+    /**
+     * @brief return free_space
+     * 
+     * @return int 
+     */
+    int get_free_space();
+    /**
+     * @brief return fp
+     * 
+     * @return string 
+     */
+    string get_fp();
 
 private:
     int total_space; // total space of the Block (byte)
@@ -135,6 +147,18 @@ public:
      * @param seek_queue 
      */
     void C_SCAN(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief LOOK
+     * 
+     * @param seek_queue 
+     */
+    void LOOK(vector<pair<int, int>> seek_queue);
+    /**
+     * @brief C-LOOK
+     * 
+     * @param seek_queue 
+     */
+    void C_LOOK(vector<pair<int, int>> seek_queue);
 
 private:
     int sector_size;     // the size of a sector
@@ -292,7 +316,7 @@ public:
      */
     json get_file(string file_path, string mode, string seek_algo);
     /**
-     * @brief simulate the paging process
+     * @brief simulate the paging read process
      * 
      * @param file_path file path relative to home
      * @param address starting address relative to file
@@ -300,6 +324,24 @@ public:
      * @return bool
      */
     bool read_data(string file_path, int address, int length);
+    /**
+     * @brief simulate the write process
+     * 
+     * @param file_path file path relative to home
+     * @param length the length of the data to be write
+     * @return bool 
+     */
+    bool write_data(string file_path, int length);
+    /**
+     * @brief tidy disk external fragmentation
+     * 
+     */
+    void tidy_disk();
+    /**
+     * @brief print status of all blocks
+     * 
+     */
+    void display_storage_status();
 
 private:
     Disk disk;             // disk

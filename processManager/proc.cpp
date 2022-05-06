@@ -1,5 +1,5 @@
 #include "proc.h"
-#include "memtest.cpp"
+// #include "memtest.cpp"
 using namespace std;
 
 
@@ -189,10 +189,10 @@ void ProcManagerFCFS::runProcManager(){
             // FIXME 无限循环，所以先注释掉了
             p->size = 4096;
             p->pc = 5;
-            bmm->createProcess(*p);
-            run(p);
+            // bmm->createProcess(*p);
+            // run(p);
             Sleep(p->time_need);
-            // cout << "pid:" << p->id << "shut in fcfs.\n";
+            cout << "pid:" << p->id << "shut in fcfs.\n";
             ProcManager::getInstance().freePCB(p);
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
@@ -208,18 +208,18 @@ void ProcManagerFCFS::runProcManager(){
  */
 string ProcManagerFCFS::getCommand(PCB *p){
     string command = "";
-    char tmp = bmm->accessMemory(p->id,p->pc);
+    // char tmp = bmm->accessMemory(p->id,p->pc);
     p->pc += 1;
-    if(tmp == '#'){
-        Sleep(1000);
-        cout << "end of file" << endl;
-        return command;
-    }
-    while(tmp != '\0' && tmp != '#'){
-        command += tmp;
-        tmp = bmm->accessMemory(p->id,p->pc);
-        p->pc += 1;
-    }
+    // if(tmp == '#'){
+    //     Sleep(1000);
+    //     cout << "end of file" << endl;
+    //     return command;
+    // }
+    // while(tmp != '\0' && tmp != '#'){
+    //     command += tmp;
+    //     tmp = bmm->accessMemory(p->id,p->pc);
+    //     p->pc += 1;
+    // }
     return command;
     // 这个函数是用来取出内存中的一条指令
     
@@ -609,6 +609,45 @@ void ProcManager::run(string file_name)
     new_pcb->status = NEW;
     new_pcb->pri = HIGH_PRI;
     new_pcb->time_need = 1888;
+    new_pcb->slice_cnt = 0;
+    PCB* pcb = new_pcb;
+
+    // 判断是否需要加入到等待队列
+    if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
+    {
+        pcb->status = READY;
+        this->rr_queue->addPCB(pcb);
+        printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
+    }
+    else if (pcb->pri == LOW_PRI && this->fcfsProcManager->getQueueSize() < MAX_PROC)
+    {
+        pcb->status = READY;
+        this->fcfsProcManager->addToQueue(pcb);
+        printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
+    }
+    else
+    {
+        this->waiting_pcb.push_back(pcb);
+        printf("[%ld]Pid=%d is waiting.\n", clock() - system_start, pcb->id);
+    }
+}
+
+/**
+ * @brief 测试用
+ * 
+ * @param file_name 文件名
+ * @param time 所需时间
+ */
+void ProcManager::run(string file_name, int time)
+{
+    // 从其他模块获取文件的有关信息，这里模拟一下
+    PCB* new_pcb = new PCB;
+    new_pcb->id = this->cpid;
+    this->cpid = (this->cpid + 1) % 65536;
+    new_pcb->name = file_name;
+    new_pcb->status = NEW;
+    new_pcb->pri = HIGH_PRI;
+    new_pcb->time_need = time;
     new_pcb->slice_cnt = 0;
     PCB* pcb = new_pcb;
 
