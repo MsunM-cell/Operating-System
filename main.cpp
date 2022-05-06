@@ -7,6 +7,7 @@
 #include "FileManager\file_manager.cpp"
 #include "FileManager\file_operation.cpp"
 #include "lib\sys.h"
+#include "FileManager\json.hpp"
 using namespace std;
 
 // 输入缓冲区
@@ -82,7 +83,7 @@ PCB* createPCB(json file)
 {
     PCB* ptr = new PCB;
     // ptr->id=;
-    // ptr->name=;
+    ptr->name = file["name"];
     // ptr->pc=0;
     // ptr->pri=;
     // ptr->size=;
@@ -109,6 +110,11 @@ int main(void)
     string cmd="";
     int args=0;
     vector<string> argv;
+
+    // 文件管理器
+    FileManager fileManager(512, 200, 12);
+    FileOperation fileOperation(&fileManager);
+
     
     while (cmd != "exit")
     {
@@ -150,14 +156,12 @@ int main(void)
             {
                 json file;
                 PCB* pcb;
-                // TODO PCB pcbsd = PCB();
                 ProcManager::getInstance().run(argv[1]);
-                file = get_file(argv[1], "read", "FCFS");
+                file = fileManager.get_file(argv[1], "read", "FCFS");
                 // 判断有没有x
-                // TODO 怎么调用
                 pcb = createPCB(file);
-                // 怎么引用？
-                createProcess();
+                // TODO 怎么引用
+                // createProcess();
             }
             // 测试用
             else if (args == 3)
