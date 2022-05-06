@@ -51,7 +51,7 @@ public:
 MemoryManager::MemoryManager()
 {
     json cfgFile;
-    ifstream in("E:/osDesign/OS/Operating-System/MemoryManager/Manager/cfg", ios::binary);
+    ifstream in("../Manager/cfg", ios::binary);
     if (!in.is_open())
     {
         cout << "Error opening file\n";
