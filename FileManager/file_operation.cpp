@@ -664,3 +664,74 @@ bool FileOperation::copy_dir(string src_path, string dst_path) {
 
     return true;
 }
+
+/**
+ * @brief list the files like the command 'ls' in Linux
+ * 
+ * @param dir_path the path of directory (absolute or relative)
+ * @return void
+ */
+void FileOperation::ls_command(string dir_path) {
+    // if dir_path is null string
+    if (dir_path == "") 
+        dir_path = file_manager->working_path;
+    
+    string target_dir, tmp;
+
+    if (dir_path.front() == (char)path::preferred_separator) 
+        target_dir = file_manager->home_path + dir_path;    // dir_path is absolute
+    else 
+        target_dir = file_manager->home_path + file_manager->working_path + dir_path;   // dir_path is relative
+    
+    if (!exists(target_dir)) {
+        printf("ls: '%s' No such file or directory\n", dir_path.c_str());
+        return;
+    }
+
+    tmp = target_dir = STRING(canonical((path)target_dir));
+    if (string::npos == STRING(canonical((path)target_dir)).find(file_manager->home_path))
+        tmp = target_dir = file_manager->home_path;
+    // cout << "DEBUG:" << target_dir << endl;
+
+    target_dir = target_dir.erase(0, file_manager->home_path.size() + 1);
+    // cout << "DEBUG:" << target_dir << endl;
+
+    json file_tree = file_manager->get_file_system_tree();
+    // Need to search the direct directory
+    while (target_dir.find((char)path::preferred_separator) != string::npos) {
+        string temp_name = target_dir.substr(0, target_dir.find_first_of((char)path::preferred_separator));
+        if (file_tree.contains(temp_name) == false) {
+            printf("ls: '%s' No such file or directory\n", dir_path.c_str());
+            return;
+        }
+        file_tree = file_tree[temp_name];
+        target_dir.erase(0, target_dir.find_first_of((char)path::preferred_separator) + 1);
+    }
+    
+    if (target_dir != "" && file_tree.contains(target_dir) == false) {
+        printf("ls: '%s' No such file or directory\n", dir_path.c_str());
+        return;
+    }
+    
+    if (is_directory(tmp)) {
+        if (target_dir != "")
+            file_tree = file_tree[target_dir];
+        int max_len = 0;
+        for (auto &element : file_tree.items()) {
+            if (max_len < element.key().size())
+                max_len = element.key().size();
+        }
+        int count = 0;
+        for (auto &element : file_tree.items()) {
+            if ((++count) % 8 == 0) 
+                cout << element.key() << "\n";
+            else
+                cout << element.key() << setw(max_len + 2);
+        }
+        cout << setw(0);
+        if (count % 8) puts("");
+    }
+    else {
+        cout << target_dir << "\n";
+    }
+}
