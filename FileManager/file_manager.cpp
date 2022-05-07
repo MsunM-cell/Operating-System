@@ -946,6 +946,15 @@ void Disk::C_LOOK(vector<pair<int, int>> seek_queue)
     this->seek_by_queue(seek_queue);
 }
 
+/**
+ * @brief return the private file_system_tree
+ * @return json
+ */
+json FileManager::get_file_system_tree()
+{
+    return file_system_tree;
+}
+
 int main()
 {
     FileManager fm(512, 200, 12);

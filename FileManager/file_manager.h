@@ -343,6 +343,12 @@ public:
      */
     void display_storage_status();
 
+    /**
+     * @brief return the private file_system_tree
+     * @return json
+     */
+    json get_file_system_tree();
+
 private:
     Disk disk;             // disk
     vector<Block> blocks;  // all disk blocks
