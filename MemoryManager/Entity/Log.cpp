@@ -1,8 +1,8 @@
 /*
  * @Date: 2022-04-08 16:51:14
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-13 16:32:06
- * @FilePath: \Operating-System\MemoryManager\Manager\Log.cpp
+ * @LastEditTime: 2022-04-29 12:03:16
+ * @FilePath: \Operating-System\MemoryManager\Entity\Log.cpp
  */
 
 #ifndef LOG_UTIL
@@ -24,7 +24,7 @@ public:
     static const int DEBUG = 0;
     static const int VERBOSE = 1;
     static const int INFO = 2;
-    static const int ERRORR = 3;     //不知道和哪个库重名了....多加一个R
+    static const int ERRORR = 3;     //不知道和哪个库重名了....多加一个R 
     static const int SUPPRESS = 100; //不输出任何信息
 
 

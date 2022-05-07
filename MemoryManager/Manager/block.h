@@ -31,9 +31,9 @@ public:
     //空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
     void adjust_list(int type);
     //搜索满足条件的空闲块，并返回空闲块首地址
-    int createProcess(PCB& p);
+    int createProcess(PCB &p);
     //释放内存，传入参数pcb
-    int freeProcess(PCB& p);
+    int freeProcess(PCB &p);
     //访问内存接口
     char accessMemory(int pid, int address);
     //写内存接口

@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:07:54
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-29 10:52:01
+ * @LastEditTime: 2022-04-29 13:22:29
  * @FilePath: \Operating-System\MemoryManager\include\ProcessTableItem.h
  */
 #ifndef PROCESSTABLEITEM
@@ -24,7 +24,7 @@ private:
     long long pageCount; //使用中的页数
     std::vector<tableItem *> pageTable;
     long long stackBase;
-    long long rsp; //指向的是栈顶，也就是说下一个才是数据
+    long long rsp; //指向的是栈顶，也就是说上一字节一个才是数据
     long long heapBase;
     long long brk; //堆的顶部
     long long dataStart;

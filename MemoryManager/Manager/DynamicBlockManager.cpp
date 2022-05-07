@@ -7,7 +7,7 @@
 
 #include "block.h"
 
-//ç©ºé—²åˆ†åŒºé“¾è¡¨æŽ’åº,type=0ä¸ºåœ°å€é€’å¢žæŽ’åºï¼Œtype=1ä¸ºå®¹é‡é€’å¢žæŽ’åº
+//¿ÕÏÐ·ÖÇøÁ´±íÅÅÐò,type=0ÎªµØÖ·µÝÔöÅÅÐò£¬type=1ÎªÈÝÁ¿µÝÔöÅÅÐò
 void BlockMemoryManager::adjust_list(int type)
 {
     if (type)
@@ -16,7 +16,7 @@ void BlockMemoryManager::adjust_list(int type)
         sort(free_block_table.begin(), free_block_table.end(), cmp2);
 }
 
-//åŠ è½½æŒ‡ä»¤
+//¼ÓÔØÖ¸Áî
 int BlockMemoryManager::load_ins(int addr, int length)
 {
 
@@ -41,7 +41,7 @@ int BlockMemoryManager::load_ins(int addr, int length)
     return 1;
 }
 
-//æœç´¢æ»¡è¶³æ¡ä»¶çš„ç©ºé—²å—ï¼Œå¹¶è¿”å›žç©ºé—²å—é¦–åœ°å€
+//ËÑË÷Âú×ãÌõ¼þµÄ¿ÕÏÐ¿é£¬²¢·µ»Ø¿ÕÏÐ¿éÊ×µØÖ·
 int BlockMemoryManager::createProcess(PCB &p)
 {
     int i = 0;
@@ -68,50 +68,50 @@ int BlockMemoryManager::createProcess(PCB &p)
         printf("Process %d starts from %d, length %d\n\n", p.id, addr, p.size);
         adjust_list(mem_config.BLOCK_ALGORITHM);
 
-        //åŠ è½½æŒ‡ä»¤
+        //¼ÓÔØÖ¸Áî
         load_ins(addr, p.size);
         return 1;
     }
 }
 
-//é‡Šæ”¾å†…å­˜ï¼Œä¼ å…¥å‚æ•°pcb
+//ÊÍ·ÅÄÚ´æ£¬´«Èë²ÎÊýpcb
 int BlockMemoryManager::freeProcess(PCB &p)
 {
     int addr = pid2addr[p.id].head_addr;
     int length = p.size;
 
-    adjust_list(0); //æ­¤å¤„å¿…é¡»æŒ‰åœ°å€æŽ’åºæ˜¯ä¸ºäº†èƒ½å¤Ÿåˆå¹?
+    adjust_list(0); //´Ë´¦±ØÐë°´µØÖ·ÅÅÐòÊÇÎªÁËÄÜ¹»ºÏ??
     int i = 0;
     while (i < free_block_table.size() && free_block_table[i].head_addr < addr)
         i++;
-    if (i < free_block_table.size() && addr + length == free_block_table[i].head_addr) //å’ŒåŽé¢blockåˆå¹¶
+    if (i < free_block_table.size() && addr + length == free_block_table[i].head_addr) //ºÍºóÃæblockºÏ²¢
     {
         free_block_table[i].head_addr = addr;
         free_block_table[i].len += length;
-        if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //å’Œå‰åŽä¸¤ä¸ªblockåˆå¹¶
+        if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //ºÍÇ°ºóÁ½¸öblockºÏ²¢
         {
             free_block_table[i - 1].len += free_block_table[i].len;
             free_block_table.erase(free_block_table.begin() + i);
         }
     }
-    else if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //å’Œå‰é¢blockåˆå¹¶
+    else if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //ºÍÇ°ÃæblockºÏ²¢
         free_block_table[i - 1].len += length;
-    else //æ–°å»ºç‹¬ç«‹block
+    else //ÐÂ½¨¶ÀÁ¢block
         free_block_table.insert(free_block_table.begin() + i, {addr, length});
 
-    //åˆ é™¤è®°å½•
+    //É¾³ý¼ÇÂ¼
     memset(memory + addr, 0, sizeof(char) * length);
     pid2addr.erase(p.id);
     addr2pid.erase(addr);
 
-    //é‡Šæ”¾å®Œé‡æ–°è°ƒæ•´è¡¨
+    //ÊÍ·ÅÍêÖØÐÂµ÷Õû±í
     adjust_list(mem_config.BLOCK_ALGORITHM);
     // adjust_list(1);
     printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
     return 1;
 }
 
-//åŽ‹ç¼©
+//Ñ¹Ëõ
 int BlockMemoryManager::compress_mem()
 {
     if (free_block_table.empty())
@@ -119,7 +119,7 @@ int BlockMemoryManager::compress_mem()
         cout << "Memory is full,can not compress any more!\n\n";
         return 1;
     }
-    int sumsize = 0; //æ‰€æœ‰è¿›ç¨‹å¤§å°å’Œ
+    int sumsize = 0; //ËùÓÐ½ø³Ì´óÐ¡ºÍ
     for (auto it = addr2pid.begin(); it != addr2pid.end(); it++)
     {
         int id = it->second;
@@ -140,31 +140,31 @@ int BlockMemoryManager::compress_mem()
     return 1;
 }
 
-//è®¿é—®å†…å­˜
+//·ÃÎÊÄÚ´æ
 char BlockMemoryManager::accessMemory(int pid, int address)
 {
     if (address < 0 || address > pid2addr[pid].len)
     {
         puts("Illegal memory access!\n\n");
-        return char(-1); //è®¿é—®å¤±è´¥è¿”å›ž-1
+        return char(-1); //·ÃÎÊÊ§°Ü·µ»Ø-1
     }
     return memory[pid2addr[pid].head_addr + address];
 }
 
-//å†™å†…å­?
+//Ð´ÄÚ??
 int BlockMemoryManager::writeMemory(int logicalAddress, long long src, int size, unsigned int pid)
 {
     return 1;
 }
 
-//åˆå§‹åŒ–å†…å­˜ç®¡ç†ç³»ç»?
+//³õÊ¼»¯ÄÚ´æ¹ÜÀíÏµ??
 void BlockMemoryManager::init_manager()
 {
-    //åˆå§‹åŒ–ç©ºé—²åˆ†åŒºè¡¨
+    //³õÊ¼»¯¿ÕÏÐ·ÖÇø±í
     free_block_table.push_back({0, mem_config.MEM_SIZE});
 }
 
-//æ‰“å°ç©ºé—²åˆ†åŒºé“?
+//´òÓ¡¿ÕÏÐ·ÖÇø??
 void BlockMemoryManager::print_list()
 {
     printf("**********Output the free block list**********\n");

@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 16:54:08
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-09 13:52:05
+ * @LastEditTime: 2022-05-07 22:39:52
  * @FilePath: \Operating-System\MemoryManager\include\FrameTableItem.h
  */
 
@@ -22,7 +22,7 @@ private:
 public:
     FrameTableItem *next, *pre;
     FrameTableItem(long long frameAddress,unsigned int frameNo);
-    ~FrameTableItem();
+    ~FrameTableItem(){};
     void setFrameAddress(long long frameAddress) { this->frameAddress = frameAddress; }
     long long getFrameAddress() { return frameAddress; }
     void setPid(unsigned int pid) { this->pid = pid; }

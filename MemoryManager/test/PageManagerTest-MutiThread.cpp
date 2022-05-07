@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-13 15:22:51
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-13 21:31:01
+ * @LastEditTime: 2022-05-07 22:39:12
  * @FilePath: \Operating-System\MemoryManager\test\PageManagerTest-MutiThread.cpp
  * @copyright: Copyright (C) 2022 shimaoZeng. All rights reserved.
  */
@@ -49,7 +49,11 @@ void test()
                 length = length * 10 + buffer[index] - '0';
                 index++;
             }
-            int res = PageMemoryManager::getInstance()->createProcess(pid, length);
+            PCB* p = new PCB;
+            p->id = pid;
+            p->size = length;
+            int res = PageMemoryManager::getInstance()->createProcess(*p);
+            delete p;
             if (res == 1)
             {
                 stringstream ss;
@@ -82,7 +86,7 @@ void test()
                 index++;
             }
             str += '#';
-            PageMemoryManager::getInstance()->write(address, str.c_str(), str.length(), pid);
+            PageMemoryManager::getInstance()->writeMemory(address, str.c_str(), str.length(), pid);
             break;
         }
 
@@ -125,7 +129,10 @@ void test()
             stringstream ss;
             ss << "delete process  " << pid << endl;
             Log::logI(TAG, ss.str());
-            PageMemoryManager::getInstance()->freeAll(pid);
+            PCB* p = new PCB;
+            p->id = pid;
+            PageMemoryManager::getInstance()->freeProcess(*p);
+            delete p;
             break;
         }
         default:

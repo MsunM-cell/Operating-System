@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-04-29 09:55:49
+ * @LastEditTime: 2022-05-07 22:21:08
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -40,7 +40,6 @@ PageMemoryManager::PageMemoryManager()
 
 PageMemoryManager::~PageMemoryManager()
 {
-    delete memory;
 }
 
 /**
@@ -74,6 +73,7 @@ vector<tableItem *> *PageMemoryManager::getProcessPageTable(int pid)
  */
 int PageMemoryManager::createProcess(PCB &p)
 {
+    cout << "very ok!!!" << endl;
     vector<tableItem *> *pageTable = new vector<tableItem *>;
     tableMap[p.id] = pageTable;
     int allocPageNum = p.size % mem_config.PAGE_SIZE == 0 ? p.size / mem_config.PAGE_SIZE : p.size / mem_config.PAGE_SIZE + 1;
@@ -145,6 +145,7 @@ int PageMemoryManager::freeProcess(PCB &p)
         bitMap[ti->pageNo] = false;
         occupiedPageNum--;
     }
+    return 1;
 }
 
 /**
@@ -153,11 +154,11 @@ int PageMemoryManager::freeProcess(PCB &p)
  * @param {int} address
  * @return {一个字节}
  */
-char PageMemoryManager::accessMemory(int pid, long long address)
+char PageMemoryManager::accessMemory(int pid, int address_index)
 { //读一个字节？
+    
+    long long address = address_index * 8;
 
-    // TODO:tableitem改成指针
-    // TODO:提示使用过该页
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
     if (!pageTable)
     {
@@ -198,8 +199,9 @@ char PageMemoryManager::accessMemory(int pid, long long address)
  * @param {unsigned int} pid
  * @return {1为成功}
  */
-int PageMemoryManager::writeMemory(long long logicalAddress, const void *src, long long size, unsigned int pid)
+int PageMemoryManager::writeMemory(int address_index, const char *src, long long size, unsigned int pid)
 {
+    long long logicalAddress = address_index * 8;
 
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
 
@@ -242,7 +244,6 @@ int PageMemoryManager::writeMemory(long long logicalAddress, const void *src, lo
 
 /**
  * @brief 将bitMap全部设为0
- * FIXME:删掉咯
  */
 void PageMemoryManager::initPageTable()
 {
