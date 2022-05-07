@@ -169,6 +169,41 @@ Disk ..> Block
 ## 存在的问题
 
 ### 内存
+**内存部分完成整合，但存在些许问题，所以先放在dev分支下，目前存在的问题如下：**
+
+    1. 头文件的引用较严格，外部引用只能 include"MemoryManager.cpp" (Manager文件夹下那个),否则编译不通过。
+    2. 测试单独的Manager目前不能直接在类cpp下文件写main函数，否则会因为没有include"MemoryManager.cpp"导致编译失败，解决办法是另开一个cpp文件include"MemoryManager.cpp"后进行测试。
+
+**外部使用的方法如下：**
+
+```cpp
+#include "../Manager/MemoryManager.cpp"
+int main()
+{
+    MemoryManager *manager = MemoryManager::getInstance();
+    PCB *new_pcb = new PCB;
+    manager->createProcess((*new_pcb));
+    manager->accessMemory(1,1234567);
+    manager->freeProcess(*new_pcb);
+    delete manager;
+}
+```
+
+**内部修改getInstance()返回的不同manager的方法为：**
+
+    修改cfg下MANAGER_TYPE，其中
+    
+     基本分页  0
+     页式虚拟内存  1
+     连续分配  2
+     默认      连续分配
+     
+**注意**
+
+    调用完毕子类析构方法后会调用父类的析构方法，父类中析构方法已经有内存释放操作，子类中析构方法不要重复释放
+
+
+
 
 ### 文件
 
@@ -177,7 +212,6 @@ Disk ..> Block
 
 ## TODO
 
-- [ ] 4-14中期验收
 
 ## TIPS
 
