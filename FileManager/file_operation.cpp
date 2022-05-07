@@ -535,7 +535,7 @@ void FileOperation::cd_command(string dir_path) {
         if (exists(target_path)) {
             if (is_directory(target_path)) {
                 file_manager->working_path = dir_path;
-                if (dir_path.back() != (char)path::preferred_separator)
+                if (file_manager->working_path.back() != (char)path::preferred_separator)
                     file_manager->working_path += (char)path::preferred_separator;
                 return;
             }
@@ -558,7 +558,7 @@ void FileOperation::cd_command(string dir_path) {
             // cout << "DEBUG: " << STRING(p) << endl;
             file_manager->working_path = STRING(canonical(p)).substr(file_manager->home_path.size());
             // cout << "DEBUG: " << file_manager->working_path << endl;
-            if (dir_path.back() != (char)path::preferred_separator)
+            if (file_manager->working_path.back() != (char)path::preferred_separator)
                 file_manager->working_path += (char)path::preferred_separator;
         }
         else {
