@@ -121,6 +121,14 @@ public:
      * @return bool
      */
     bool copy_dir(string src_path, string dst_path);
+
+    /**
+     * @brief list the files like the command 'ls' in Linux
+     * 
+     * @param dir_path the path of directory (absolute or relative)
+     * @return void
+     */
+    void ls_command(string dir_path);
     
 private:
     FileManager* file_manager;  // The pointer to a FileManager instance
