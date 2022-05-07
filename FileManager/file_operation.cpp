@@ -19,13 +19,12 @@ FileOperation::FileOperation(FileManager* fm)
  */
 bool FileOperation::create_file(string current_dir, string file_name)
 {
+    if (current_dir.back() != (char)path::preferred_separator)  
+        current_dir.push_back((char)path::preferred_separator);
     string cur_file_path = current_dir + file_name;
     // cout << cur_file_path << endl;
 
-    ifstream input;
-    input.open(cur_file_path, ios::in);
-    if (input.is_open()) {
-        input.close();
+    if (exists(cur_file_path)) {
         printf("Existed! Please try again.\n");
         return false;
     }
@@ -43,14 +42,11 @@ bool FileOperation::create_file(string current_dir, string file_name)
         ofstream outfile(cur_file_path, ios::out);
         outfile << std::setw(4) << new_file;
         outfile.close();
-        input.open(cur_file_path, ios::in);
         // check if the file has been created and if add to the file_system_tree
-        if (input.is_open() && file_manager->add_json_node_to_tree(cur_file_path, new_file)) {
-            input.close();
+        if (exists(cur_file_path) && file_manager->add_json_node_to_tree(cur_file_path, new_file)) {
             printf("Success: make file %s\n", file_name.c_str());
             return true;
         }
-        input.close();
         printf("open file failed or add json failed !\n");
     }
     else
@@ -60,7 +56,7 @@ bool FileOperation::create_file(string current_dir, string file_name)
 }
 
 /**
- * @brief delete a new file
+ * @brief delete a new file (only for file !! Not used to delete a directory!!)
  * 
  * @param current_dir the working directory (absolute)
  * @param file_name the name of the file
@@ -94,7 +90,7 @@ bool FileOperation::delete_file(string current_dir, string file_name)
 }
 
 /**
- * @brief create a new directory
+ * @brief create a new directory called 'dir_name' in the current_dir called 'current_dir'
  * 
  * @param current_dir the working directory (absolute)
  * @param dir_name the name of the directory
@@ -139,13 +135,14 @@ bool FileOperation::delete_dir(string current_dir, string dir_name)
 {
     if (current_dir.back() != path::preferred_separator)
         current_dir.push_back(path::preferred_separator);
-    if (!exists(current_dir + dir_name)) {
+
+    string cur_dir_path = current_dir + dir_name;
+    if (!exists(cur_dir_path)) {
         printf("rm: '%s' No such directory.\n", dir_name.c_str());
         return false;
     }
     
-    string cur_dir_path = current_dir + dir_name;
-    for (auto item: directory_iterator(path(cur_dir_path))) {
+    for (auto &item: directory_iterator(path(cur_dir_path))) {
         string file_path = STRING(item.path());
         string file_name = STRING(item.path().filename());
         
@@ -211,7 +208,7 @@ int FileOperation::file_size(string path) {
  * 
  * @param file_path the absolute path of the file
  * @param mode use a decimal number for a three-bit binary, 1 means the permission is not available. 
- *             From the left to right is to read, write and execute.
+ *             From the left to right is to read, write and execute, for example, mode '7' : '111'.
  * @return bool
  */
 bool FileOperation::modify_file_type(string file_path, unsigned int mode) {
@@ -281,12 +278,11 @@ bool FileOperation::modify_file_type(string file_path, unsigned int mode) {
     return false;
 }
 
-
 /**
  * @brief move a file from the src_path to the dst_path
  * 
- * @param src_path the source path of a file
- * @param dst_path the destination path of the file
+ * @param src_path the source path of a file (absolute)
+ * @param dst_path the destination path of the file (absolute)
  * @return bool
  */
 bool FileOperation::move_file(string src_path, string dst_path) {
@@ -603,7 +599,7 @@ bool FileOperation::recursive_copy_dir(string src_path, string dst_path) {
         printf("cp: '%s' No such directory\n", src_path.c_str());
         return false;
     }
-    for (auto item : directory_iterator(path(src_path))) {
+    for (auto &item : directory_iterator(path(src_path))) {
         string file_path = STRING(item.path());
         string file_name = STRING(item.path().filename());
         if (is_directory(file_path)) {
