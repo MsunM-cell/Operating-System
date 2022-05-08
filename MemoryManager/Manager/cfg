@@ -4,9 +4,9 @@
     "Virtual_memory": "yes",
     "Block_algorithm": "BF",
     "Swap_memory_size": 4194304,
-    "Manager_type": 1
+    "Page": "yes"
   },
-  "name": "config_file",
+  "name": "configuration",
   "priority": 1,
   "size": 500,
   "type": "erwx"
