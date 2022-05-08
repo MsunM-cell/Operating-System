@@ -180,31 +180,33 @@ void test(BasicPageManager &bpm, PCB &p)
   bpm.print_pagetable(p);
 }
 
-//测试完请注释掉..，不然就不能调用这个类写main函数了！
+/* int main()
+{
+  //测试进程
+  PCB p, q, u, v;
+  init_pcb(001, 12345, p); // 13页
+  init_pcb(102, 12900, q); // 13页
+  init_pcb(666, 2049, u);  // 3页
+  init_pcb(321, 6000, v);  // 6页
 
-// int main()
-// {
-//   //测试进程
-//   PCB p, q, u, v;
-//   init_pcb(001, 12345, p); // 13页
-//   init_pcb(102, 12900, q); // 13页
-//   init_pcb(666, 2049, u);  // 3页
-//   init_pcb(321, 6000, v);  // 6页
+  BasicPageManager bpm;
+  test(bpm, p);
+  test(bpm, q);
+  test(bpm, u);
+  bpm.freeProcess(q);
+  bpm.print_frame();
+  cout << bpm.accessMemory(u.id, 4) << endl;
+  bpm.writeMemory(1024, 'f', p.id);
+  cout << bpm.accessMemory(p.id, 1024) << endl;
+  bpm.writeMemory(1,'a',u.id);
+  test(bpm, v);
+  test(bpm, q);
+  bpm.freeProcess(p);
+  bpm.freeProcess(u);
+  bpm.freeProcess(v);
+  bpm.print_frame();
+  bpm.freeProcess(q);
+  bpm.print_frame();
 
-//   BasicPageManager bpm;
-//   test(bpm, p);
-//   test(bpm, q);
-//   test(bpm, u);
-//   bpm.freeProcess(q);
-//   bpm.print_frame();
-//   test(bpm, v);
-//   test(bpm, q);
-//   bpm.freeProcess(p);
-//   bpm.freeProcess(u);
-//   bpm.freeProcess(v);
-//   bpm.print_frame();
-//   bpm.freeProcess(q);
-//   bpm.print_frame();
-
-//   return 0;
-// }
+  return 0;
+} */

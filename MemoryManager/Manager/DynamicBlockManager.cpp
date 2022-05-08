@@ -5,7 +5,7 @@
 
 #include "block.h"
 
-//????????,type=0????????type=1???????
+//空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
 void BlockMemoryManager::adjust_list(int type)
 {
     if (type)
@@ -14,7 +14,7 @@ void BlockMemoryManager::adjust_list(int type)
         sort(free_block_table.begin(), free_block_table.end(), cmp2);
 }
 
-//????
+//加载指令
 int BlockMemoryManager::load_ins(int addr, int length)
 {
 
