@@ -1,7 +1,6 @@
 /*
 @Author:Yuxing Long
-@Date:2022.4.28
-@Content:The basic page allocation
+@Date:2022.5.8
 */
 
 #include "page.h"
@@ -22,14 +21,16 @@ int BasicPageManager::load_ins(int pid)
   if (!in.is_open())
   {
     cout << "Error opening file\n";
-    exit(1);
+    return -1;
   }
   in >> root;
   int addr = pagetable[pid][0] * mem_config.PAGE_SIZE;
   int length = mem_config.PAGE_SIZE;
+  int ins_len = 0;
   for (int i = 0, j = 0; i < root["content"].size(); ++i)
   {
     string s = root["content"][i];
+    ins_len += s.size();
     if (length < s.size()) //帧边界处理
     {
       sprintf(memory + addr, "%s", s.substr(0, length).c_str());
@@ -48,7 +49,7 @@ int BasicPageManager::load_ins(int pid)
   }
 
   in.close();
-  return 1;
+  return ins_len;
 }
 
 //为进程分配内存
@@ -77,7 +78,9 @@ int BasicPageManager::createProcess(PCB &p)
         j++;
       }
 
-    load_ins(p.id);
+    int ins_len = load_ins(p.id);
+    if (ins_len != -1)
+      ins_sum_len[p.id] = ins_len;
     return 1;
   }
   else
@@ -104,6 +107,34 @@ int BasicPageManager::freeProcess(PCB &p)
   }
   pagetable.erase(p.id);
   return 1;
+}
+
+//访问内存
+char BasicPageManager::accessMemory(int pid, int address)
+{
+  int page = address / mem_config.PAGE_SIZE;
+  int offset = address % mem_config.PAGE_SIZE;
+  if (page < pagetable[pid].size())
+  {
+    int trueaddr = pagetable[pid][page] * mem_config.PAGE_SIZE + offset;
+    return memory[trueaddr];
+  }
+  return char(-1);
+}
+
+//写内存
+int BasicPageManager::writeMemory(int logicalAddress, char src, unsigned int pid)
+{
+  if (logicalAddress >= ins_sum_len[pid] && logicalAddress < pagetable[pid].size() * mem_config.PAGE_SIZE)
+  {
+    int page = logicalAddress / mem_config.PAGE_SIZE;
+    int offset = logicalAddress % mem_config.PAGE_SIZE;
+    int trueaddr = pagetable[pid][page] + offset;
+    memory[trueaddr] = src;
+    return 1;
+  }
+  printf("Illegal write!\n\n");
+  return -1;
 }
 
 //打印帧使用情况
@@ -149,31 +180,33 @@ void test(BasicPageManager &bpm, PCB &p)
   bpm.print_pagetable(p);
 }
 
-//测试完请注释掉..，不然就不能调用这个类写main函数了！
+/* int main()
+{
+  //测试进程
+  PCB p, q, u, v;
+  init_pcb(001, 12345, p); // 13页
+  init_pcb(102, 12900, q); // 13页
+  init_pcb(666, 2049, u);  // 3页
+  init_pcb(321, 6000, v);  // 6页
 
-// int main()
-// {
-//   //测试进程
-//   PCB p, q, u, v;
-//   init_pcb(001, 12345, p); // 13页
-//   init_pcb(102, 12900, q); // 13页
-//   init_pcb(666, 2049, u);  // 3页
-//   init_pcb(321, 6000, v);  // 6页
+  BasicPageManager bpm;
+  test(bpm, p);
+  test(bpm, q);
+  test(bpm, u);
+  bpm.freeProcess(q);
+  bpm.print_frame();
+  cout << bpm.accessMemory(u.id, 4) << endl;
+  bpm.writeMemory(1024, 'f', p.id);
+  cout << bpm.accessMemory(p.id, 1024) << endl;
+  bpm.writeMemory(1,'a',u.id);
+  test(bpm, v);
+  test(bpm, q);
+  bpm.freeProcess(p);
+  bpm.freeProcess(u);
+  bpm.freeProcess(v);
+  bpm.print_frame();
+  bpm.freeProcess(q);
+  bpm.print_frame();
 
-//   BasicPageManager bpm;
-//   test(bpm, p);
-//   test(bpm, q);
-//   test(bpm, u);
-//   bpm.freeProcess(q);
-//   bpm.print_frame();
-//   test(bpm, v);
-//   test(bpm, q);
-//   bpm.freeProcess(p);
-//   bpm.freeProcess(u);
-//   bpm.freeProcess(v);
-//   bpm.print_frame();
-//   bpm.freeProcess(q);
-//   bpm.print_frame();
-
-//   return 0;
-// }
+  return 0;
+} */
