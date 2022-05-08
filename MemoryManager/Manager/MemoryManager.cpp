@@ -1,9 +1,10 @@
 #include "BasicPageManager.cpp"
 #include "DynamicBlockManager.cpp"
 #include "PageMemoryManager.cpp"
-//#include "mem.h"
+// #include "mem.h"
 
 MemoryManager *MemoryManager::instance = nullptr;
+int MemoryManager::MANAGER_TYPE = 0;
 
 MemoryManager::MemoryManager()
 {
@@ -14,19 +15,20 @@ MemoryManager::MemoryManager()
 MemoryManager::~MemoryManager()
 {
     delete[] memory;
-    json cfgfile;
-    cfgfile["name"] = "configuration";
-    cfgfile["priority"] = 1;
-    cfgfile["size"] = 500;
-    cfgfile["type"] = "erwx";
-    cfgfile["content"]["Page_size"] = mem_config_copy.PAGE_SIZE;
-    cfgfile["content"]["Page"] = (mem_config_copy.IS_PAGE ? "yes" : "no");
-    cfgfile["content"]["Virtual_memory"] = (mem_config_copy.IS_VIRTUAL ? "yes" : "no");
-    cfgfile["content"]["Block_algorithm"] = (mem_config_copy.BLOCK_ALGORITHM == 1 ? "BF" : "FF");
-    cfgfile["content"]["Swap_memory_size"] = mem_config_copy.SWAP_MEMORY_SIZE;
-    ofstream f("../Manager/cfg", ios::binary);
-    f << cfgfile;
-    f.close();
+    //FIXME:写回存在大问题，比如page size 会变成0 ， ispage也会莫名其妙变成no....以后再修吧，累了
+    // json cfgfile;
+    // cfgfile["name"] = "configuration";
+    // cfgfile["priority"] = 1;
+    // cfgfile["size"] = 500;
+    // cfgfile["type"] = "erwx";
+    // cfgfile["content"]["Page_size"] = mem_config_copy.PAGE_SIZE;
+    // cfgfile["content"]["Page"] = (mem_config_copy.IS_PAGE ? "yes" : "no");
+    // cfgfile["content"]["Virtual_memory"] = (mem_config_copy.IS_VIRTUAL ? "yes" : "no");
+    // cfgfile["content"]["Block_algorithm"] = (mem_config_copy.BLOCK_ALGORITHM == 1 ? "BF" : "FF");
+    // cfgfile["content"]["Swap_memory_size"] = mem_config_copy.SWAP_MEMORY_SIZE;
+    // ofstream f("../Manager/cfg", ios::binary);
+    // f << cfgfile;
+    // f.close();
     cout << "Exit Memory Manager!\n\n";
 }
 
@@ -48,10 +50,7 @@ MemoryManager *MemoryManager::getInstance()
             instance = new BlockMemoryManager();
             break;
         case VIRTUAL_PAGE_MAMORY_MANAGER:
-            std::cout << "will create PageMemoryManager" << std::endl;
-
             instance = new PageMemoryManager();
-            std::cout << "create PageMemoryManager" << std::endl;
             break;
         default:
             instance = new BlockMemoryManager();

@@ -30,6 +30,7 @@ typedef struct memory_configuration
 } configuration;
 configuration mem_config, mem_config_copy;
 
+
 class MemoryManager
 {
 private:
@@ -37,18 +38,17 @@ private:
     const static int VIRTUAL_PAGE_MAMORY_MANAGER = 1;
     const static int BLOCK_MEMORY_MANAGER = 2;
     static int MANAGER_TYPE;
-    
 public:
     char *memory; //物理内存4MB
-
     MemoryManager();
-    static MemoryManager* getInstance();
-    static MemoryManager* instance;
+
+    static MemoryManager *getInstance();
+    static MemoryManager *instance;
     static void init_config();
+
     virtual ~MemoryManager();
     virtual int createProcess(PCB &p) { return 1; }
     virtual int freeProcess(PCB &p) { return 1; }
     virtual char accessMemory(int pid, int address) { return '0'; }
     virtual int writeMemory(int logicalAddress, char src, unsigned int pid) { return 1; }
 };
-

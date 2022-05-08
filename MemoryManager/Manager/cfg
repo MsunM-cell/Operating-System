@@ -1,10 +1,10 @@
 {
   "content": {
+    "Block_algorithm": "FF",
+    "Page": "no",
     "Page_size": 4096,
-    "Virtual_memory": "yes",
-    "Block_algorithm": "BF",
     "Swap_memory_size": 4194304,
-    "Page": "yes"
+    "Virtual_memory": "no"
   },
   "name": "configuration",
   "priority": 1,
