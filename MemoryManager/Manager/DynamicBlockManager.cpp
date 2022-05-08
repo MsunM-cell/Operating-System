@@ -1,13 +1,11 @@
 /*
 @Author:Yuxing Long
-@Date:2022.4.22
-@Content:The dynamic block allocation(First fit & Best fit)
-@Adding configuration file reading
+@Date:2022.5.8
 */
 
 #include "block.h"
 
-//¿ÕÏĞ·ÖÇøÁ´±íÅÅĞò,type=0ÎªµØÖ·µİÔöÅÅĞò£¬type=1ÎªÈİÁ¿µİÔöÅÅĞò
+//ç©ºé—²åˆ†åŒºé“¾è¡¨æ’åº,type=0ä¸ºåœ°å€é€’å¢æ’åºï¼Œtype=1ä¸ºå®¹é‡é€’å¢æ’åº
 void BlockMemoryManager::adjust_list(int type)
 {
     if (type)
@@ -16,32 +14,34 @@ void BlockMemoryManager::adjust_list(int type)
         sort(free_block_table.begin(), free_block_table.end(), cmp2);
 }
 
-//¼ÓÔØÖ¸Áî
+//åŠ è½½æŒ‡ä»¤
 int BlockMemoryManager::load_ins(int addr, int length)
 {
 
     json root;
-    ifstream in("../MemoryManager/Manager/test", ios::binary);
+    ifstream in("git_main/Operating-System/MemoryManager/Manager/test", ios::binary);
     if (!in.is_open())
     {
         cout << "Error opening file\n";
         exit(1);
     }
     in >> root;
+    int ins_len = 0;
     for (int i = 0, j = addr; i < root["content"].size(); ++i)
     {
         string s = root["content"][i];
+        ins_len += s.size();
         s += '\0';
-        //s = s.substr(1, s.size() - 2);
+        // s = s.substr(1, s.size() - 2);
         sprintf(memory + j, "%s", s.c_str());
         j += s.size();
     }
 
     in.close();
-    return 1;
+    return ins_len;
 }
 
-//ËÑË÷Âú×ãÌõ¼şµÄ¿ÕÏĞ¿é£¬²¢·µ»Ø¿ÕÏĞ¿éÊ×µØÖ·
+//æœç´¢æ»¡è¶³æ¡ä»¶çš„ç©ºé—²å—ï¼Œå¹¶è¿”å›ç©ºé—²å—é¦–åœ°å€
 int BlockMemoryManager::createProcess(PCB &p)
 {
     int i = 0;
@@ -68,50 +68,52 @@ int BlockMemoryManager::createProcess(PCB &p)
         printf("Process %d starts from %d, length %d\n\n", p.id, addr, p.size);
         adjust_list(mem_config.BLOCK_ALGORITHM);
 
-        //¼ÓÔØÖ¸Áî
-        load_ins(addr, p.size);
-        return 1;
+        //åŠ è½½æŒ‡ä»¤
+        int ins_len = load_ins(addr, p.size);
+        if (ins_len != -1)
+            ins_sum_len[p.id] = ins_len;
+        return addr;
     }
 }
 
-//ÊÍ·ÅÄÚ´æ£¬´«Èë²ÎÊıpcb
+//é‡Šæ”¾å†…å­˜ï¼Œä¼ å…¥å‚æ•°pcb
 int BlockMemoryManager::freeProcess(PCB &p)
 {
     int addr = pid2addr[p.id].head_addr;
     int length = p.size;
 
-    adjust_list(0); //´Ë´¦±ØĞë°´µØÖ·ÅÅĞòÊÇÎªÁËÄÜ¹»ºÏ??
+    adjust_list(0); //æ­¤å¤„å¿…é¡»æŒ‰åœ°å€æ’åºæ˜¯ä¸ºäº†èƒ½å¤Ÿåˆå¹¶
     int i = 0;
     while (i < free_block_table.size() && free_block_table[i].head_addr < addr)
         i++;
-    if (i < free_block_table.size() && addr + length == free_block_table[i].head_addr) //ºÍºóÃæblockºÏ²¢
+    if (i < free_block_table.size() && addr + length == free_block_table[i].head_addr) //å’Œåé¢blockåˆå¹¶
     {
         free_block_table[i].head_addr = addr;
         free_block_table[i].len += length;
-        if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //ºÍÇ°ºóÁ½¸öblockºÏ²¢
+        if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //å’Œå‰åä¸¤ä¸ªblockåˆå¹¶
         {
             free_block_table[i - 1].len += free_block_table[i].len;
             free_block_table.erase(free_block_table.begin() + i);
         }
     }
-    else if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //ºÍÇ°ÃæblockºÏ²¢
+    else if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //å’Œå‰é¢blockåˆå¹¶
         free_block_table[i - 1].len += length;
-    else //ĞÂ½¨¶ÀÁ¢block
+    else //æ–°å»ºç‹¬ç«‹block
         free_block_table.insert(free_block_table.begin() + i, {addr, length});
 
-    //É¾³ı¼ÇÂ¼
-    memset(memory + addr, 0, sizeof(char) * length);
+    //åˆ é™¤è®°å½•
+    // memset(memory + addr, 0, sizeof(char) * length);
     pid2addr.erase(p.id);
     addr2pid.erase(addr);
 
-    //ÊÍ·ÅÍêÖØĞÂµ÷Õû±í
+    //é‡Šæ”¾å®Œé‡æ–°è°ƒæ•´è¡¨
     adjust_list(mem_config.BLOCK_ALGORITHM);
     // adjust_list(1);
     printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
     return 1;
 }
 
-//Ñ¹Ëõ
+//å‹ç¼©
 int BlockMemoryManager::compress_mem()
 {
     if (free_block_table.empty())
@@ -119,7 +121,7 @@ int BlockMemoryManager::compress_mem()
         cout << "Memory is full,can not compress any more!\n\n";
         return 1;
     }
-    int sumsize = 0; //ËùÓĞ½ø³Ì´óĞ¡ºÍ
+    int sumsize = 0; //æ‰€æœ‰è¿›ç¨‹å¤§å°å’Œ
     for (auto it = addr2pid.begin(); it != addr2pid.end(); it++)
     {
         int id = it->second;
@@ -140,31 +142,37 @@ int BlockMemoryManager::compress_mem()
     return 1;
 }
 
-//·ÃÎÊÄÚ´æ
+//è®¿é—®å†…å­˜
 char BlockMemoryManager::accessMemory(int pid, int address)
 {
     if (address < 0 || address > pid2addr[pid].len)
     {
         puts("Illegal memory access!\n\n");
-        return char(-1); //·ÃÎÊÊ§°Ü·µ»Ø-1
+        return char(-1); //è®¿é—®å¤±è´¥è¿”å›-1
     }
     return memory[pid2addr[pid].head_addr + address];
 }
 
-//Ğ´ÄÚ??
-int BlockMemoryManager::writeMemory(int logicalAddress, long long src, int size, unsigned int pid)
+//å†™å†…å­˜
+int BlockMemoryManager::writeMemory(int logicalAddress, char src, unsigned int pid)
 {
-    return 1;
+    if (logicalAddress < pid2addr[pid].second && logicalAddress >= ins_sum_len[pid])
+    {
+        memory[pid2addr[pid].first + logicalAddress] = src;
+        return 1;
+    }
+    printf("Illegal write!\n\n");
+    return -1;
 }
 
-//³õÊ¼»¯ÄÚ´æ¹ÜÀíÏµ??
+//åˆå§‹åŒ–å†…å­˜ç®¡ç†ç³»ç»Ÿ
 void BlockMemoryManager::init_manager()
 {
-    //³õÊ¼»¯¿ÕÏĞ·ÖÇø±í
+    //åˆå§‹åŒ–ç©ºé—²åˆ†åŒºè¡¨
     free_block_table.push_back({0, mem_config.MEM_SIZE});
 }
 
-//´òÓ¡¿ÕÏĞ·ÖÇø??
+//æ‰“å°ç©ºé—²åˆ†åŒºé“¾
 void BlockMemoryManager::print_list()
 {
     printf("**********Output the free block list**********\n");
@@ -175,35 +183,38 @@ void BlockMemoryManager::print_list()
     puts("**********************End*********************\n");
 }
 
-// int main()
-// {
-//     PCB a, b, c, d;
-//     a.id = 1001, a.size = 12 * 1024; // 12KB
-//     b.id = 1002, b.size = 6 * 1024;  // 6KB
-//     c.id = 1003, c.size = 10 * 1024; // 10KB
-//     d.id = 1004, d.size = 4 * 1024;  // 4KB
+/* int main()
+{
+    PCB a, b, c, d;
+    a.id = 1001, a.size = 12 * 1024; // 12KB
+    b.id = 1002, b.size = 6 * 1024;  // 6KB
+    c.id = 1003, c.size = 10 * 1024; // 10KB
+    d.id = 1004, d.size = 4 * 1024;  // 4KB
 
-//     BlockMemoryManager bmm;
-//     bmm.print_list();
-//     bmm.createProcess(a);
-//     bmm.createProcess(b);
-//     bmm.createProcess(c);
-//     cout << bmm.accessMemory(a.id, 1) << endl;
-//     bmm.print_list();
-//     bmm.freeProcess(b);
-//     bmm.print_list();
-//     bmm.compress_mem();
-//     bmm.print_list();
-//     bmm.createProcess(d);
-//     bmm.print_list();
-//     bmm.freeProcess(a);
-//     bmm.createProcess(b);
-//     bmm.print_list();
-//     bmm.freeProcess(d);
-//     bmm.print_list();
-//     bmm.freeProcess(b);
-//     bmm.print_list();
-//     bmm.freeProcess(c);
-//     bmm.print_list();
-//     return 0;
-// }
+    BlockMemoryManager bmm;
+    bmm.print_list();
+    bmm.createProcess(a);
+    bmm.createProcess(b);
+    bmm.createProcess(c);
+    cout << bmm.accessMemory(a.id, 1) << endl;
+    bmm.writeMemory(256, 't', b.id);
+    cout << bmm.accessMemory(b.id, 256) << endl;
+    bmm.writeMemory(2, 'a', b.id);
+    bmm.print_list();
+    bmm.freeProcess(b);
+    bmm.print_list();
+    bmm.compress_mem();
+    bmm.print_list();
+    bmm.createProcess(d);
+    bmm.print_list();
+    bmm.freeProcess(a);
+    bmm.createProcess(b);
+    bmm.print_list();
+    bmm.freeProcess(d);
+    bmm.print_list();
+    bmm.freeProcess(b);
+    bmm.print_list();
+    bmm.freeProcess(c);
+    bmm.print_list();
+    return 0;
+} */
