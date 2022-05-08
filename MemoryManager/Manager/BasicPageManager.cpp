@@ -1,7 +1,6 @@
 /*
 @Author:Yuxing Long
-@Date:2022.5.6
-@Content:The basic page allocation
+@Date:2022.5.8
 */
 
 #include "page.h"
@@ -80,6 +79,8 @@ int BasicPageManager::createProcess(PCB &p)
       }
 
     int ins_len = load_ins(p.id);
+    if (ins_len != -1)
+      ins_sum_len[p.id] = ins_len;
     return 1;
   }
   else
@@ -197,6 +198,7 @@ int main()
   cout << bpm.accessMemory(u.id, 4) << endl;
   bpm.writeMemory(1024, 'f', p.id);
   cout << bpm.accessMemory(p.id, 1024) << endl;
+  bpm.writeMemory(1,'a',u.id);
   test(bpm, v);
   test(bpm, q);
   bpm.freeProcess(p);

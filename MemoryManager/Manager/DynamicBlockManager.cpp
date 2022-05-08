@@ -1,8 +1,6 @@
 /*
 @Author:Yuxing Long
-@Date:2022.5.6
-@Content:The dynamic block allocation(First fit & Best fit)
-@Adding configuration file reading
+@Date:2022.5.8
 */
 
 #include "block.h"
@@ -71,7 +69,9 @@ int BlockMemoryManager::createProcess(PCB &p)
         adjust_list(mem_config.BLOCK_ALGORITHM);
 
         //????
-        ins_sum_len[p.id] = load_ins(addr, p.size);
+        int ins_len = load_ins(addr, p.size);
+        if (ins_len != -1)
+            ins_sum_len[p.id] = ins_len;
         return addr;
     }
 }
@@ -102,7 +102,7 @@ int BlockMemoryManager::freeProcess(PCB &p)
         free_block_table.insert(free_block_table.begin() + i, {addr, length});
 
     //????
-    memset(memory + addr, 0, sizeof(char) * length);
+    // memset(memory + addr, 0, sizeof(char) * length);
     pid2addr.erase(p.id);
     addr2pid.erase(addr);
 
@@ -199,6 +199,7 @@ int main()
     cout << bmm.accessMemory(a.id, 1) << endl;
     bmm.writeMemory(256, 't', b.id);
     cout << bmm.accessMemory(b.id, 256) << endl;
+    bmm.writeMemory(2, 'a', b.id);
     bmm.print_list();
     bmm.freeProcess(b);
     bmm.print_list();

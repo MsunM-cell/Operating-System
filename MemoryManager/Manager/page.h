@@ -4,10 +4,6 @@
 //页表寄存器
 #define start_addr first
 #define table_len second
-//页表项长度(字节)
-#define PageTableItem_Byte 2
-//快表长度
-#define TLB_len 5
 
 
 //基本分页管理
