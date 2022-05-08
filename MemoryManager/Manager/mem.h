@@ -23,18 +23,19 @@ using nlohmann::json;
 
 typedef pair<int, int> PII;
 
-//ÄÚ´æÅäÖÃ£¬´ÓÅäÖÃÎÄ¼ş¶ÁÈ¡
-struct memory_configuration
+//å†…å­˜é…ç½®ï¼Œä»é…ç½®æ–‡ä»¶è¯»å–
+typedef struct memory_configuration
 {
 
-    int PAGE_SIZE;                        //Ò»Ò³µÄ´óĞ¡
-    int FRAME_NUM;                        //Ö¡µÄÊıÁ¿
-    int SWAP_MEMORY_SIZE;                 //½»»»Çø´óĞ¡
-    bool IS_VIRTUAL;                      //ÊÇ·ñ¿ªÆôĞéÄâÄÚ´æ
-    const int MEM_SIZE = 4 * 1024 * 1024; //ÎïÀíÄÚ´æ´óĞ¡£¨¹Ì¶¨£©
-    int BLOCK_ALGORITHM;                  //¶¯Ì¬·ÖÇøËã·¨
-    int MANAGER_TYPE;
-} mem_config;
+    int PAGE_SIZE;                        //ä¸€é¡µçš„å¤§å°
+    int FRAME_NUM;                        //å¸§çš„æ•°é‡
+    int SWAP_MEMORY_SIZE;                 //äº¤æ¢åŒºå¤§å°
+    bool IS_VIRTUAL;                      //æ˜¯å¦å¼€å¯è™šæ‹Ÿå†…å­˜
+    const int MEM_SIZE = 4 * 1024 * 1024; //ç‰©ç†å†…å­˜å¤§å°ï¼ˆå›ºå®šï¼‰
+    int BLOCK_ALGORITHM;                  //åŠ¨æ€åˆ†åŒºç®—æ³•
+    bool IS_PAGE;                         //æ˜¯å¦å¯åŠ¨åˆ†é¡µ
+} configuration;
+configuration mem_config, mem_config_copy;
 
 class MemoryManager
 {
@@ -44,11 +45,11 @@ private:
     const static int BLOCK_MEMORY_MANAGER = 2;
     
 public:
-    char *memory; //ÄÚ´æÊı×é£¬¶¯Ì¬ÉêÇë4MB
+    char *memory; //å†…å­˜æ•°ç»„ï¼ŒåŠ¨æ€ç”³è¯·4MB
     static MemoryManager *instance;
     static MemoryManager *getInstance();
     static void init_config();
-    //³õÊ¼ÅäÖÃÎÄ¼ş
+    //åˆå§‹é…ç½®æ–‡ä»¶
     MemoryManager();
     virtual ~MemoryManager();
     virtual int createProcess(PCB &p);
