@@ -7,6 +7,9 @@ MemoryManager *MemoryManager::instance = nullptr;
 
 MemoryManager::MemoryManager()
 {
+    MemoryManager::init_config();
+    //有点矛盾...如果只通过getInstance调用的话这里可以不init
+    //但单独new单个类时不会调用getInstance，所以写了两遍init_config
     memory = new char[mem_config.MEM_SIZE]{};
 }
 
@@ -34,10 +37,7 @@ MemoryManager *MemoryManager::getInstance()
             instance = new BlockMemoryManager();
             break;
         case VIRTUAL_PAGE_MAMORY_MANAGER:
-            std::cout << "will crete PageMemoryManager" << std::endl;
-
             instance = new PageMemoryManager();
-            std::cout << "crete PageMemoryManager" << std::endl;
             break;
         default:
             instance = new BlockMemoryManager();
@@ -45,23 +45,6 @@ MemoryManager *MemoryManager::getInstance()
         }
         return instance;
     }
-}
-
-int MemoryManager::createProcess(PCB &p)
-{
-    return 0;
-}
-int MemoryManager::freeProcess(PCB &p)
-{
-    return 0;
-}
-char MemoryManager::accessMemory(int pid, int address)
-{
-    return '0';
-}
-int MemoryManager::writeMemory(int logicalAddress, const char *src, int size, unsigned int pid)
-{
-    return 0;
 }
 
 void MemoryManager::init_config()

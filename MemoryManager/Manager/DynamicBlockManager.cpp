@@ -183,38 +183,38 @@ void BlockMemoryManager::print_list()
     puts("**********************End*********************\n");
 }
 
-int main()
-{
-    PCB a, b, c, d;
-    a.id = 1001, a.size = 12 * 1024; // 12KB
-    b.id = 1002, b.size = 6 * 1024;  // 6KB
-    c.id = 1003, c.size = 10 * 1024; // 10KB
-    d.id = 1004, d.size = 4 * 1024;  // 4KB
+// int main()
+// {
+//     PCB a, b, c, d;
+//     a.id = 1001, a.size = 12 * 1024; // 12KB
+//     b.id = 1002, b.size = 6 * 1024;  // 6KB
+//     c.id = 1003, c.size = 10 * 1024; // 10KB
+//     d.id = 1004, d.size = 4 * 1024;  // 4KB
 
-    BlockMemoryManager bmm;
-    bmm.print_list();
-    bmm.createProcess(a);
-    bmm.createProcess(b);
-    bmm.createProcess(c);
-    cout << bmm.accessMemory(a.id, 1) << endl;
-    bmm.writeMemory(256, 't', b.id);
-    cout << bmm.accessMemory(b.id, 256) << endl;
-    bmm.writeMemory(2, 'a', b.id);
-    bmm.print_list();
-    bmm.freeProcess(b);
-    bmm.print_list();
-    bmm.compress_mem();
-    bmm.print_list();
-    bmm.createProcess(d);
-    bmm.print_list();
-    bmm.freeProcess(a);
-    bmm.createProcess(b);
-    bmm.print_list();
-    bmm.freeProcess(d);
-    bmm.print_list();
-    bmm.freeProcess(b);
-    bmm.print_list();
-    bmm.freeProcess(c);
-    bmm.print_list();
-    return 0;
-}
+//     BlockMemoryManager bmm;
+//     bmm.print_list();
+//     bmm.createProcess(a);
+//     bmm.createProcess(b);
+//     bmm.createProcess(c);
+//     cout << bmm.accessMemory(a.id, 1) << endl;
+//     bmm.writeMemory(256, 't', b.id);
+//     cout << bmm.accessMemory(b.id, 256) << endl;
+//     bmm.writeMemory(2, 'a', b.id);
+//     bmm.print_list();
+//     bmm.freeProcess(b);
+//     bmm.print_list();
+//     bmm.compress_mem();
+//     bmm.print_list();
+//     bmm.createProcess(d);
+//     bmm.print_list();
+//     bmm.freeProcess(a);
+//     bmm.createProcess(b);
+//     bmm.print_list();
+//     bmm.freeProcess(d);
+//     bmm.print_list();
+//     bmm.freeProcess(b);
+//     bmm.print_list();
+//     bmm.freeProcess(c);
+//     bmm.print_list();
+//     return 0;
+// }
