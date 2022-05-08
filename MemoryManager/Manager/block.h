@@ -18,6 +18,8 @@ private:
     //进程和首地址对应表
     map<int, PII> pid2addr;
     map<int, int> addr2pid;
+    //进程指令长度
+    map<int,int> ins_sum_len;
     //读取配置文件，修改分配策略
     void modify_tactic(int new_mode) { mem_config.BLOCK_ALGORITHM = new_mode; }
     //初始化该内存管理系统
@@ -37,7 +39,7 @@ public:
     //访问内存接口
     char accessMemory(int pid, int address);
     //写内存接口
-    int writeMemory(int logicalAddress, long long src, int size, unsigned int pid);
+    int writeMemory(int logicalAddress, char src, unsigned int pid);
     //压缩
     int compress_mem();
     //加载指令

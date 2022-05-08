@@ -18,6 +18,8 @@ private:
     PII PTR;
     //所有进程快表模拟,随PTR切换而切换
     unordered_map<int, vector<PII>> TLB;
+    //进程指令长度
+    map<int,int> ins_sum_len;
     //初始化基本分页系统
     void init_manager();
     //标记帧使用情况,first为进程pid,初识为-1,second为该帧实际使用大小
@@ -28,15 +30,11 @@ private:
 public:
     //构造函数和析构函数
     BasicPageManager() { init_manager(); }
-    ~BasicPageManager() 
-    { 
-        puts("Exit the basic page system"); 
-    }
+    ~BasicPageManager(){ printf("Exit BasicPageManager\n"); }
     //访问内存接口
-    char accessMemory(int pid, int address) { return '1'; }
+    char accessMemory(int pid, int address);
     //写内存接口
-    int writeMemory(int logicalAddress, long long src, int size, unsigned int pid) { return 1; }
-
+    int writeMemory(int logicalAddress, char src, unsigned int pid);
     //加载指令
     int load_ins(int pid);
     //分配进程内存
