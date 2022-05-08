@@ -17,7 +17,7 @@ int BasicPageManager::load_ins(int pid)
 {
 
   json root;
-  ifstream in("git_main/Operating-System/MemoryManager/Manager/test", ios::binary);
+  ifstream in("../Manager/test", ios::binary);
   if (!in.is_open())
   {
     cout << "Error opening file\n";
@@ -30,6 +30,7 @@ int BasicPageManager::load_ins(int pid)
   for (int i = 0, j = 0; i < root["content"].size(); ++i)
   {
     string s = root["content"][i];
+    s += '\0';//末尾\0
     ins_len += s.size();
     if (length < s.size()) //帧边界处理
     {
