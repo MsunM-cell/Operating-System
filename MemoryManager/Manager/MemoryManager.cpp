@@ -15,7 +15,7 @@ MemoryManager::MemoryManager()
 MemoryManager::~MemoryManager()
 {
     delete[] memory;
-    //FIXME:写回存在大问题，比如page size 会变成0 ， ispage也会莫名其妙变成no....以后再修吧，累了
+    //FIXME:写回存在大问题，比如page size 会变�?0 �? ispage也会莫名其妙变成no....以后再修吧，累了
     // json cfgfile;
     // cfgfile["name"] = "configuration";
     // cfgfile["priority"] = 1;
@@ -63,7 +63,7 @@ MemoryManager *MemoryManager::getInstance()
 void MemoryManager::init_config()
 {
     json cfgFile;
-    ifstream in("../Manager/cfg", ios::binary);
+    ifstream in("../MemoryManager/Manager/cfg", ios::binary);
     if (!in.is_open())
     {
         cout << "Error opening file\n";
@@ -71,7 +71,7 @@ void MemoryManager::init_config()
     }
 
     in >> cfgFile;
-    //读取子节点信息
+    //读取子节点信�?
     mem_config.PAGE_SIZE = cfgFile["content"]["Page_size"];
     mem_config.FRAME_NUM = mem_config.MEM_SIZE / mem_config.PAGE_SIZE;
     string blockAlgorithm = cfgFile["content"]["Block_algorithm"];

@@ -19,7 +19,7 @@ int BlockMemoryManager::load_ins(int addr, int length)
 {
 
     json root;
-    ifstream in("git_main/Operating-System/MemoryManager/Manager/test", ios::binary);
+    ifstream in("../MemoryManager/Manager/test", ios::binary);
     if (!in.is_open())
     {
         cout << "Error opening file\n";
@@ -106,7 +106,7 @@ int BlockMemoryManager::freeProcess(PCB &p)
     pid2addr.erase(p.id);
     addr2pid.erase(addr);
 
-    //动态调整链表
+    //动态调整链�?
     adjust_list(mem_config.BLOCK_ALGORITHM);
     // adjust_list(1);
     printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
@@ -165,7 +165,7 @@ int BlockMemoryManager::writeMemory(int logicalAddress, char src, unsigned int p
     return -1;
 }
 
-//初始化
+//初始�?
 void BlockMemoryManager::init_manager()
 {
     //全部物理内存

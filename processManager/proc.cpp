@@ -189,7 +189,7 @@ void ProcManagerFCFS::runProcManager(){
             // FIXME 无限循环，所以先注释掉了
             p->size = 4096;
             p->pc = 5;
-            bmm->createProcess(*p);
+            mm->createProcess(*p);
             run(p);
             Sleep(p->time_need);
             // cout << "pid:" << p->id << "shut in fcfs.\n";
@@ -208,7 +208,7 @@ void ProcManagerFCFS::runProcManager(){
  */
 string ProcManagerFCFS::getCommand(PCB *p){
     string command = "";
-    char tmp = bmm->accessMemory(p->id,p->pc);
+    char tmp = mm->accessMemory(p->id,p->pc);
     p->pc += 1;
     if(tmp == '#'){
         Sleep(1000);
@@ -217,7 +217,7 @@ string ProcManagerFCFS::getCommand(PCB *p){
     }
     while(tmp != '\0' && tmp != '#'){
         command += tmp;
-        tmp = bmm->accessMemory(p->id,p->pc);
+        tmp = mm->accessMemory(p->id,p->pc);
         p->pc += 1;
     }
     return command;
@@ -706,29 +706,29 @@ ProcManager& ProcManager::getInstance()
     return instance;
 }
 
-// int main()
-// {
-//     // RRQueue test_queue(5,2);
-//     // 系统开始计时，实际应该更早
-//     system_start = clock();
-//     cout << setiosflags(ios::left);
-//     printf("[%ld]This is a test\n", clock() - system_start);
+int main()
+{
+    // RRQueue test_queue(5,2);
+    // 系统开始计时，实际应该更早
+    system_start = clock();
+    cout << setiosflags(ios::left);
+    printf("[%ld]This is a test\n", clock() - system_start);
 
 
-//     cout << "ps all" << endl;
-//     ProcManager::getInstance().ps();
-//     cout << "ps 3" << endl;
-//     ProcManager::getInstance().ps(3);
-//     cout <<"kill test\n";
-//     ProcManager::getInstance().kill(3);
-//     ProcManager::getInstance().ps();
-//     cout <<"run test\n";
-//     ProcManager::getInstance().run("run_test");
-//     ProcManager::getInstance().ps();
-//     ProcManager::getInstance().scheduling();
-//     ProcManager::getInstance().ps();
+    cout << "ps all" << endl;
+    ProcManager::getInstance().ps();
+    cout << "ps 3" << endl;
+    ProcManager::getInstance().ps(3);
+    cout <<"kill test\n";
+    ProcManager::getInstance().kill(3);
+    ProcManager::getInstance().ps();
+    cout <<"run test\n";
+    ProcManager::getInstance().run("run_test");
+    ProcManager::getInstance().ps();
+    ProcManager::getInstance().scheduling();
+    ProcManager::getInstance().ps();
 
 
-//     // system("pause");
-//     return 0;
-// }
+    // system("pause");
+    return 0;
+}
