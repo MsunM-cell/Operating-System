@@ -15,7 +15,7 @@ MemoryManager::MemoryManager()
 MemoryManager::~MemoryManager()
 {
     delete[] memory;
-    //FIXME:写回存在大问题，比如page size 会变�?0 �? ispage也会莫名其妙变成no....以后再修吧，累了
+    //FIXME:å†™å›žå­˜åœ¨å¤§é—®é¢˜ï¼Œæ¯”å¦‚page size ä¼šå˜æˆ?0 ï¼? ispageä¹Ÿä¼šèŽ«åå…¶å¦™å˜æˆno....ä»¥åŽå†ä¿®å§ï¼Œç´¯äº†
     // json cfgfile;
     // cfgfile["name"] = "configuration";
     // cfgfile["priority"] = 1;
@@ -71,7 +71,7 @@ void MemoryManager::init_config()
     }
 
     in >> cfgFile;
-    //读取子节点信�?
+    //è¯»å–å­èŠ‚ç‚¹ä¿¡æ?
     mem_config.PAGE_SIZE = cfgFile["content"]["Page_size"];
     mem_config.FRAME_NUM = mem_config.MEM_SIZE / mem_config.PAGE_SIZE;
     string blockAlgorithm = cfgFile["content"]["Block_algorithm"];
@@ -93,4 +93,6 @@ void MemoryManager::init_config()
     cout << "Configuration Complete!\n"
          << endl;
     in.close();
+    
+    memcpy(&mem_config_copy, &mem_config, sizeof(mem_config));
 }
