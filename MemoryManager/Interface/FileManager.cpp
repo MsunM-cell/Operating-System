@@ -8,13 +8,13 @@
 #ifndef FILE_MANAGER
 #define FILE_MANAGER
 
-class FileManager
-{
-private:
-    /* data */
-public:
-    virtual char *readData(long long address, unsigned int length) = 0;
-    virtual long long write(char *src, unsigned int length) = 0;
-};
+// class FileManager
+// {
+// private:
+//     /* data */
+// public:
+//     virtual char *readData(long long address, unsigned int length) = 0;
+//     virtual long long write(char *src, unsigned int length) = 0;
+// };
 
 #endif

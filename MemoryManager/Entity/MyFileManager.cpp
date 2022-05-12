@@ -5,11 +5,12 @@
  * @FilePath: \Operating-System\MemoryManager\Manager\MyFileManager.cpp
  */
 #include "../Interface/FileManager.cpp"
-#include <vector>
+// #include <vector>
 #include <map>
 #include <string>
+#include "../../FileManager/file_manager.h"
 
-class MyFileManager : public FileManager
+class MyFileManager
 {
 private:
     std::map<int, char *> myMap;
@@ -20,13 +21,13 @@ public:
     static MyFileManager *getInstance();
     char *readData(long long address, unsigned int length);
     long long write(char *src, unsigned int length);
-    MyFileManager(/* args */);
+    MyFileManager(int block_size, int track_num, int sector_num);
     ~MyFileManager();
 };
 
 MyFileManager *MyFileManager::instance = nullptr;
 
-MyFileManager::MyFileManager(/* args */)
+MyFileManager::MyFileManager(int block_size, int track_num, int sector_num)
 {
     addressCount = 0;
 }
@@ -43,7 +44,7 @@ MyFileManager *MyFileManager::getInstance()
     }
     else
     {
-        instance = new MyFileManager();
+        instance = new MyFileManager(512,200,12);
         return instance;
     }
 }

@@ -2,19 +2,22 @@
 #include <sstream>
 #include <windows.h>
 
-
+#include "processManager\proc.h"
 #include "processManager\proc.cpp"
+#include "FileManager\file_manager.h"
 #include "FileManager\file_manager.cpp"
+#include "FileManager\file_operation.h"
 #include "FileManager\file_operation.cpp"
+#include "FileManager\json.hpp"
 #include "lib\sys.h"
 #include "FileManager\json.hpp"
 using namespace std;
 
-// 输入缓冲区
+// 输入缓冲�?
 string inBuf="";
-// 互斥锁
+// 互斥�?
 HANDLE hMutex = NULL;
-// 信号量
+// 信号�?
 HANDLE hSemaphore = INVALID_HANDLE_VALUE;
 
 /**
@@ -34,7 +37,7 @@ DWORD WINAPI getch(LPVOID lpParamter)
 }
 
 /**
- * @brief 进程管理器调度的线程函数，确保可以边接收指令边调度
+ * @brief 进程管理器调度的线程函数，确保可以边接收指令边调�?
  * 
  * @param lpParamter 
  * @return DWORD 
@@ -55,10 +58,10 @@ DWORD WINAPI setupProcManager(LPVOID lpParamter)
 }
 
 /**
- * @brief 对用户指令进行解析
+ * @brief 对用户指令进行解�?
  * 
  * @param cmd 输入指令
- * @param argv 输出的参数数组
+ * @param argv 输出的参数数�?
  * @return int 参数数量
  */
 int parse(string cmd, vector<string> &argv)
@@ -77,7 +80,7 @@ int parse(string cmd, vector<string> &argv)
 /**
  * @brief 新建pcb
  * 
- * @param file 传入的文件
+ * @param file 传入的文�?
  */
 PCB* createPCB(json file)
 {
@@ -111,9 +114,9 @@ int main(void)
     int args=0;
     vector<string> argv;
 
-    // 文件管理器
-    FileManager fileManager(512, 200, 12);
-    FileOperation fileOperation(&fileManager);
+    // 文件管理�?
+    FileManager fm(512, 200, 12);
+    FileOperation fileOperation(&fm);
 
     
     while (cmd != "exit")
@@ -123,7 +126,7 @@ int main(void)
         cmd = inBuf;
         // cout << cmd << endl;
         args = parse(cmd, argv);
-        // 根据分析出的指令执行相关的操作
+        // 根据分析出的指令执行相关的操�?
         if (argv[0] == "ps") {
             if (args == 1)
             {
@@ -157,17 +160,17 @@ int main(void)
                 json file;
                 PCB* pcb;
                 ProcManager::getInstance().run(argv[1]);
-                file = fileManager.get_file(argv[1], "read", "FCFS");
+                file = fm.get_file(argv[1], "read", "FCFS");
                 // 判断有没有x
                 pcb = createPCB(file);
                 // TODO 怎么引用
                 // createProcess();
             }
-            // 测试用
-            else if (args == 3)
-            {
-                ProcManager::getInstance().run(argv[1], atoi(argv[2].c_str()));
-            }
+            // 测试�?
+            // else if (args == 3)
+            // {
+            //     ProcManager::getInstance().run(argv[1], atoi(argv[2].c_str()));
+            // }
             else
             {
                 cout << "unknown cmd!\n";
@@ -184,6 +187,5 @@ int main(void)
         }
         ReleaseMutex(hMutex);
     }
-    
     return 0;
 }

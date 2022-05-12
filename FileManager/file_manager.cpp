@@ -174,8 +174,10 @@ json FileManager::init_file_system_tree(string current_path)
 {
     json tree;
     // convert std::string to filesystem::path
+    cout << current_path << endl;
     path cur_path(current_path);
     // get file entry container to traverse directory
+    cout << cur_path << endl;
     directory_iterator file_list(cur_path);
     // traverse directory
     for (auto &file : file_list)
@@ -955,23 +957,24 @@ json FileManager::get_file_system_tree()
     return file_system_tree;
 }
 
-int main()
-{
-    FileManager fm(512, 200, 12);
-    // fm.display_storage_status();
-    // fm.tidy_disk();
-    // fm.write_data("/a.txt", 120);
-    fm.print_file_system_tree(fm.home_path);
-    // fm.set_disk_head_pointer(110);
-    // fm.get_file_demo("C-SCAN");
-    // fm.set_disk_head_pointer(12);
-    // fm.get_file_demo("SSTF");
-    // Disk d(512, 200, 12);
-    // vector<pair<int, int>> seek_queue;
-    // seek_queue.push_back({100, 1});
-    // seek_queue.push_back({40, 1});
-    // seek_queue.push_back({60, 1});
-    // seek_queue.push_back({10, 1});
-    // d.SSTF(seek_queue);
-    return 0;
-}
+// int main()
+// {
+//     FileManager fm(512, 200, 12);
+//     // fm.display_storage_status();
+//     // fm.tidy_disk();
+//     // fm.write_data("/a.txt", 120);
+//     fm.print_file_system_tree(fm.home_path);
+//     // fm.set_disk_head_pointer(110);
+//     // fm.get_file_demo("C-SCAN");
+//     // fm.set_disk_head_pointer(12);
+//     // fm.get_file_demo("SSTF");
+//     // Disk d(512, 200, 12);
+//     // vector<pair<int, int>> seek_queue;
+//     // seek_queue.push_back({100, 1});
+//     // seek_queue.push_back({40, 1});
+//     // seek_queue.push_back({60, 1});
+//     // seek_queue.push_back({10, 1});
+//     // d.SSTF(seek_queue);
+//     system("pause");
+//     return 0;
+// }

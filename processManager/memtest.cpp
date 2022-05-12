@@ -1,4 +1,9 @@
-#include "../MemoryManager/Manager/mem.h"
+// #include "OS\Operating-System\MemoryManager\Manager\DynamicBlockManager.cpp"
+// #include "../MemoryManager/Manager/MemoryManager.cpp"
+
+
+// MemoryManager *mm = MemoryManager::getInstance();
+
 #include "../MemoryManager/Manager/MemoryManager.cpp"
 
-MemoryManager *mm = MemoryManager::getInstance();
+BlockMemoryManager *bmm = new BlockMemoryManager;
