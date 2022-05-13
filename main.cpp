@@ -13,11 +13,11 @@
 #include "FileManager\json.hpp"
 using namespace std;
 
-// 输入缓冲�?
+// 输入缓冲�??
 string inBuf="";
-// 互斥�?
+// 互斥�??
 HANDLE hMutex = NULL;
-// 信号�?
+// 信号�??
 HANDLE hSemaphore = INVALID_HANDLE_VALUE;
 
 /**
@@ -37,7 +37,7 @@ DWORD WINAPI getch(LPVOID lpParamter)
 }
 
 /**
- * @brief 进程管理器调度的线程函数，确保可以边接收指令边调�?
+ * @brief 进程管理器调度的线程函数，确保可以边接收指令边调�??
  * 
  * @param lpParamter 
  * @return DWORD 
@@ -58,10 +58,10 @@ DWORD WINAPI setupProcManager(LPVOID lpParamter)
 }
 
 /**
- * @brief 对用户指令进行解�?
+ * @brief 对用户指令进行解�??
  * 
  * @param cmd 输入指令
- * @param argv 输出的参数数�?
+ * @param argv 输出的参数数�??
  * @return int 参数数量
  */
 int parse(string cmd, vector<string> &argv)
@@ -80,7 +80,7 @@ int parse(string cmd, vector<string> &argv)
 /**
  * @brief 新建pcb
  * 
- * @param file 传入的文�?
+ * @param file 传入的文�??
  */
 PCB* createPCB(json file)
 {
@@ -114,7 +114,7 @@ int main(void)
     int args=0;
     vector<string> argv;
 
-    // 文件管理�?
+    // 文件管理�??
     FileManager fm(512, 200, 12);
     FileOperation fileOperation(&fm);
 
@@ -126,7 +126,8 @@ int main(void)
         cmd = inBuf;
         // cout << cmd << endl;
         args = parse(cmd, argv);
-        // 根据分析出的指令执行相关的操�?
+        // cout << argv[0];
+        // 根据分析出的指令执行相关的操�??
         if (argv[0] == "ps") {
             if (args == 1)
             {
@@ -166,7 +167,7 @@ int main(void)
                 // TODO 怎么引用
                 // createProcess();
             }
-            // 测试�?
+            // 测试�??
             // else if (args == 3)
             // {
             //     ProcManager::getInstance().run(argv[1], atoi(argv[2].c_str()));
@@ -176,6 +177,18 @@ int main(void)
                 cout << "unknown cmd!\n";
             }
 
+        }
+        else if(argv[0] == "ls"){
+            if(args == 2){
+                fileOperation.ls_command(argv[1]);
+            }
+            else{
+                fileOperation.ls_command("");
+            }
+            
+        }
+        else if(argv[0] == "cd"){
+            fileOperation.cd_command(argv[1]);
         }
         else if (argv[0] == "exit")
         {
