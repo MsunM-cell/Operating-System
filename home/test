@@ -4,7 +4,7 @@
     "size": 2000,
     "priority": 2,
     "content": [
-        "start",
+        "INIT",
         "cpu 10",
         "access 10",
         "access 100",
