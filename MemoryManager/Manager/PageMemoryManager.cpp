@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-08 21:12:33
+ * @LastEditTime: 2022-05-13 19:32:30
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -73,7 +73,6 @@ vector<tableItem *> *PageMemoryManager::getProcessPageTable(int pid)
  */
 int PageMemoryManager::createProcess(PCB &p)
 {
-    cout << "very ok!!!" << endl;
     vector<tableItem *> *pageTable = new vector<tableItem *>;
     tableMap[p.id] = pageTable;
     int allocPageNum = p.size % mem_config.PAGE_SIZE == 0 ? p.size / mem_config.PAGE_SIZE : p.size / mem_config.PAGE_SIZE + 1;
@@ -84,8 +83,6 @@ int PageMemoryManager::createProcess(PCB &p)
         Log::logE(TAG, ss.str());
         return -1;
     }
-
-    // TODO:bitmap不知道有没有存在的必要吼
 
     int findPage = 0;
 
@@ -108,7 +105,14 @@ int PageMemoryManager::createProcess(PCB &p)
             findPage++;
         }
     }
+    // FIXME:文件地址放哪？？？？不是说好放PCB中吗
+    int load_res = load_ins(p.id, "./MemoryManager/Manager/test");
     occupiedPageNum += allocPageNum;
+    if (load_res == 0)
+    {
+        freeProcess(p);
+        return -1;
+    }
     return 1;
 }
 
@@ -156,7 +160,7 @@ int PageMemoryManager::freeProcess(PCB &p)
  */
 char PageMemoryManager::accessMemory(int pid, int address_index)
 { //读一个字节？
-    
+
     long long address = address_index * 8;
 
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
@@ -199,10 +203,10 @@ char PageMemoryManager::accessMemory(int pid, int address_index)
  * @param {unsigned int} pid
  * @return {1为成功}
  */
-int PageMemoryManager::writeMemory(int address_index, const char *src, long long size, unsigned int pid)
+int PageMemoryManager::writeMemory(int address_index, char src, unsigned int pid)
 {
     long long logicalAddress = address_index * 8;
-
+    int size = 8;
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
 
     if (!pageTable)
@@ -231,13 +235,13 @@ int PageMemoryManager::writeMemory(int address_index, const char *src, long long
 
     FrameTableItem *fti = ti->frame;
     long long realAddress = fti->getFrameAddress() + logicalAddress % mem_config.PAGE_SIZE;
-    memcpy((void *)realAddress, src, size);
+    ((char *)realAddress)[0] = src;
     useFrame(fti);
     ti->isChange = true;
 
     stringstream logMsg;
-    logMsg << "process " << pid << " write " << size << " words into page " << ti->pageNo;
-    Log::logI(TAG, logMsg.str());
+    logMsg << "process " << pid << " write " << size/8 << " words into page " << ti->pageNo;
+    Log::logV(TAG, logMsg.str());
 
     return true;
 }
@@ -256,7 +260,6 @@ void PageMemoryManager::initPageTable()
 }
 
 /**
- * TODO:定义尚不明确
  * @brief 得到已申请的页数，不一定已申请内存
  * @param {*}
  * @return {已申请的页数}
@@ -467,26 +470,79 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
     }
 }
 
-/**
- * @brief 将该进程的页全部填满1，使系统为其分配内存，以测试换页输出，仅用于测试
- *
- * @param {unsigned int} pid
- * @return {*}
- */
-void PageMemoryManager::stuff(unsigned int pid)
+// /**
+//  * @brief 将该进程的页全部填满1，使系统为其分配内存，以测试换页输出，仅用于测试
+//  *
+//  * @param {unsigned int} pid
+//  * @return {*}
+//  */
+// void PageMemoryManager::stuff(unsigned int pid)
+// {
+//     char *src = new char[mem_config.PAGE_SIZE];
+//     char c = -1;
+//     for (int i = 0; i < mem_config.PAGE_SIZE; i++)
+//     {
+//         src[i] = c;
+//     }
+//     Log::stopLog(); //暂时将日志输出阈值调到最高，以防stuff过程中输出太多信息
+//     vector<tableItem *> *table = getProcessPageTable(pid);
+//     for (int i = 0; i < table->size(); i++)
+//     {
+//         writeMemory(i * mem_config.PAGE_SIZE, src, mem_config.PAGE_SIZE, pid);
+//     }
+//     Log::continueLog();
+//     delete src;
+// }
+
+int PageMemoryManager::load_ins(int pid, string file_address)
 {
-    char *src = new char[mem_config.PAGE_SIZE];
-    char c = -1;
-    for (int i = 0; i < mem_config.PAGE_SIZE; i++)
+    vector<tableItem *> *pageTable = getProcessPageTable(pid);
+
+    if (!pageTable)
     {
-        src[i] = c;
+        stringstream ss;
+        ss << "process " << pid << " not found !" << endl;
+        Log::logE(TAG, ss.str());
+        return 0;
     }
-    Log::stopLog(); //暂时将日志输出阈值调到最高，以防stuff过程中输出太多信息
-    vector<tableItem *> *table = getProcessPageTable(pid);
-    for (int i = 0; i < table->size(); i++)
+    vector<string> codeTemp;
+    int code_length = 0;
+    json j;
+
+    cout<<"文件地址是"<<file_address<<endl;
+    ifstream in(file_address, ios::binary);
+    if (!in.is_open())
     {
-        writeMemory(i * mem_config.PAGE_SIZE, src, mem_config.PAGE_SIZE, pid);
+        cout << "Error opening file  ????" << file_address << endl;
+        exit(1);
     }
-    Log::continueLog();
-    delete src;
+    in >> j;
+    in.close();
+    for (int i = 0; i < j["content"].size(); ++i)
+    {
+        string s = j["content"][i];
+        s += '\0'; //末尾\0
+        codeTemp.push_back(s);
+        code_length += s.size();
+        // s = s.substr(1, s.size() - 2);
+        // sprintf(memory, "%s", s.c_str());
+    }
+
+    if (code_length > pageTable->size() * mem_config.PAGE_SIZE)
+    {
+        cout << "the code is too long to load in memory" << endl;
+        return 0;
+    }
+    int address_index = 0;
+    for (string s : codeTemp)
+    {
+        for (int i = 0; i < s.size(); i++)
+        {
+            writeMemory(address_index++, s[i], pid);
+            // cout << i << ": " << s[i] << endl;
+        }
+        //看起来不用补充\0了
+    }
+
+    return 1;
 }

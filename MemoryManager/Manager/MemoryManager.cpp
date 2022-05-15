@@ -15,20 +15,20 @@ MemoryManager::MemoryManager()
 MemoryManager::~MemoryManager()
 {
     delete[] memory;
-    //FIXME:å†™å›žå­˜åœ¨å¤§é—®é¢˜ï¼Œæ¯”å¦‚page size ä¼šå˜æˆ?0 ï¼? ispageä¹Ÿä¼šèŽ«åå…¶å¦™å˜æˆno....ä»¥åŽå†ä¿®å§ï¼Œç´¯äº†
-    // json cfgfile;
-    // cfgfile["name"] = "configuration";
-    // cfgfile["priority"] = 1;
-    // cfgfile["size"] = 500;
-    // cfgfile["type"] = "erwx";
-    // cfgfile["content"]["Page_size"] = mem_config_copy.PAGE_SIZE;
-    // cfgfile["content"]["Page"] = (mem_config_copy.IS_PAGE ? "yes" : "no");
-    // cfgfile["content"]["Virtual_memory"] = (mem_config_copy.IS_VIRTUAL ? "yes" : "no");
-    // cfgfile["content"]["Block_algorithm"] = (mem_config_copy.BLOCK_ALGORITHM == 1 ? "BF" : "FF");
-    // cfgfile["content"]["Swap_memory_size"] = mem_config_copy.SWAP_MEMORY_SIZE;
-    // ofstream f("../Manager/cfg", ios::binary);
-    // f << cfgfile;
-    // f.close();
+    // FIXME:å†™å›žå­˜åœ¨å¤§é—®é¢˜ï¼Œæ¯”å¦‚page size ä¼šå˜æˆ?0 ï¼? ispageä¹Ÿä¼šèŽ«åå…¶å¦™å˜æˆno....ä»¥åŽå†ä¿®å§ï¼Œç´¯äº†
+    //  json cfgfile;
+    //  cfgfile["name"] = "configuration";
+    //  cfgfile["priority"] = 1;
+    //  cfgfile["size"] = 500;
+    //  cfgfile["type"] = "erwx";
+    //  cfgfile["content"]["Page_size"] = mem_config_copy.PAGE_SIZE;
+    //  cfgfile["content"]["Page"] = (mem_config_copy.IS_PAGE ? "yes" : "no");
+    //  cfgfile["content"]["Virtual_memory"] = (mem_config_copy.IS_VIRTUAL ? "yes" : "no");
+    //  cfgfile["content"]["Block_algorithm"] = (mem_config_copy.BLOCK_ALGORITHM == 1 ? "BF" : "FF");
+    //  cfgfile["content"]["Swap_memory_size"] = mem_config_copy.SWAP_MEMORY_SIZE;
+    //  ofstream f("../Manager/cfg", ios::binary);
+    //  f << cfgfile;
+    //  f.close();
     cout << "Exit Memory Manager!\n\n";
 }
 
@@ -63,10 +63,11 @@ MemoryManager *MemoryManager::getInstance()
 void MemoryManager::init_config()
 {
     json cfgFile;
-    ifstream in("../MemoryManager/Manager/cfg", ios::binary);
+    string configAddress = "./MemoryManager/Manager/cfg";
+    ifstream in(configAddress, ios::binary);
     if (!in.is_open())
     {
-        cout << "Error opening file\n";
+        cout << "Error opening config file"<<configAddress<<endl;;
         exit(1);
     }
 
@@ -93,6 +94,6 @@ void MemoryManager::init_config()
     cout << "Configuration Complete!\n"
          << endl;
     in.close();
-    
+
     memcpy(&mem_config_copy, &mem_config, sizeof(mem_config));
 }
