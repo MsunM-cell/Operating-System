@@ -117,8 +117,6 @@ int main(void)
     // 文件管理�??
     FileManager fm(512, 200, 12);
     FileOperation fileOperation(&fm);
-
-    
     while (cmd != "exit")
     {
         WaitForSingleObject(hSemaphore, INFINITE);
@@ -159,9 +157,11 @@ int main(void)
             if (args == 2)
             {
                 json file;
+                string path = fm.working_path + argv[1];
                 PCB* pcb;
-                ProcManager::getInstance().run(argv[1]);
-                file = fm.get_file(argv[1], "read", "FCFS");
+                // ProcManager::getInstance().run(argv[1]);
+                file = fm.get_file(path, "read", "FCFS");
+                cout << file << endl;
                 // 判断有没有x
                 pcb = createPCB(file);
                 // TODO 怎么引用
