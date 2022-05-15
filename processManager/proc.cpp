@@ -30,6 +30,7 @@ int RRQueue::getSize()
  */
 void RRQueue::downLevel(PCB* target,ProcManagerFCFS* fcfs)
 {
+    target->path = "./home/test";
     fcfs->addToQueue(target);
     printf("[%ld]Pid %d down to fcfs.\n", clock() - system_start, target->id);
 }
@@ -249,6 +250,7 @@ void ProcManagerFCFS::run(PCB *p){
         }
         string cmd = splitCommand(command);
         //剩下的是指令中的参数
+        cout << endl << command << endl;
         command = command.substr(cmd.length() + 1,command.length());
         switch(this->commandMap[cmd]){
             case 0:

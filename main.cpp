@@ -82,11 +82,11 @@ int parse(string cmd, vector<string> &argv)
  * 
  * @param file 传入的文�??
  */
-PCB* createPCB(json file)
+PCB* createPCB(json file,string path)
 {
     PCB* ptr = new PCB;
     // ptr->id=;
-    ptr->name = file["name"];
+    ptr->path = path;
     // ptr->pc=0;
     // ptr->pri=;
     // ptr->size=;
@@ -163,7 +163,7 @@ int main(void)
                 file = fm.get_file(path, "read", "FCFS");
                 cout << file << endl;
                 // 判断有没有x
-                pcb = createPCB(file);
+                pcb = createPCB(file,path);
                 // TODO 怎么引用
                 // createProcess();
             }

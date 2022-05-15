@@ -15,11 +15,13 @@ void BlockMemoryManager::adjust_list(int type)
 }
 
 //加载指令
-int BlockMemoryManager::load_ins(int addr, int length)
+int BlockMemoryManager::load_ins(int addr, int length,string path)
 {
 
     json root;
-    ifstream in("./MemoryManager/Manager/test", ios::binary);
+    cout << path << endl;
+    // Sleep(10000);
+    ifstream in(path, ios::binary);
     if (!in.is_open())
     {
         cout << "Error opening file\n";
@@ -30,8 +32,8 @@ int BlockMemoryManager::load_ins(int addr, int length)
     for (int i = 0, j = addr; i < root["content"].size(); ++i)
     {
         string s = root["content"][i];
-        ins_len += s.size();
         s += '\0';//末尾\0
+        ins_len += s.size();
         // s = s.substr(1, s.size() - 2);
         sprintf(memory + j, "%s", s.c_str());
         j += s.size();
@@ -69,7 +71,7 @@ int BlockMemoryManager::createProcess(PCB &p)
         adjust_list(mem_config.BLOCK_ALGORITHM);
 
         //加载指令
-        int ins_len = load_ins(addr, p.size);
+        int ins_len = load_ins(addr, p.size,p.path);
         if (ins_len != -1)
             ins_sum_len[p.id] = ins_len;
         return addr;

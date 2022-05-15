@@ -4,7 +4,7 @@
     "size": "2000",
     "priority": 2,
     "content": [
-        "fork",
+        "duck",
         "cpu 10",
         "access 10",
         "access 100",
