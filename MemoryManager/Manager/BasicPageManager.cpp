@@ -120,6 +120,7 @@ char BasicPageManager::accessMemory(int pid, int address)
     int trueaddr = pagetable[pid][page] * mem_config.PAGE_SIZE + offset;
     return memory[trueaddr];
   }
+  cout << "Illegal access!\n\n";
   return char(-1);
 }
 
@@ -130,7 +131,7 @@ int BasicPageManager::writeMemory(int logicalAddress, char src, unsigned int pid
   {
     int page = logicalAddress / mem_config.PAGE_SIZE;
     int offset = logicalAddress % mem_config.PAGE_SIZE;
-    int trueaddr = pagetable[pid][page] + offset;
+    int trueaddr = pagetable[pid][page] * mem_config.PAGE_SIZE + offset;
     memory[trueaddr] = src;
     return 1;
   }
