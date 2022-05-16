@@ -128,8 +128,10 @@ int main(void)
         // 根据分析出的指令执行相关的操�??
         if(args == 0){
             cout << "error" << endl;
-            system("pause");
-            break;
+            ReleaseMutex(hMutex);
+            // system("pause");
+            continue;
+            // break;
         }
         if (argv[0] == "ps") {
             if (args == 1)
