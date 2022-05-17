@@ -32,7 +32,7 @@ public:
     //写内存接口
     int writeMemory(int logicalAddress, char src, unsigned int pid);
     //加载指令
-    int load_ins(int pid);
+    int load_ins(int pid, string Path);
     //分配进程内存
     int createProcess(PCB& p);
     //释放内存
