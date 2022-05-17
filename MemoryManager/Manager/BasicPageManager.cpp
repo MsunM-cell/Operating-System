@@ -13,11 +13,11 @@ void BasicPageManager::init_manager()
 }
 
 //加载进程指令
-int BasicPageManager::load_ins(int pid)
+int BasicPageManager::load_ins(int pid, string Path)
 {
 
   json root;
-  ifstream in("../Manager/test", ios::binary);
+  ifstream in(Path, ios::binary);
   if (!in.is_open())
   {
     cout << "Error opening file\n";
@@ -79,7 +79,7 @@ int BasicPageManager::createProcess(PCB &p)
         j++;
       }
 
-    int ins_len = load_ins(p.id);
+    int ins_len = load_ins(p.id, p.path);
     if (ins_len != -1)
       ins_sum_len[p.id] = ins_len;
     return 1;
