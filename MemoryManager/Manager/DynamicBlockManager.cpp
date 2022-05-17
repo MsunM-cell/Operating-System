@@ -5,7 +5,7 @@
 
 #include "block.h"
 
-//空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
+//ç©ºé—²åˆ†åŒºé“¾è¡¨æŽ’åº,type=0ä¸ºåœ°å€é€’å¢žæŽ’åºï¼Œtype=1ä¸ºå®¹é‡é€’å¢žæŽ’åº
 void BlockMemoryManager::adjust_list(int type)
 {
     if (type)
@@ -14,7 +14,7 @@ void BlockMemoryManager::adjust_list(int type)
         sort(free_block_table.begin(), free_block_table.end(), cmp2);
 }
 
-//加载指令
+//åŠ è½½æŒ‡ä»¤
 int BlockMemoryManager::load_ins(int addr, int length,string path)
 {
 
@@ -25,14 +25,14 @@ int BlockMemoryManager::load_ins(int addr, int length,string path)
     if (!in.is_open())
     {
         cout << "Error opening file\n";
-        exit(1);
+        return -1;
     }
     in >> root;
     int ins_len = 0;
     for (int i = 0, j = addr; i < root["content"].size(); ++i)
     {
         string s = root["content"][i];
-        s += '\0';//末尾\0
+        s += '\0';//æœ«å°¾\0
         ins_len += s.size();
         // s = s.substr(1, s.size() - 2);
         sprintf(memory + j, "%s", s.c_str());
@@ -43,7 +43,7 @@ int BlockMemoryManager::load_ins(int addr, int length,string path)
     return ins_len;
 }
 
-//创建进程
+//åˆ›å»ºè¿›ç¨‹
 int BlockMemoryManager::createProcess(PCB &p)
 {
     int i = 0;
@@ -70,7 +70,7 @@ int BlockMemoryManager::createProcess(PCB &p)
         printf("Process %d starts from %d, length %d\n\n", p.id, addr, p.size);
         adjust_list(mem_config.BLOCK_ALGORITHM);
 
-        //加载指令
+        //åŠ è½½æŒ‡ä»¤
         int ins_len = load_ins(addr, p.size,p.path);
         if (ins_len != -1)
             ins_sum_len[p.id] = ins_len;
@@ -78,13 +78,13 @@ int BlockMemoryManager::createProcess(PCB &p)
     }
 }
 
-//释放进程
+//é‡Šæ”¾è¿›ç¨‹
 int BlockMemoryManager::freeProcess(PCB &p)
 {
     int addr = pid2addr[p.id].head_addr;
     int length = p.size;
 
-    adjust_list(0); //首先调整链表方便合并
+    adjust_list(0); //é¦–å…ˆè°ƒæ•´é“¾è¡¨æ–¹ä¾¿åˆå¹¶
     int i = 0;
     while (i < free_block_table.size() && free_block_table[i].head_addr < addr)
         i++;
@@ -100,22 +100,22 @@ int BlockMemoryManager::freeProcess(PCB &p)
     }
     else if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //???block??
         free_block_table[i - 1].len += length;
-    else //单独block
+    else //å•ç‹¬block
         free_block_table.insert(free_block_table.begin() + i, {addr, length});
 
-    //释放
+    //é‡Šæ”¾
     // memset(memory + addr, 0, sizeof(char) * length);
     pid2addr.erase(p.id);
     addr2pid.erase(addr);
 
-    //动态调整链�?
+    //åŠ¨æ€è°ƒæ•´é“¾è¡?
     adjust_list(mem_config.BLOCK_ALGORITHM);
     // adjust_list(1);
     printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
     return 1;
 }
 
-//压缩
+//åŽ‹ç¼©
 int BlockMemoryManager::compress_mem()
 {
     if (free_block_table.empty())
@@ -123,7 +123,7 @@ int BlockMemoryManager::compress_mem()
         cout << "Memory is full,can not compress any more!\n\n";
         return 1;
     }
-    int sumsize = 0; //所有进程大小和
+    int sumsize = 0; //æ‰€æœ‰è¿›ç¨‹å¤§å°å’Œ
     for (auto it = addr2pid.begin(); it != addr2pid.end(); it++)
     {
         int id = it->second;
@@ -144,18 +144,18 @@ int BlockMemoryManager::compress_mem()
     return 1;
 }
 
-//访存
+//è®¿å­˜
 char BlockMemoryManager::accessMemory(int pid, int address)
 {
     if (address < 0 || address > pid2addr[pid].len)
     {
         puts("Illegal memory access!\n\n");
-        return char(-1); //返回-1
+        return char(-1); //è¿”å›ž-1
     }
     return memory[pid2addr[pid].head_addr + address];
 }
 
-//写存
+//å†™å­˜
 int BlockMemoryManager::writeMemory(int logicalAddress, char src, unsigned int pid)
 {
     if (logicalAddress < pid2addr[pid].second && logicalAddress >= ins_sum_len[pid])
@@ -167,14 +167,14 @@ int BlockMemoryManager::writeMemory(int logicalAddress, char src, unsigned int p
     return -1;
 }
 
-//初始�?
+//åˆå§‹åŒ?
 void BlockMemoryManager::init_manager()
 {
-    //全部物理内存
+    //å…¨éƒ¨ç‰©ç†å†…å­˜
     free_block_table.push_back({0, mem_config.MEM_SIZE});
 }
 
-//打印空闲分区链表
+//æ‰“å°ç©ºé—²åˆ†åŒºé“¾è¡¨
 void BlockMemoryManager::print_list()
 {
     printf("**********Output the free block list**********\n");
