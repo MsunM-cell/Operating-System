@@ -129,6 +129,14 @@ public:
      * @return void
      */
     void ls_command(string dir_path);
+
+    /**
+     * @brief Convert from the input path of the shell to the local hard disk path
+     * 
+     * @param shell_input_path the input path of the shell
+     * @return string
+     */
+    string pathConverter(string shell_input_path);
     
 private:
     FileManager* file_manager;  // The pointer to a FileManager instance
@@ -141,6 +149,8 @@ private:
      * @return bool
      */
     bool recursive_copy_dir(string src_path, string dst_path);
+
+    
 
 };
 

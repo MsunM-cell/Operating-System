@@ -19,6 +19,11 @@ FileOperation::FileOperation(FileManager* fm)
  */
 bool FileOperation::create_file(string current_dir, string file_name)
 {
+    current_dir = pathConverter(current_dir);
+    if (current_dir == "error") {
+        puts("touch: Not such directory");
+        return false;
+    }
     if (current_dir.back() != (char)path::preferred_separator)  
         current_dir.push_back((char)path::preferred_separator);
     string cur_file_path = current_dir + file_name;
@@ -64,6 +69,11 @@ bool FileOperation::create_file(string current_dir, string file_name)
  */
 bool FileOperation::delete_file(string current_dir, string file_name)
 {
+    current_dir = pathConverter(current_dir);
+    if (current_dir == "error") {
+        puts("rm: Not such directory");
+        return false;
+    }
     if (current_dir.back() != path::preferred_separator)
         current_dir.push_back(path::preferred_separator);
 
@@ -98,6 +108,11 @@ bool FileOperation::delete_file(string current_dir, string file_name)
  */
 bool FileOperation::create_dir(string current_dir, string dir_name)
 {
+    current_dir = pathConverter(current_dir);
+    if (current_dir == "error") {
+        puts("mkdir: Not such directory");
+        return false;
+    }
     if (current_dir.back() != path::preferred_separator)
         current_dir.push_back(path::preferred_separator);
 
@@ -133,6 +148,11 @@ bool FileOperation::create_dir(string current_dir, string dir_name)
  */
 bool FileOperation::delete_dir(string current_dir, string dir_name)
 {
+    current_dir = pathConverter(current_dir);
+    if (current_dir == "error") {
+        puts("rm: Not such directory");
+        return false;
+    }
     if (current_dir.back() != path::preferred_separator)
         current_dir.push_back(path::preferred_separator);
 
@@ -212,6 +232,7 @@ int FileOperation::file_size(string path) {
  * @return bool
  */
 bool FileOperation::modify_file_type(string file_path, unsigned int mode) {
+    file_path = pathConverter(file_path);
     if (!exists(file_path)) {
         printf("Cannot find the file whose type will be modified.\n");
         return false;
@@ -286,6 +307,12 @@ bool FileOperation::modify_file_type(string file_path, unsigned int mode) {
  * @return bool
  */
 bool FileOperation::move_file(string src_path, string dst_path) {
+    src_path = pathConverter(src_path);
+    dst_path = pathConverter(dst_path);
+    if (src_path == "error" || dst_path == "error") {
+        printf("mv: Cannot find the source file.\n");
+        return false;
+    }
     string relative_src_path = src_path.substr(file_manager->home_path.size());
 
     if (!exists(src_path)) {
@@ -406,6 +433,13 @@ bool FileOperation::move_file(string src_path, string dst_path) {
  * @return bool
  */
 bool FileOperation::copy_file(string src_path, string dst_path) {
+    src_path = pathConverter(src_path);
+    dst_path = pathConverter(dst_path);
+    if (src_path == "error" || dst_path == "error") {
+        printf("cp: Cannot find the source file.\n");
+        return false;
+    }
+
     if (!exists(src_path)) {
         printf("cp: Cannot find the source file.\n");
         return false;
@@ -574,6 +608,13 @@ void FileOperation::cd_command(string dir_path) {
      * @return bool 
      */
 bool FileOperation::move_dir(string src_path, string dst_path) {
+    src_path = pathConverter(src_path);
+    dst_path = pathConverter(dst_path);
+    if (src_path == "error" || dst_path == "error") {
+        printf("mv: Cannot find the source directory.\n");
+        return false;
+    }
+
     if (!copy_dir(src_path, dst_path))
         return false;
     if (src_path.back() == path::preferred_separator)   src_path.pop_back();
@@ -623,6 +664,13 @@ bool FileOperation::recursive_copy_dir(string src_path, string dst_path) {
  * @return bool
  */
 bool FileOperation::copy_dir(string src_path, string dst_path) {
+    src_path = pathConverter(src_path);
+    dst_path = pathConverter(dst_path);
+    if (src_path == "error" || dst_path == "error") {
+        printf("cp: Cannot find the source file.\n");
+        return false;
+    }
+
     if (!exists(src_path) || !is_directory(src_path)) {
         printf("cp: '%s' No such directory.\n", src_path.c_str());
         return false;
@@ -729,5 +777,40 @@ void FileOperation::ls_command(string dir_path) {
     }
     else {
         cout << target_dir << "\n";
+    }
+}
+
+/**
+ * @brief Convert from the input path of the shell to the local hard disk path
+ * 
+ * @param shell_input_path the input path of the shell
+ * @return string
+ */
+string FileOperation::pathConverter(string shell_input_path)
+{
+    // shell input a absolute path from the home
+    if (shell_input_path.front() == (char)path::preferred_separator) {
+        cout << "DEBUG " << file_manager->home_path + shell_input_path << endl;;
+        return file_manager->home_path + shell_input_path;
+    }
+    else {
+        string path = file_manager->home_path + file_manager->working_path + shell_input_path;
+        if (!exists(path)) {
+            if (path.back() == path::preferred_separator)
+                path.pop_back();
+            string file_name = path.substr(path.find_last_of(path::preferred_separator) + 1);
+            path = path.erase(path.find_last_of(path::preferred_separator));
+            if (!exists(path)) {
+                return "error";
+            }
+            path = STRING(canonical(path));
+            path.push_back((char)path::preferred_separator);
+            path += file_name;
+            cout << "DEBUG " << path << endl;
+            return path;
+        }
+        path = STRING(canonical(path));
+        cout << "DEBUG " << path << endl;
+        return path;
     }
 }
