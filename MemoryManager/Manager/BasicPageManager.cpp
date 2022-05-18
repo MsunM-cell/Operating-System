@@ -94,6 +94,7 @@ int BasicPageManager::createProcess(PCB &p)
 //释放内存
 int BasicPageManager::freeProcess(PCB &p)
 {
+  cout << "free process successfully" << endl;
   if (pagetable.find(p.id) == pagetable.end())
   {
     puts("%d : process not in memory\n");

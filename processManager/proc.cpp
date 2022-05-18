@@ -193,6 +193,7 @@ void ProcManagerFCFS::runProcManager(){
             bmm->createProcess(*p);
             run(p);
             Sleep(p->time_need);
+            bmm->freeProcess(*p);
             // cout << "pid:" << p->id << "shut in fcfs.\n";
             ProcManager::getInstance().freePCB(p);
             auto it = fcfsQueue.begin();
