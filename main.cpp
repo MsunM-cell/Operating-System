@@ -163,7 +163,6 @@ int main(void)
         }
         else if (argv[0] == "run")
         {
-            // 真实模式
             if (args == 2)
             {
                 json file;
@@ -207,6 +206,62 @@ int main(void)
         else if (argv[0] == "exit")
         {
             // nop
+        }
+        else if(argv[0] == "rm"){
+            if(args == 2){
+                string path = fm.home_path + fm.working_path;
+                fileOperation.delete_file(path,argv[1]);
+            }
+            else{
+                cout << "error" << endl;
+            }
+        }
+        else if(argv[0] == "mkdir"){
+            if(args == 2){
+                string path = fm.home_path + fm.working_path;
+                fileOperation.create_dir(path,argv[1]);
+            }
+            else{
+                cout << "error" << endl;
+            }
+        }
+        else if(argv[0] == "touch"){
+            if(args == 2){
+                string path = fm.home_path + fm.working_path;
+                fileOperation.create_file(path,argv[1]);
+            }
+            else{
+                cout << "error" << endl;
+            }
+        }
+        else if(argv[0] == "rm-rf"){
+            if(args == 2){
+                string path = fm.home_path + fm.working_path;
+                fileOperation.delete_dir(path,argv[1]);
+            }
+            else{
+                cout << "error" << endl;
+            }
+        }
+        else if(argv[0] == "cp"){
+            if(args == 3){
+                string path = fm.home_path + fm.working_path + argv[1];
+                string toPath = fm.home_path + argv[2];
+                fileOperation.copy_file(path,toPath);
+            }
+            else{
+                cout << "error" << endl;
+            }
+        }
+        else if(argv[0] == "mv"){
+            if(args == 3){
+                string path = fm.home_path + fm.working_path + argv[1];
+                string toPath = fm.home_path + argv[2];
+                fileOperation.move_file(path,toPath);
+            }
+            else{
+                cout << "error" << endl;
+            }
         }
         else
         {
