@@ -1,8 +1,15 @@
 {
-    "name": "test_file",
-    "type": "crwx",
-    "size": 3000,
+    "name": "test",
+    "type": "erwx",
+    "size": 2000,
+    "priority": 2,
     "content": [
-        null
+        "cpu 10",
+        "access 10",
+        "access 100",
+        "access 100",
+        "access 100",
+        "cpu 1",
+        "#"
     ]
 }
