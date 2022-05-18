@@ -254,10 +254,10 @@ void ProcManagerFCFS::run(PCB *p){
         command = command.substr(cmd.length() + 1,command.length());
         switch(this->commandMap[cmd]){
             case 0:
-                writeMem(command);
+                writeMem(command,p->id);
                 break;
             case 1:
-                accessMem(command);
+                accessMem(command,p->id);
                 break;
             case 2:
                 useCPU(command);
@@ -402,9 +402,9 @@ void ProcManagerFCFS::useIO(string command){
  * @param {string} command
  * @return {NULL}
  */
-void ProcManagerFCFS::accessMem(string command){
+void ProcManagerFCFS::accessMem(string command,int pid){
     int addr = atoi(command.c_str());
-    cout << "access Memory at addr" << " " << addr << endl;
+    cout << "access Memory at addr" << " " << addr << ", " << "the content is " << bmm->accessMemory(pid,addr) << endl;
     Sleep(1000);
     return ;
 }
@@ -417,13 +417,15 @@ void ProcManagerFCFS::accessMem(string command){
  * @param {int} number
  * @return {NULL}
  */
-void ProcManagerFCFS::writeMem(string command){
+void ProcManagerFCFS::writeMem(string command,int pid){
     int pos = command.find(' ');
     string addr = command.substr(0,pos);
-    string num = command.substr(pos + 1,command.length());
-    int number = atoi(num.c_str());
+    // string num = command.substr(pos + 1,command.length());
+    char tmp = command[command.length() - 1];
+    // int number = atoi(num.c_str());
     int address = atoi(addr.c_str());
-    cout << "write Memory at addr" << " " << addr << " with number " << number << endl;
+    cout << "write Memory at addr" << " " << addr << " with " << tmp << endl;
+    bmm->writeMemory(address,tmp,pid);
     return ;
 }
 
