@@ -592,7 +592,7 @@ json FileManager::get_file(string file_path, string mode, string seek_algo)
 
     // get upper directory dict
     json upper_dict = this->path2dict(upper_directory);
-    cout << setw(4) << upper_dict << endl;
+    // cout << setw(4) << upper_dict << endl;
 
     if (upper_dict.contains(file_name))
     {
