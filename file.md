@@ -58,3 +58,75 @@ op.ls_command("666");
 // ls: '666' No such file or directory
 
 ```
+
+# rm (rm仅仅只使用于单个文件 若需要删除文件夹请使用rm -r)
+删除文件或文件夹
+
+```c++
+// 如果删除home下的test文件 假设当前工作目录在"\" 需要以下操作
+bool ans = op.delete_file(fm.home_path + fm.working_path, "test");
+bool ans = op.delete_file(fm.home_path + "\\", "test");
+bool ans = op.delete_file(fm.home_path, "test");
+// 以上三个代码都可以实现
+// 即第一个参数是文件所属目录的绝对路径，第二个参数是文件名 第一个参数最后的斜杠可加可不加
+
+```
+
+```c++
+// 如果删除home下的dir1文件夹，假设当前处于工作目录"\" 需要以下操作
+bool ans = op.delete_dir(fm.home_path + fm.working_path, "dir1");
+bool ans = op.delete_dir(fm.home_path + "\\", "dir1");
+bool ans = op.delete_dir(fm.home_path, "dir1");
+// 以上三个代码都可以实现
+// 即第一个参数是待删除目录所属的目录的绝对路径，第二个参数是目录名 第一个参数最后的斜杠可加可不加
+```
+
+# mkdir
+创建目录
+
+```c++
+// 假设想给home目录下创建一个新目录"new_dir"
+bool ans = op.create_dir(fm.home_path, "new_dir");
+bool ans = op.create_dir(fm.home_path + "\\", "new_dir");
+// 以上两个代码都能实现
+// 即第一个为待新建目录所属的目录的绝对路径，第二个参数是目录名
+```
+
+# touch 
+创建文件
+
+```c++
+// 假设在home的dir1目录下创建一个 "hhh"文件
+bool ans = op.create_file(fm.home_path + "\\dir1", "hhh");
+bool ans = op.create_file(fm.home_path + "\\dir1\\", "hhh");
+// 以上两个代码都能实现
+// 即第一个为待新建文件所属的目录的绝对路径，第二个参数是文件名
+```
+
+# cp
+复制文件
+
+```c++
+// 假设将home下的test复制到dir1下
+bool ans = op.copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1");
+bool ans = op.copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1\\");
+bool ans = op.copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1\\hhh"); // 这种参数为复制的同时改名
+//以上三种代码都可以实现，第一个参数必须为需要复制的文件的绝对路径且最后不能有斜杠，第二个参数可以是需要复制的目录或者是一个具有新文件名的绝对路径
+```
+
+# mv
+移动文件
+参数使用和cp一致
+
+# chmod
+修改文件权限
+
+shell中使用方法为chmod [file_path] [mode]
+```c++
+// 假设需要修改home下的test的权限，变为不可读不可写不可执行
+bool ans = op.modify_file_type(fm.home_path + "\\test", 0);
+// 假设需要修改home下的test的权限，变为可读可写可执行
+bool ans = op.modify_file_type(fm.home_path + "\\test", 7);
+// 即以二进制从左到右读写执行，为每一位为1则表示拥有权限
+// 可读可写不可执行的二进制为110，mode就是6
+```
