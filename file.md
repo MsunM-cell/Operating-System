@@ -92,3 +92,13 @@ bool ans = op.create_dir(fm.home_path + "\\", "new_dir");
 // 即第一个为待新建目录所属的目录的绝对路径，第二个参数是目录名
 ```
 
+# touch 
+创建文件
+
+```c++
+// 假设在home的dir1目录下创建一个 "hhh"文件
+bool ans = create_file(fm.home_path + "\\dir1", "hhh");
+bool ans = create_file(fm.home_path + "\\dir1\\", "hhh");
+// 以上两个代码都能实现
+// 即第一个为待新建文件所属的目录的绝对路径，第二个参数是文件名
+```
