@@ -6,4 +6,4 @@
 
 #include "../MemoryManager/Manager/MemoryManager.cpp"
 
-BlockMemoryManager *bmm = new BlockMemoryManager;
+MemoryManager *bmm = MemoryManager::getInstance();
