@@ -97,8 +97,8 @@ bool ans = op.create_dir(fm.home_path + "\\", "new_dir");
 
 ```c++
 // 假设在home的dir1目录下创建一个 "hhh"文件
-bool ans = create_file(fm.home_path + "\\dir1", "hhh");
-bool ans = create_file(fm.home_path + "\\dir1\\", "hhh");
+bool ans = op.create_file(fm.home_path + "\\dir1", "hhh");
+bool ans = op.create_file(fm.home_path + "\\dir1\\", "hhh");
 // 以上两个代码都能实现
 // 即第一个为待新建文件所属的目录的绝对路径，第二个参数是文件名
 ```
@@ -108,9 +108,9 @@ bool ans = create_file(fm.home_path + "\\dir1\\", "hhh");
 
 ```c++
 // 假设将home下的test复制到dir1下
-bool ans = copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1");
-bool ans = copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1\\");
-bool ans = copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1\\hhh"); // 这种参数为复制的同时改名
+bool ans = op.copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1");
+bool ans = op.copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1\\");
+bool ans = op.copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1\\hhh"); // 这种参数为复制的同时改名
 //以上三种代码都可以实现，第一个参数必须为需要复制的文件的绝对路径且最后不能有斜杠，第二个参数可以是需要复制的目录或者是一个具有新文件名的绝对路径
 ```
 
@@ -118,3 +118,15 @@ bool ans = copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1\\hhh"); // 
 移动文件
 参数使用和cp一致
 
+# chmod
+修改文件权限
+
+shell中使用方法为chmod [file_path] [mode]
+```c++
+// 假设需要修改home下的test的权限，变为不可读不可写不可执行
+bool ans = op.modify_file_type(fm.home_path + "\\test", 0);
+// 假设需要修改home下的test的权限，变为可读可写可执行
+bool ans = op.modify_file_type(fm.home_path + "\\test", 7);
+// 即以二进制从左到右读写执行，为每一位为1则表示拥有权限
+// 可读可写不可执行的二进制为110，mode就是6
+```
