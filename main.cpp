@@ -117,8 +117,11 @@ int main(void)
     // 文件管理初始化
     FileManager fm(512, 200, 12);
     FileOperation fileOperation(&fm);
+    string pwd;
     while (cmd != "exit")
     {
+        pwd = "BUPT@My-OS:" + fm.working_path + "$ ";
+        cout << pwd;
         WaitForSingleObject(hSemaphore, INFINITE);
         WaitForSingleObject(hMutex,INFINITE);
         cmd = inBuf;
