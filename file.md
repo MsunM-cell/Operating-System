@@ -65,7 +65,7 @@ op.ls_command("666");
 ```c++
 // 如果删除home下的test文件 假设当前工作目录在"\" 需要以下操作
 bool ans = op.delete_file(fm.home_path + fm.working_path, "test");
-bool ans = op.delete_file(fm.home_path + "\", "test");
+bool ans = op.delete_file(fm.home_path + "\\", "test");
 bool ans = op.delete_file(fm.home_path, "test");
 // 以上三个代码都可以实现
 // 即第一个参数是文件所属目录的绝对路径，第二个参数是文件名 第一个参数最后的斜杠可加可不加
@@ -75,8 +75,20 @@ bool ans = op.delete_file(fm.home_path, "test");
 ```c++
 // 如果删除home下的dir1文件夹，假设当前处于工作目录"\" 需要以下操作
 bool ans = op.delete_dir(fm.home_path + fm.working_path, "dir1");
-bool ans = op.delete_dir(fm.home_path + "\", "dir1");
+bool ans = op.delete_dir(fm.home_path + "\\", "dir1");
 bool ans = op.delete_dir(fm.home_path, "dir1");
 // 以上三个代码都可以实现
 // 即第一个参数是待删除目录所属的目录的绝对路径，第二个参数是目录名 第一个参数最后的斜杠可加可不加
 ```
+
+# mkdir
+创建目录
+
+```c++
+// 假设想给home目录下创建一个新目录"new_dir"
+bool ans = op.create_dir(fm.home_path, "new_dir");
+bool ans = op.create_dir(fm.home_path + "\\", "new_dir");
+// 以上两个代码都能实现
+// 即第一个为待新建目录所属的目录的绝对路径，第二个参数是目录名
+```
+
