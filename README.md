@@ -169,7 +169,7 @@ Disk ..> Block
 ## 存在的问题
 
 ### 内存
-**内存部分完成整合，但存在些许问题，所以先放在dev分支下，目前存在的问题如下：**
+**内存部分完成整合，目前存在的问题如下：**
 
     1. 头文件的引用较严格，外部引用只能 include"MemoryManager.cpp" (Manager文件夹下那个),否则编译不通过。
     2. 测试单独的Manager目前不能直接在类cpp下文件写main函数，否则会因为没有include"MemoryManager.cpp"导致编译失败，解决办法是另开一个cpp文件include"MemoryManager.cpp"后进行测试。
@@ -189,14 +189,15 @@ int main()
 }
 ```
 
-**内部修改getInstance()返回的不同manager的方法为：**
+**修改getInstance()返回的不同manager的方法为：**
 
-    修改cfg下MANAGER_TYPE，其中
+    修改cfg下Page、Virtual Memory选项。
     
-     基本分页  0
-     页式虚拟内存  1
-     连续分配  2
-     默认      连续分配
+    其中Page选项与Virtual Memory同时为yes时为有虚拟内存的页式管理
+    仅Page选项为yes、Virtual Memory为no时为基本分页
+    两者均为no时为连续分配
+    默认：连续分配
+
      
 **注意**
 
@@ -212,6 +213,7 @@ int main()
 
 ## TODO
 
+    监控各组件运行情况接口
 
 ## TIPS
 
