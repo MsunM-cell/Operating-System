@@ -102,3 +102,19 @@ bool ans = create_file(fm.home_path + "\\dir1\\", "hhh");
 // 以上两个代码都能实现
 // 即第一个为待新建文件所属的目录的绝对路径，第二个参数是文件名
 ```
+
+# cp
+复制文件
+
+```c++
+// 假设将home下的test复制到dir1下
+bool ans = copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1");
+bool ans = copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1\\");
+bool ans = copy_file(fm.home_path + "\\test", fm.home_path + "\\dir1\\hhh"); // 这种参数为复制的同时改名
+//以上三种代码都可以实现，第一个参数必须为需要复制的文件的绝对路径且最后不能有斜杠，第二个参数可以是需要复制的目录或者是一个具有新文件名的绝对路径
+```
+
+# mv
+移动文件
+参数使用和cp一致
+
