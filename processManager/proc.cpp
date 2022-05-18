@@ -30,7 +30,7 @@ int RRQueue::getSize()
  */
 void RRQueue::downLevel(PCB* target,ProcManagerFCFS* fcfs)
 {
-    target->path = "./home/test";
+    // target->path = "./home/test";
     fcfs->addToQueue(target);
     printf("[%ld]Pid %d down to fcfs.\n", clock() - system_start, target->id);
 }
@@ -642,11 +642,13 @@ void ProcManager::run(string file_name)
  */
 void ProcManager::run(string file_name, int time)
 {
+    cout << file_name << endl;
     // 从其他模块获取文件的有关信息，这里模拟一下
     PCB* new_pcb = new PCB;
     new_pcb->id = this->cpid;
     this->cpid = (this->cpid + 1) % 65536;
     new_pcb->name = file_name;
+    new_pcb->path = file_name;
     new_pcb->status = NEW;
     new_pcb->pri = HIGH_PRI;
     new_pcb->time_need = time;

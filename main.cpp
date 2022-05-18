@@ -13,11 +13,11 @@
 #include "FileManager\json.hpp"
 using namespace std;
 
-// 输入缓冲�??
+// 输入缓冲区
 string inBuf="";
-// 互斥�??
+// 互斥锁
 HANDLE hMutex = NULL;
-// 信号�??
+// 信号量
 HANDLE hSemaphore = INVALID_HANDLE_VALUE;
 
 /**
@@ -37,7 +37,7 @@ DWORD WINAPI getch(LPVOID lpParamter)
 }
 
 /**
- * @brief 进程管理器调度的线程函数，确保可以边接收指令边调�??
+ * @brief 进程管理器调度的线程函数，确保可以边接收指令边调度
  * 
  * @param lpParamter 
  * @return DWORD 
@@ -58,10 +58,10 @@ DWORD WINAPI setupProcManager(LPVOID lpParamter)
 }
 
 /**
- * @brief 对用户指令进行解�??
+ * @brief 对用户指令进行解释
  * 
  * @param cmd 输入指令
- * @param argv 输出的参数数�??
+ * @param argv 输出的参数数量
  * @return int 参数数量
  */
 int parse(string cmd, vector<string> &argv)
@@ -80,7 +80,7 @@ int parse(string cmd, vector<string> &argv)
 /**
  * @brief 新建pcb
  * 
- * @param file 传入的文�??
+ * @param file 传入的文件
  */
 PCB* createPCB(json file,string path)
 {
@@ -114,7 +114,7 @@ int main(void)
     int args=0;
     vector<string> argv;
 
-    // 文件管理�??
+    // 文件管理初始化
     FileManager fm(512, 200, 12);
     FileOperation fileOperation(&fm);
     while (cmd != "exit")
@@ -125,7 +125,7 @@ int main(void)
         // cout << cmd << endl;
         args = parse(cmd, argv);
         // cout << argv[0];
-        // 根据分析出的指令执行相关的操�??
+        // 根据分析出的指令执行相关的操作
         if(args == 0){
             cout << "error" << endl;
             ReleaseMutex(hMutex);
@@ -164,15 +164,19 @@ int main(void)
             if (args == 2)
             {
                 json file;
-                string path = fm.working_path + argv[1];
+                // cout << fm.working_path << endl;
+                string path = fm.home_path + fm.working_path + argv[1];
+                string get_file_path = fm.working_path + argv[1];
+                cout << path << endl;
                 PCB* pcb;
                 // ProcManager::getInstance().run(argv[1]);
-                file = fm.get_file(path, "read", "FCFS");
+                file = fm.get_file(get_file_path, "read", "FCFS");
                 cout << file << endl;
                 // 判断有没有x
                 pcb = createPCB(file,path);
                 // TODO 怎么引用
                 // createProcess();
+                ProcManager::getInstance().run(path,5000);
             }
             // 测试�??
             // else if (args == 3)
