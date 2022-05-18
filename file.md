@@ -68,7 +68,7 @@ bool ans = op.delete_file(".", "test");
 bool ans = op.delete_file(".\\", "test");
 bool ans = op.delete_file("\\", "test");
 // 以上三个代码都可以实现
-// 即第一个参数是文件所属目录的绝对路径，第二个参数是文件名 第一个参数最后的斜杠可加可不加
+// 即第一个参数是os中的路径，第二个参数是文件名 第一个参数最后的斜杠可加可不加
 
 ```
 
@@ -78,7 +78,7 @@ bool ans = op.delete_dir(".", "dir1");   // 当前处于home目录下
 bool ans = op.delete_dir(".\\", "dir1");     // 当前处于home目录下
 bool ans = op.delete_dir("\\", "dir1");
 // 以上三个代码都可以实现
-// 即第一个参数是待删除目录所属的目录的绝对路径，第二个参数是目录名 第一个参数最后的斜杠可加可不加
+// 即第一个参数是待删除目录所属的目录的os中的路径，第二个参数是目录名 第一个参数最后的斜杠可加可不加
 ```
 
 # mkdir
@@ -89,7 +89,7 @@ bool ans = op.delete_dir("\\", "dir1");
 bool ans = op.create_dir("\\", "new_dir");
 bool ans = op.create_dir(".", "new_dir");   // 当前处于home目录下
 // 以上两个代码都能实现
-// 即第一个为待新建目录所属的目录的绝对路径，第二个参数是目录名
+// 即第一个为待新建目录所属的目录的os中的路径，第二个参数是目录名
 ```
 
 # touch 
@@ -100,7 +100,7 @@ bool ans = op.create_dir(".", "new_dir");   // 当前处于home目录下
 bool ans = op.create_file("\\dir1", "hhh");
 bool ans = op.create_file("dir1", "hhh");   // 当前处于home目录下
 // 以上两个代码都能实现
-// 即第一个为待新建文件所属的目录的绝对路径，第二个参数是文件名
+// 即第一个为待新建文件所属的目录的os中的路径，第二个参数是文件名
 ```
 
 # cp
@@ -111,7 +111,7 @@ bool ans = op.create_file("dir1", "hhh");   // 当前处于home目录下
 bool ans = op.copy_file("test", "dir1");
 bool ans = op.copy_file("\\test", "\\dir1");
 bool ans = op.copy_file(".\\test", "dir1\\hhh"); // 这种参数为复制的同时改名
-//以上三种代码都可以实现，第一个参数必须为需要复制的文件的绝对路径且最后不能有斜杠，第二个参数可以是需要复制的目录或者是一个具有新文件名的绝对路径
+//以上三种代码都可以实现，第一个参数必须为需要复制的文件的os中的路径且最后不能有斜杠，第二个参数可以是需要复制的目录或者是一个具有新文件名的os中的路径
 ```
 
 # mv
