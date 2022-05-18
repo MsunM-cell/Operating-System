@@ -130,7 +130,7 @@ int main(void)
         // cout << argv[0];
         // 根据分析出的指令执行相关的操作
         if(args == 0){
-            cout << "error" << endl;
+            puts("error");
             ReleaseMutex(hMutex);
             // system("pause");
             continue;
@@ -208,12 +208,34 @@ int main(void)
             // nop
         }
         else if(argv[0] == "rm"){
-            if(args == 2){
+            if(args == 2 && argv[1] != "-r"){
                 string path = fm.home_path + fm.working_path;
                 fileOperation.delete_file(path,argv[1]);
             }
+            else if (args == 3) {
+                bool recursive = false;
+                int index = -1;
+
+                for (int i = 0; i < 3; i++) 
+                    if (argv[i] == "-r") {
+                        recursive = true;
+                        index = i;
+                        break;
+                    }
+                
+                if (!recursive) {
+                    puts("error");
+                } else {
+                    string path = fm.home_path + fm.working_path;
+                    if (index == 1)
+                        fileOperation.delete_dir(path, argv[2]);
+                    else 
+                        fileOperation.delete_dir(path, argv[1]);
+                }
+
+            }
             else{
-                cout << "error" << endl;
+                puts("error");
             }
         }
         else if(argv[0] == "mkdir"){
@@ -222,7 +244,7 @@ int main(void)
                 fileOperation.create_dir(path,argv[1]);
             }
             else{
-                cout << "error" << endl;
+                puts("error");
             }
         }
         else if(argv[0] == "touch"){
@@ -231,16 +253,7 @@ int main(void)
                 fileOperation.create_file(path,argv[1]);
             }
             else{
-                cout << "error" << endl;
-            }
-        }
-        else if(argv[0] == "rm-rf"){
-            if(args == 2){
-                string path = fm.home_path + fm.working_path;
-                fileOperation.delete_dir(path,argv[1]);
-            }
-            else{
-                cout << "error" << endl;
+                puts("error");
             }
         }
         else if(argv[0] == "cp"){
@@ -250,7 +263,7 @@ int main(void)
                 fileOperation.copy_file(path,toPath);
             }
             else{
-                cout << "error" << endl;
+                puts("error");
             }
         }
         else if(argv[0] == "mv"){
@@ -260,7 +273,16 @@ int main(void)
                 fileOperation.move_file(path,toPath);
             }
             else{
-                cout << "error" << endl;
+                puts("error");
+            }
+        }
+        else if (argv[0] == "chmod") {
+            if (args == 3) {
+                string path = fm.home_path + fm.working_path + argv[1];
+                fileOperation.modify_file_type(path, 0 + argv[2][0]);
+            }
+            else {
+                puts("error");
             }
         }
         else
