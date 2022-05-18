@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-07 23:04:56
+ * @LastEditTime: 2022-05-18 17:13:05
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #pragma once
@@ -46,6 +46,8 @@ private:
 
     vector<tableItem *> *getProcessPageTable(int pid);
 
+    int load_ins(int pid, string file_address);
+
 public:
     long PAGE_NUM;
 
@@ -56,12 +58,13 @@ public:
     int freeProcess(PCB &p);
     char accessMemory(int pid, int address_index);
     void initPageTable();
-    int getOccupiedPageNum();
     void useFrame(FrameTableItem *frameTableItem);
-    int getUsedFrameNum() { return usedFrameNum; };
-    int getSwapPageNum() { return swapPageNum; };
     unsigned long getLogicalMemorySize() { return mem_config.MEM_SIZE + mem_config.SWAP_MEMORY_SIZE; };
     bool pageFault(unsigned int pid, tableItem *ti);
-    int writeMemory(int address_index, const char *src, long long size, unsigned int pid);
-    void stuff(unsigned int pid);
+    int writeMemory(int logicalAddress_index, char src, unsigned int pid);
+    // void stuff(unsigned int pid);
+
+    int getUsedFrameNum() { return usedFrameNum; };
+    int getOccupiedPageNum();
+    int getSwapPageNum() { return swapPageNum; };
 };
