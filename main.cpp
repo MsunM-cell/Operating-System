@@ -209,8 +209,22 @@ int main(void)
         }
         else if(argv[0] == "rm"){
             if(args == 2 && argv[1] != "-r"){
-                string path = fm.home_path + fm.working_path;
-                fileOperation.delete_file(path,argv[1]);
+                string dir = "";
+                string file_name = "";
+                if (argv[1].front() == path::preferred_separator) {
+                    dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                    file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                } else {
+                    if (argv[1].find(path::preferred_separator) == string::npos) {
+                        dir = ".";
+                        file_name = argv[1];
+                    }
+                    else {
+                        dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                        file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                    }
+                }
+                fileOperation.delete_file(dir, file_name);
             }
             else if (args == 3) {
                 bool recursive = false;
@@ -226,11 +240,43 @@ int main(void)
                 if (!recursive) {
                     puts("error");
                 } else {
-                    string path = fm.home_path + fm.working_path;
-                    if (index == 1)
-                        fileOperation.delete_dir(path, argv[2]);
-                    else 
-                        fileOperation.delete_dir(path, argv[1]);
+                    
+                    if (index == 1) {
+                        string dir = "";
+                        string file_name = "";
+                        if (argv[2].front() == path::preferred_separator) {
+                            dir = argv[2].substr(0, argv[2].find_last_of(path::preferred_separator));
+                            file_name = argv[2].substr(argv[2].find_last_of(path::preferred_separator) + 1);
+                        } else {
+                            if (argv[2].find(path::preferred_separator) == string::npos) {
+                                dir = ".";
+                                file_name = argv[2];
+                            }
+                            else {
+                                dir = argv[2].substr(0, argv[2].find_last_of(path::preferred_separator));
+                                file_name = argv[2].substr(argv[2].find_last_of(path::preferred_separator) + 1);
+                            }
+                        }
+                        fileOperation.delete_dir(dir, file_name);
+                    }
+                    else {
+                        string dir = "";
+                        string file_name = "";
+                        if (argv[1].front() == path::preferred_separator) {
+                            dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                            file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                        } else {
+                            if (argv[1].find(path::preferred_separator) == string::npos) {
+                                dir = ".";
+                                file_name = argv[1];
+                            }
+                            else {
+                                dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                                file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                            }
+                        }
+                        fileOperation.delete_dir(dir, file_name);
+                    }
                 }
 
             }
@@ -240,8 +286,22 @@ int main(void)
         }
         else if(argv[0] == "mkdir"){
             if(args == 2){
-                string path = fm.home_path + fm.working_path;
-                fileOperation.create_dir(path,argv[1]);
+                string dir = "";
+                string dir_name = "";
+                if (argv[1].front() == path::preferred_separator) {
+                    dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                    dir_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                } else {
+                    if (argv[1].find(path::preferred_separator) == string::npos) {
+                        dir = ".";
+                        dir_name = argv[1];
+                    }
+                    else {
+                        dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                        dir_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                    }
+                }
+                fileOperation.create_dir(dir, dir_name);
             }
             else{
                 puts("error");
@@ -249,8 +309,22 @@ int main(void)
         }
         else if(argv[0] == "touch"){
             if(args == 2){
-                string path = fm.home_path + fm.working_path;
-                fileOperation.create_file(path,argv[1]);
+                string dir = "";
+                string file_name = "";
+                if (argv[1].front() == path::preferred_separator) {
+                    dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                    file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                } else {
+                    if (argv[1].find(path::preferred_separator) == string::npos) {
+                        dir = ".";
+                        file_name = argv[1];
+                    }
+                    else {
+                        dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                        file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                    }
+                }
+                fileOperation.create_file(dir, file_name);
             }
             else{
                 puts("error");
@@ -258,9 +332,7 @@ int main(void)
         }
         else if(argv[0] == "cp"){
             if(args == 3){
-                string path = fm.home_path + fm.working_path + argv[1];
-                string toPath = fm.home_path + argv[2];
-                fileOperation.copy_file(path,toPath);
+                fileOperation.copy_file(argv[1], argv[2]);
             }
             else{
                 puts("error");
@@ -268,9 +340,7 @@ int main(void)
         }
         else if(argv[0] == "mv"){
             if(args == 3){
-                string path = fm.home_path + fm.working_path + argv[1];
-                string toPath = fm.home_path + argv[2];
-                fileOperation.move_file(path,toPath);
+                fileOperation.move_file(argv[1], argv[2]);
             }
             else{
                 puts("error");
@@ -278,8 +348,7 @@ int main(void)
         }
         else if (argv[0] == "chmod") {
             if (args == 3) {
-                string path = fm.home_path + fm.working_path + argv[1];
-                fileOperation.modify_file_type(path, 0 + argv[2][0]);
+                fileOperation.modify_file_type(argv[1], 0 + argv[2][0]);
             }
             else {
                 puts("error");
