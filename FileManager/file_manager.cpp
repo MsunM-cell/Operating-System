@@ -174,10 +174,10 @@ json FileManager::init_file_system_tree(string current_path)
 {
     json tree;
     // convert std::string to filesystem::path
-    cout << current_path << endl;
+    // cout << current_path << endl;
     path cur_path(current_path);
     // get file entry container to traverse directory
-    cout << cur_path << endl;
+    // cout << cur_path << endl;
     directory_iterator file_list(cur_path);
     // traverse directory
     for (auto &file : file_list)
