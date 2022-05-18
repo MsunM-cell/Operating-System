@@ -445,6 +445,7 @@ ProcManager::ProcManager()
 {
     this->cpid = 0;
     this->rr_queue = new RRQueue();
+    this->fcfsProcManager = new ProcManagerFCFS();
     cout << "ProcManager is running!\n";
 }
 
@@ -744,7 +745,7 @@ void ProcManager::maintain()
 ProcManager& ProcManager::getInstance() 
 {
     // 测试用
-    static ProcManager instance(5,3);
+    static ProcManager instance;
     // static ProcManager instance;
     return instance;
 }
