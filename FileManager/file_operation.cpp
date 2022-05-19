@@ -200,6 +200,11 @@ void FileOperation::tree(string dir, int layer) {
  * @return  int
  */
 int FileOperation::file_size(string path) {
+    path = pathConverter(path);
+    if (path == "error") {
+        puts("Not such file.");
+        return -3;
+    }
     string file_name = path.substr(path.find_last_of((char)path::preferred_separator) + 1);
 
     if (!exists(path)) {
