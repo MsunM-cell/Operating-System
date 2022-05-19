@@ -252,6 +252,7 @@ void ProcManagerFCFS::run(PCB *p){
         //剩下的是指令中的参数
         cout << endl << command << endl;
         command = command.substr(cmd.length() + 1,command.length());
+        cout<<"[pid "<< p->id<<"] ";
         switch(this->commandMap[cmd]){
             case 0:
                 writeMem(command,p->id);
@@ -404,7 +405,7 @@ void ProcManagerFCFS::useIO(string command){
  */
 void ProcManagerFCFS::accessMem(string command,int pid){
     int addr = atoi(command.c_str());
-    cout << "access Memory at addr" << " " << addr << ", " << "the content is " << bmm->accessMemory(pid,addr) << endl;
+    cout <<"access Memory at addr" << " " << addr << ", " << "the content is " << bmm->accessMemory(pid,addr) << endl;
     Sleep(1000);
     return ;
 }

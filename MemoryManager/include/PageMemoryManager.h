@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-18 17:13:05
+ * @LastEditTime: 2022-05-19 15:00:24
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #pragma once
@@ -23,6 +23,11 @@ private:
 
     //逻辑页的使用位图
     bool *bitMap;
+
+    //访问内存次数
+    long long accessTime;
+    //缺页次数
+    long long pageFaultTime;
 
     //已经申请的页数，不一定分配了内存。
     int occupiedPageNum;
@@ -59,7 +64,6 @@ public:
     char accessMemory(int pid, int address_index);
     void initPageTable();
     void useFrame(FrameTableItem *frameTableItem);
-    unsigned long getLogicalMemorySize() { return mem_config.MEM_SIZE + mem_config.SWAP_MEMORY_SIZE; };
     bool pageFault(unsigned int pid, tableItem *ti);
     int writeMemory(int logicalAddress_index, char src, unsigned int pid);
     // void stuff(unsigned int pid);
@@ -67,4 +71,12 @@ public:
     int getUsedFrameNum() { return usedFrameNum; };
     int getOccupiedPageNum();
     int getSwapPageNum() { return swapPageNum; };
+    long getPhysicalMemorySize() { return mem_config.MEM_SIZE; };
+    unsigned long getLogicalMemorySize() { return mem_config.MEM_SIZE + mem_config.SWAP_MEMORY_SIZE; };
+    long long getAccessTime(){return accessTime;};
+    long long getPageFaultTime(){return pageFaultTime;};
+
+    string getMode() { return "Page Memory Manager with Virtual Memory"; }
+    void dss_command();
+    void dms_command();
 };
