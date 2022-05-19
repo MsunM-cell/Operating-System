@@ -115,7 +115,7 @@ int BlockMemoryManager::freeProcess(PCB &p)
     //åŠ¨æ€è°ƒæ•´é“¾è¡?
     adjust_list(mem_config.BLOCK_ALGORITHM);
     // adjust_list(1);
-    printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
+    //printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
     return 1;
 }
 

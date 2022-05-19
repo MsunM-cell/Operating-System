@@ -107,7 +107,7 @@ int BasicPageManager::freeProcess(PCB &p)
     bitmap[pageid].second = 0;
   }
   pagetable.erase(p.id);
-  cout << "free process successfully" << endl;
+  //cout << "free process successfully" << endl;
   return 1;
 }
 
@@ -188,7 +188,7 @@ void BasicPageManager::dss_command()
   int used = 0;
   for (auto it = pagetable.begin(); it != pagetable.end(); it++)
     used += it->second.size();
-  for (int i = 0, j = 0; i < mem_config.FRAME_NUM; i++)
+  for (int i = 0, j = 0; i < mem_config.FRAME_NUM && j < used; i++)
   {
     printf("frame #%d\t%d / %d Byte(s)\t", i, bitmap[i].second, mem_config.PAGE_SIZE);
     if (bitmap[i].first == -1)
@@ -197,8 +197,6 @@ void BasicPageManager::dss_command()
     {
       printf("[pid]%d\n", bitmap[i].first);
       j++;
-      if (j >= used)
-        break;
     }
   }
 }
