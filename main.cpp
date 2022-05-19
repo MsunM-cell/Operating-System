@@ -49,7 +49,8 @@ DWORD WINAPI setupProcManager(LPVOID lpParamter)
         ProcManager::getInstance().scheduling();
         if (ProcManager::getInstance().getActiveNum() == 0)
         {
-            Sleep(200);
+            Sleep(20);
+            ProcManager::getInstance().maintain(20);
         }
     }
 
@@ -92,8 +93,8 @@ PCB* createPCB(json file,string path)
     ptr->pri = file["priority"];
     ptr->size = file["size"];
     ptr->slice_cnt = 0;
-    ptr->time_need = 5000000;
-    // 向前估计使用的时间
+    ptr->time_need = 5000;
+    ptr->cpu_time = 0;
     
     return ptr;
 }
@@ -204,6 +205,20 @@ int main(void)
         else if (argv[0] == "exit")
         {
             // nop
+        }
+        else if (argv[0] == "tc")
+        {
+            json file;
+            string path = fm.home_path + fm.working_path + "cpu";
+            string get_file_path = fm.working_path + "cpu";
+            cout << path << endl;
+            PCB* pcb;
+            file = fm.get_file(get_file_path, "read", "FCFS");
+            for (int i = 0; i < 5; i++)
+            {
+                pcb = createPCB(file,path);
+                ProcManager::getInstance().run(pcb);
+            }   
         }
         else
         {

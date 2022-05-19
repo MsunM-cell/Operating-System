@@ -5,7 +5,8 @@
     "priority": 0,
     "content": [
         "cpu 10",
-        "cpu 20",
+        "cpu 300",
+        "access 10",
         "keyboard 200",
         "cpu 1",
         "#"

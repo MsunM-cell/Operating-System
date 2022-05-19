@@ -13,6 +13,7 @@
 #define BLOCKED 2
 #define DEAD 3
 #define NEW 4
+#define DEV_NUM 2
 
 
 
@@ -33,6 +34,8 @@ typedef struct PCB
     int time_need;
     // 预计阻塞的时间
     int block_time;
+    // 还需要使用cpu的时间
+    int cpu_time;
     // PC
     int pc;
     // 块大小

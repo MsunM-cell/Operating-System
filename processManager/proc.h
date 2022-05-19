@@ -20,7 +20,9 @@ using namespace std;
 // 对齐宽度
 #define WIDTH 10
 // 时间片大小
-#define TIME_SLICE 200
+#define TIME_SLICE 100
+// 一个因子，用于放大模拟时间
+#define ALPHA 10
 // 高优先级
 #define HIGH_PRI 0
 // 低优先级
@@ -93,7 +95,7 @@ public:
     void downLevel(PCB* target,ProcManagerFCFS* fcfs);
     int scheduling(ProcManagerFCFS* fcfs);
     void getInfo();
-    void exec(PCB *p);
+    void exec(PCB *p,int &time);
     PCB* getInfo(int pid);
 };
 
@@ -126,7 +128,7 @@ public:
     void ps(int pid);
     void scheduling();
     bool freePCB(PCB* target);
-    void maintain();
+    void maintain(int time_pass);
     int getAvailableId();
     void block(PCB* pcb, int dev);
     static ProcManager& getInstance();
