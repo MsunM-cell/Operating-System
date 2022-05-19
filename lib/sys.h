@@ -1,5 +1,5 @@
 /**
- * 系统共用头文�?
+ * 系统共用头文件
  */
 
 #include<ctime>
@@ -23,17 +23,19 @@ typedef struct PCB
     int id;
     // 进程名称
     std::string path;
-    // 进程状�?
+    // 进程状态
     int status;
-    // 优先�?
+    // 优先级
     int pri;
-    // 使用过的时间片数�?
+    // 使用过的时间片数
     int slice_cnt;
     // 预计还需要的时间
     int time_need;
+    // 预计阻塞的时间
+    int block_time;
     // PC
     int pc;
-    // 块大�?
+    // 块大小
     int size;
     //页表首地址
     int pagetable_addr;
@@ -42,10 +44,10 @@ typedef struct PCB
     std::string name;
 } PCB;
 
-//文件结构�?
+//文件结构
 typedef struct XFILE
 {
-    // 文件�?
+    // 文件名称
     std::string name;
     // 文件类型
     std::string type;
@@ -55,7 +57,7 @@ typedef struct XFILE
     std::string content;
 }XFILE;
 
-//程序运行的开始时�?
+//程序运行的开始时间
 clock_t system_start;
 
 #endif //SYS_H

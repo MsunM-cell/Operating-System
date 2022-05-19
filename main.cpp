@@ -44,7 +44,6 @@ DWORD WINAPI getch(LPVOID lpParamter)
  */
 DWORD WINAPI setupProcManager(LPVOID lpParamter)
 {
-    // ProcManager::getInstance().scheduling();
     while(true)
     {
         ProcManager::getInstance().scheduling();
@@ -85,13 +84,17 @@ int parse(string cmd, vector<string> &argv)
 PCB* createPCB(json file,string path)
 {
     PCB* ptr = new PCB;
-    // ptr->id=;
+    ptr->id= ProcManager::getInstance().getAvailableId();
     ptr->path = path;
-    // ptr->pc=0;
-    // ptr->pri=;
-    // ptr->size=;
-    // ptr->slice_cnt=0;
-    // ptr->time_need=;
+    ptr->name = file["name"];
+    ptr->status = NEW;
+    ptr->pc = 0;
+    ptr->pri = file["priority"];
+    ptr->size = file["size"];
+    ptr->slice_cnt = 0;
+    ptr->time_need = 5000000;
+    // 向前估计使用的时间
+    
     return ptr;
 }
 
@@ -120,7 +123,7 @@ int main(void)
     string pwd;
     while (cmd != "exit")
     {
-        pwd = "BUPT@My-OS:" + fm.working_path + "$ ";
+        pwd = usrname + "@My-OS:" + fm.working_path + "$ ";
         cout << pwd;
         WaitForSingleObject(hSemaphore, INFINITE);
         WaitForSingleObject(hMutex,INFINITE);
@@ -177,15 +180,9 @@ int main(void)
                 cout << file << endl;
                 // 判断有没有x
                 pcb = createPCB(file,path);
-                // TODO 怎么引用
-                // createProcess();
-                ProcManager::getInstance().run(path,5000);
+                ProcManager::getInstance().run(pcb);
+                // ProcManager::getInstance().run(path,5000);
             }
-            // 测试�??
-            // else if (args == 3)
-            // {
-            //     ProcManager::getInstance().run(argv[1], atoi(argv[2].c_str()));
-            // }
             else
             {
                 cout << "unknown cmd!\n";

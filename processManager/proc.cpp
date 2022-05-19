@@ -7,6 +7,10 @@ using namespace std;
  * RRQueue类的有关定义部分
  ****************************************************************************************/
 
+RRQueue::RRQueue(){
+    initCmdMap();
+}
+
 /**
  * @brief 析构函数
  */
@@ -86,6 +90,7 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
             cur_pcb->status = RUNNING;
             if (cur_pcb->time_need > TIME_SLICE)
             {
+                exec(cur_pcb);
                 // 模拟服务过程
                 Sleep(TIME_SLICE);
                 // 时间片到
@@ -187,10 +192,10 @@ void ProcManagerFCFS::runProcManager(){
         while(!fcfsQueue.empty()){
             PCB *p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
-            // FIXME 无限循环，所以先注释掉了
-            p->size = 4096;
-            p->pc = 0;
-            bmm->createProcess(*p);
+            // TODO 改了3行
+            // p->size = 4096;
+            // p->pc = 0;
+            // bmm->createProcess(*p);
             run(p);
             Sleep(p->time_need);
             // cout << "pid:" << p->id << "shut in fcfs.\n";
@@ -677,6 +682,35 @@ void ProcManager::run(string file_name, int time)
 }
 
 /**
+ * @brief 正式的run
+ * 
+ * @param pcb 
+ */
+void ProcManager::run(PCB* pcb)
+{
+    // 判断是否需要加入到等待队列
+    if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
+    {
+        bmm->createProcess(*pcb);
+        pcb->status = READY;
+        this->rr_queue->addPCB(pcb);
+        printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
+    }
+    else if (pcb->pri == LOW_PRI && this->fcfsProcManager->getQueueSize() < MAX_PROC)
+    {
+        bmm->createProcess(*pcb);
+        pcb->status = READY;
+        this->fcfsProcManager->addToQueue(pcb);
+        printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
+    }
+    else
+    {
+        this->waiting_pcb.push_back(pcb);
+        printf("[%ld]Pid=%d is waiting.\n", clock() - system_start, pcb->id);
+    }
+}
+
+/**
  * 开始调度
  */
 void ProcManager::scheduling()
@@ -749,6 +783,180 @@ ProcManager& ProcManager::getInstance()
     // static ProcManager instance;
     return instance;
 }
+
+/**
+ * @brief 返回一个可用的pid
+ * 
+ * @return int 可用的pid
+ */
+int ProcManager::getAvailableId()
+{
+    int id = this->cpid;
+    this->cpid = (this->cpid + 1) % 65536;
+    return id;
+}
+
+void ProcManager::block(PCB* pcb, int dev)
+{
+    block_pcb[dev].push_back(pcb);
+}
+
+/*** 
+ * @brief 
+ * @param {NULL}
+ * @return {NULL}
+ */
+void RRQueue::initCmdMap(){
+    commandMap["WriteMemory"] = 0;
+    commandMap["access"] = 1;
+    commandMap["cpu"] = 2;
+    commandMap["IO"] = 3;
+    commandMap["keyboard"] = 4;
+    return ;
+}
+
+
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @return {NULL}
+ */
+void RRQueue::useCPU(string command){
+    int time = atoi(command.c_str());
+    cout << "use CPU " << time << endl;
+    if(CPU){
+        CPU = false;
+        Sleep(time * 100);
+        CPU = true;
+    }
+    else{
+        while(!CPU);
+        CPU = false;
+        Sleep(time);
+        CPU = true;
+    }
+    return ;
+}
+
+
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @return {NULL}
+ */
+void RRQueue::useIO(string command){
+    int time = atoi(command.c_str());
+    cout << "IO Time" << " " << time << endl;
+    if(IO){
+        IO = false;
+        Sleep(time);
+        IO = true;
+    }
+    else{
+        while(!IO);
+        IO = false;
+        Sleep(time);
+        IO = true;
+    }
+    return ;
+}
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @return {NULL}
+ */
+void RRQueue::accessMem(string command){
+    int addr = atoi(command.c_str());
+    cout << "access Memory at addr" << " " << addr << endl;
+    Sleep(1000);
+    return ;
+}
+
+/*** 
+ * @brief 
+ * @param {string} command
+ * @param {string} num
+ * @param {int} number
+ * @return {NULL}
+ */
+void RRQueue::writeMem(string command){
+    int pos = command.find(' ');
+    string addr = command.substr(0,pos);
+    string num = command.substr(pos + 1,command.length());
+    int number = atoi(num.c_str());
+    int address = atoi(addr.c_str());
+    cout << "write Memory at addr" << " " << addr << " with number " << number << endl;
+    return ;
+}
+
+/*** 
+ * @brief 获得下一条指令
+ * @param {PCB} p
+ * @return {string} command
+ */
+string RRQueue::getCommand(PCB *p){
+    string command = "";
+    char tmp = bmm->accessMemory(p->id,p->pc);
+    p->pc += 1;
+    if(tmp == '#'){
+        Sleep(1000);
+        cout << "end of file" << endl;
+        return command;
+    }
+    while(tmp != '\0' && tmp != '#'){
+        command += tmp;
+        tmp = bmm->accessMemory(p->id,p->pc);
+        p->pc += 1;
+    }
+    return command;
+}
+
+string RRQueue::splitCommand(string command)
+{
+    // 这个函数用来取出指令字部分
+    int pos = command.find(' ');
+    return command.substr(0,pos);
+}
+
+void RRQueue::exec(PCB *p)
+{
+    string command = getCommand(p);
+    if(command == ""){
+        return ;
+    }
+    string cmd = splitCommand(command);
+    //剩下的是指令中的参数
+    cout << endl << command << endl;
+    command = command.substr(cmd.length() + 1,command.length());
+    cout << endl << commandMap[cmd] << endl;
+    switch(this->commandMap[cmd]){
+        case 0:
+            writeMem(command);
+            break;
+        case 1:
+            accessMem(command);
+            break;
+        case 2:
+            useCPU(command);
+            break;
+        case 3:
+            useIO(command);
+            break;
+        case 4:
+            // 键盘阻塞
+            p->status = BLOCKED;
+            p->block_time = atoi(command.c_str());
+            printf("Pid %d block!.\n", p->id);
+            ProcManager::getInstance().block(p,0);
+            break;
+        default:
+            return ;
+    }
+}
+
 
 // int main()
 // {
