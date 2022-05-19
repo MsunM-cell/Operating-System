@@ -4,12 +4,12 @@
     "size": 2000,
     "priority": 2,
     "content": [
-        "cpu 10",
+        "cpu 10000",
         "access 10",
         "access 100",
         "access 100",
         "access 100",
-        "cpu 1",
+        "cpu 10000",
         "writeMemory 100 9",
         "access 100",
         "#"

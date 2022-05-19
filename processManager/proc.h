@@ -105,7 +105,7 @@ public:
     int getActiveNum();
     void kill(int pid);
     void run(string file_name);
-    void run(string file_name, int time);
+    void run(string file_name, int time,int psize);
     void ps();
     void ps(int pid);
     void scheduling();

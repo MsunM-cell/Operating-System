@@ -167,10 +167,12 @@ bool FileOperation::delete_dir(string current_dir, string dir_name)
         string file_name = STRING(item.path().filename());
         
         if (is_directory(file_path)) {
-            if (!delete_dir(cur_dir_path , file_name))   return false;
+            string tmp_dir = cur_dir_path.substr(file_manager->home_path.size());
+            if (!delete_dir(tmp_dir , file_name))   return false;
         }
         else {
-            if (!delete_file(cur_dir_path, file_name))  return false;
+            string tmp_dir = cur_dir_path.substr(file_manager->home_path.size());
+            if (!delete_file(tmp_dir, file_name))  return false;
         }
     }
     if (file_manager->delete_json_node_from_tree(cur_dir_path)) {
@@ -198,6 +200,11 @@ void FileOperation::tree(string dir, int layer) {
  * @return  int
  */
 int FileOperation::file_size(string path) {
+    path = pathConverter(path);
+    if (path == "error") {
+        puts("Not such file.");
+        return -3;
+    }
     string file_name = path.substr(path.find_last_of((char)path::preferred_separator) + 1);
 
     if (!exists(path)) {
