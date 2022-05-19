@@ -556,13 +556,13 @@ int PageMemoryManager::load_ins(int pid, string file_address)
 void PageMemoryManager::dss_command()
 {
 
-    cout << "总内存大小: " << getPhysicalMemorySize() << " B , 物理内存帧数: " << mem_config.FRAME_NUM << "  ,已使用物理帧数: " << getUsedFrameNum() << ", 交换区使用页数: " << getSwapPageNum() << endl;
+    cout << "total: " << getPhysicalMemorySize() << " B , physical mem: " << mem_config.FRAME_NUM << "  ,physical mem used: " << getUsedFrameNum() << ", page used in swap: " << getSwapPageNum() << endl;
     int ratio = 100 * getUsedFrameNum() / mem_config.FRAME_NUM;
-    cout << "内存利用率：" << ratio / 100.0 << endl;
+    cout << "rate:" << ratio / 100.0 << endl;
     if(getAccessTime() != 0)
-        cout << "总访问内存次数: " << getAccessTime() << ", 页错误次数: " << getPageFaultTime() << ", 页错误率" << ((100 * getPageFaultTime() / getAccessTime()) / 100.0) << endl;
+        cout << "total access: " << getAccessTime() << ", fault number: " << getPageFaultTime() << ", fault rate" << ((100 * getPageFaultTime() / getAccessTime()) / 100.0) << endl;
     else{
-        cout << "总访问内存次数: " << getAccessTime() << ", 页错误次数: " << getPageFaultTime() << endl;
+        cout << "total access: " << getAccessTime() << ", fault number: " << getPageFaultTime() << endl;
     }
 }
 void PageMemoryManager::dms_command()
