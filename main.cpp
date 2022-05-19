@@ -180,7 +180,7 @@ int main(void)
                 // createProcess();
                 int time = 5 * fileOperation.file_size(path);
                 cout << "time need " << time << endl;
-                ProcManager::getInstance().run(path,time);
+                ProcManager::getInstance().run(path,time,time/5 + 1024);
             }
             // 测试�??
             // else if (args == 3)

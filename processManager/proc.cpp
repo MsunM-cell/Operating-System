@@ -188,7 +188,6 @@ void ProcManagerFCFS::runProcManager(){
             PCB *p = fcfsQueue.front();
             //该函数是执行函数，暂时未定
             // FIXME 无限循环，所以先注释掉了
-            p->size = 4096;
             p->pc = 0;
             bmm->createProcess(*p);
             run(p);
@@ -644,7 +643,7 @@ void ProcManager::run(string file_name)
  * @param file_name 文件名
  * @param time 所需时间
  */
-void ProcManager::run(string file_name, int time)
+void ProcManager::run(string file_name, int time,int psize)
 {
     cout << file_name << endl;
     // 从其他模块获取文件的有关信息，这里模拟一下
@@ -657,6 +656,7 @@ void ProcManager::run(string file_name, int time)
     new_pcb->pri = HIGH_PRI;
     new_pcb->time_need = time;
     new_pcb->slice_cnt = 0;
+    new_pcb->size = psize;
     PCB* pcb = new_pcb;
 
     // 判断是否需要加入到等待队列
