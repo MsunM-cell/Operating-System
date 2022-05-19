@@ -1,0 +1,31 @@
+{
+        "editor.fontSize": 20,
+        "editor.mouseWheelZoom": true,
+        "window.zoomLevel": 0,
+        "files.autoGuessEncoding": true,
+        "files.associations": {
+            "xiosbase": "cpp",
+            "iosfwd": "cpp",
+            "chrono": "cpp",
+            "format": "cpp",
+            "iostream": "cpp",
+            "filesystem": "cpp",
+            "xstring": "cpp",
+            "string": "cpp",
+            "utility": "cpp",
+            "span": "cpp",
+            "type_traits": "cpp"
+        },
+    
+        // 为VSCODE TERMINAL 添加 Git bash 
+        //"terminal.integrated.automationShell.windows": "D:\\Program Files\\Git\\bin\\bash.exe",
+        "terminal.integrated.profiles.windows": {
+            "GitBash": {
+                "path": [
+                    "D:\\Program Files\\Git\\bin\\bash.exe"
+                ],
+                "icon": "terminal-bash"
+            }
+        }
+
+}
