@@ -47,4 +47,8 @@ public:
     void print_frame();
     //打印进程页表
     void print_pagetable(const PCB& p);
+    
+    string getMode(){return "page";}
+    void dss_command();
+    void dms_command();
 };

@@ -200,6 +200,23 @@ int main(void)
             }
             
         }
+        else if (argv[0] == "td")
+        {
+            if (bmm->getMode() == "block")
+            {
+                bmm->compress_mem();
+            }
+            else
+                cout << "No outer debris, can not compress\n";
+        }
+        else if (argv[0] == "dss")
+        {
+            bmm->dss_command();
+        }
+        else if(argv[0]=="dms")
+        {
+            bmm->dms_command();
+        }
         else if(argv[0] == "cd"){
             fileOperation.cd_command(argv[1]);
         }

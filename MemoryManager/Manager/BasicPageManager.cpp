@@ -30,7 +30,7 @@ int BasicPageManager::load_ins(int pid, string Path)
   for (int i = 0, j = 0; i < root["content"].size(); ++i)
   {
     string s = root["content"][i];
-    s += '\0';//末尾\0
+    s += '\0'; //末尾\0
     ins_len += s.size();
     if (length < s.size()) //帧边界处理
     {
@@ -94,7 +94,6 @@ int BasicPageManager::createProcess(PCB &p)
 //释放内存
 int BasicPageManager::freeProcess(PCB &p)
 {
-  cout << "free process successfully" << endl;
   if (pagetable.find(p.id) == pagetable.end())
   {
     puts("%d : process not in memory\n");
@@ -108,6 +107,7 @@ int BasicPageManager::freeProcess(PCB &p)
     bitmap[pageid].second = 0;
   }
   pagetable.erase(p.id);
+  cout << "free process successfully" << endl;
   return 1;
 }
 
@@ -165,6 +165,41 @@ void BasicPageManager::print_pagetable(const PCB &p)
       printf("%d : %d\n", i, pagetable[p.id][i]);
     }
     puts("***************************end**************************\n");
+  }
+}
+
+// dms打印
+void BasicPageManager::dms_command()
+{
+  cout << "total : " << mem_config.MEM_SIZE << "\t  ";
+  int used = 0;
+  for (auto it = pagetable.begin(); it != pagetable.end(); it++)
+  {
+    used += it->second.size();
+  }
+  cout << "allocated : " << mem_config.PAGE_SIZE * used << "\t";
+  cout << "free : " << mem_config.PAGE_SIZE * (mem_config.FRAME_NUM - used) << endl;
+}
+
+// dss打印
+void BasicPageManager::dss_command()
+{
+  dms_command();
+  int used = 0;
+  for (auto it = pagetable.begin(); it != pagetable.end(); it++)
+    used += it->second.size();
+  for (int i = 0, j = 0; i < mem_config.FRAME_NUM; i++)
+  {
+    printf("frame #%d\t%d / %d Byte(s)\t", i, bitmap[i].second, mem_config.PAGE_SIZE);
+    if (bitmap[i].first == -1)
+      printf("null\n");
+    else
+    {
+      printf("[pid]%d\n", bitmap[i].first);
+      j++;
+      if (j >= used)
+        break;
+    }
   }
 }
 
