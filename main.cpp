@@ -178,7 +178,7 @@ int main(void)
                 pcb = createPCB(file,path);
                 // TODO 怎么引用
                 // createProcess();
-                int time = 5 * fileOperation.file_size(path);
+                int time = 5 * fileOperation.file_size(argv[1]);
                 cout << "time need " << time << endl;
                 ProcManager::getInstance().run(path,time,time/5 + 1024);
             }
