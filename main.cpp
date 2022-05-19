@@ -167,20 +167,24 @@ int main(void)
             {
                 json file;
                 // cout << fm.working_path << endl;
-                string path = fm.home_path + fm.working_path + argv[1];
-                string get_file_path = fm.working_path + argv[1];
-                cout << path << endl;
-                PCB* pcb;
-                // ProcManager::getInstance().run(argv[1]);
-                // file = fm.get_file(get_file_path, "read", "FCFS");
-                // cout << file << endl;
-                // 判断有没有x
-                pcb = createPCB(file,path);
-                // TODO 怎么引用
-                // createProcess();
-                int time = 5 * fileOperation.file_size(argv[1]);
-                cout << "time need " << time << endl;
-                ProcManager::getInstance().run(path,time,time/5 + 1024);
+                string path = fileOperation.pathConverter(argv[1]);
+                if (path == "error" || !exists(path)) {
+                    puts("error");
+                }
+                else {
+                    cout << path << endl;
+                    PCB* pcb;
+                    // ProcManager::getInstance().run(argv[1]);
+                    // file = fm.get_file(get_file_path, "read", "FCFS");
+                    // cout << file << endl;
+                    // 判断有没有x
+                    pcb = createPCB(file,path);
+                    // TODO 怎么引用
+                    // createProcess();
+                    int time = 5 * fileOperation.file_size(argv[1]);
+                    cout << "time need " << time << endl;
+                    ProcManager::getInstance().run(path,time,time/5 + 1024);
+                }
             }
             // 测试�??
             // else if (args == 3)
