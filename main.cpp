@@ -161,6 +161,14 @@ int main(void)
                 cout << "unknown cmd!\n";
             }
         }
+        else if(argv[0] == "cm"){
+            if (bmm->getMode() == "block")
+            {
+                bmm->compress_mem();
+            }
+            else
+                cout << "No outer debris, can not compress\n";
+        }
         else if (argv[0] == "run")
         {
             if (args == 2)
