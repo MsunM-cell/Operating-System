@@ -1,7 +1,7 @@
 {
     "name": "test1",
     "type": "erwx",
-    "size": 2000,
+    "size": 6124,
     "priority": 2,
     "content": [
         "cpu 10",
