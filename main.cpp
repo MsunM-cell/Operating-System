@@ -35,7 +35,6 @@ DWORD WINAPI getch(LPVOID lpParamter)
     }
     return 0L;
 }
-
 /**
  * @brief 进程管理器调度的线程函数，确保可以边接收指令边调度
  * 

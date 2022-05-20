@@ -244,6 +244,10 @@ string ProcManagerFCFS::getCommand(PCB *p){
     }
     while(tmp != '\0' && tmp != '#'){
         command += tmp;
+        if(p->id > 65536 || p->id < 0){
+            command = "";
+            return command;
+        }
         tmp = bmm->accessMemory(p->id,p->pc);
         p->pc += 1;
     }
@@ -301,6 +305,9 @@ void ProcManagerFCFS::run(PCB *p){
             default:
                 break ;
         }
+    }
+    if(p->id > 65536 || p->id < 0){
+        return ;
     }
     ProcManager::getInstance().freePCB(p);
     return ;
