@@ -220,16 +220,7 @@ void ProcManagerFCFS::runProcManager(){
     while(true){
         while(!fcfsQueue.empty()){
             PCB *p = fcfsQueue.front();
-            //该函数是执行函数，暂时未定
-            // TODO 改了3行
-            // p->size = 4096;
-            // p->pc = 0;
-            // bmm->createProcess(*p);
             run(p);
-            Sleep(p->time_need);
-            // bmm->freeProcess(*p);
-            // cout << "pid:" << p->id << "shut in fcfs.\n";
-            ProcManager::getInstance().freePCB(p);
             auto it = fcfsQueue.begin();
             it = fcfsQueue.erase(it);
         }
@@ -277,14 +268,16 @@ string ProcManagerFCFS::splitCommand(string command){
  * @return {NULL}
  */
 void ProcManagerFCFS::run(PCB *p){
-    // TODO 把剩下的CPU时间跑完
-    Sleep(p->cpu_time);
-    cout << "pid: " << p->id << " is using cpu for " << p->cpu_time << endl;
-    // 目前就是等一个内存接口了
+    //把剩下的CPU时间跑完
+    if(p->cpu_time != 0){
+        Sleep(p->cpu_time);
+        cout << "pid: " << p->id << " is using cpu for " << p->cpu_time << endl;
+        p->cpu_time = 0;
+    }
     while(true){
         string command = getCommand(p);
         if(command == ""){
-            return ;
+            break ;
         }
         string cmd = splitCommand(command);
         //剩下的是指令中的参数
@@ -302,16 +295,30 @@ void ProcManagerFCFS::run(PCB *p){
                 useCPU(command);
                 break;
             case 3:
+                moveToWaiting(p->id);
                 useIO(command);
-                break;
-            default:
                 return ;
+            default:
+                break ;
         }
     }
+    ProcManager::getInstance().freePCB(p);
     return ;
 }
 
-
+void ProcManagerFCFS::moveToWaiting(int pid){
+    PCB *tmp = fcfsQueue.front();
+    blocked.push_back(tmp);
+    cout << "pid " << tmp->id << "is blocked" << endl;
+    for(auto it = blocked.begin();it != blocked.end();it++){
+        if((*it)->id == pid){
+            it = blocked.erase(it);
+            break;
+        }
+    }
+    fcfsQueue.push_back(tmp);
+    return ;
+}
 
 /*** 
  * @brief remove a process from the fcfs queue
@@ -321,7 +328,6 @@ void ProcManagerFCFS::run(PCB *p){
 bool ProcManagerFCFS::removeProc(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
         if((*it)->id == pid){
-            // delete *it;
             ProcManager::getInstance().freePCB(*it);
             it = fcfsQueue.erase(it);
             return true;
@@ -382,7 +388,7 @@ void ProcManagerFCFS::initCmdMap(){
     commandMap["WriteMemory"] = 0;
     commandMap["access"] = 1;
     commandMap["cpu"] = 2;
-    commandMap["IO"] = 3;
+    commandMap["keyboard"] = 3;
     return ;
 }
 
@@ -398,7 +404,7 @@ void ProcManagerFCFS::useCPU(string command){
     cout << "use CPU " << time << endl;
     if(CPU){
         CPU = false;
-        Sleep(time * 100);
+        Sleep(time);
         CPU = true;
     }
     else{

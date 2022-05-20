@@ -4,7 +4,7 @@
     "size": 2000,
     "priority": 0,
     "content": [
-        "cpu 150",
+        "cpu 1100",
         "keyboard 200",
         "cpu 1000",
         "#"
