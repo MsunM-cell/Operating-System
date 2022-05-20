@@ -729,7 +729,6 @@ void ProcManager::scheduling()
  */
 bool ProcManager::freePCB(PCB* target)
 {
-    // TODO 联动后需要添加释放其他资源的操作
     bmm->freeProcess(*target);
     delete target;
     return true;
