@@ -6,7 +6,7 @@
     "content": [
         "cpu 150",
         "keyboard 200",
-        "cpu 20000",
+        "cpu 1000",
         "#"
     ]
 }
