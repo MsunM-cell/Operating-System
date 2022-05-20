@@ -556,13 +556,13 @@ int PageMemoryManager::load_ins(int pid, string file_address)
 void PageMemoryManager::dss_command()
 {
 
-    cout << "total: " << getPhysicalMemorySize() << " B , physical mem: " << mem_config.FRAME_NUM << "  ,physical mem used: " << getUsedFrameNum() << ", page used in swap: " << getSwapPageNum() << endl;
+    cout << "total: " << getPhysicalMemorySize() << " B \tphysical mem: " << mem_config.FRAME_NUM << " \tphysical mem used: " << getUsedFrameNum() << " \tpage used in swap: " << getSwapPageNum() << endl;
     int ratio = 100 * getUsedFrameNum() / mem_config.FRAME_NUM;
     cout << "rate:" << ratio / 100.0 << endl;
     if(getAccessTime() != 0)
-        cout << "total access: " << getAccessTime() << ", fault number: " << getPageFaultTime() << ", fault rate" << ((100 * getPageFaultTime() / getAccessTime()) / 100.0) << endl;
+        cout << "total access: " << getAccessTime() << " \tfault number: " << getPageFaultTime() << " \tfault rate: " << ((100 * getPageFaultTime() / getAccessTime()) / 100.0) << endl;
     else{
-        cout << "total access: " << getAccessTime() << ", fault number: " << getPageFaultTime() << endl;
+        cout << "total access: " << getAccessTime() << " \tfault number: " << getPageFaultTime() << endl;
     }
 }
 void PageMemoryManager::dms_command()

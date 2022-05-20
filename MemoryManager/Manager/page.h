@@ -49,6 +49,5 @@ public:
     void print_pagetable(const PCB& p);
     
     string getMode(){return "page";}
-    void dss_command();
     void dms_command();
 };

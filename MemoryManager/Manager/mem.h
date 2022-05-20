@@ -48,7 +48,6 @@ public:
 
     virtual ~MemoryManager();
     virtual string getMode(){return "memory";}
-    virtual void dss_command(){}
     virtual void dms_command(){}
     virtual int createProcess(PCB &p) { return 1; }
     virtual int freeProcess(PCB &p) { return 1; }

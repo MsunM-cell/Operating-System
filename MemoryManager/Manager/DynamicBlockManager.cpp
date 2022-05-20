@@ -81,7 +81,7 @@ int BlockMemoryManager::createProcess(PCB &p)
 //é‡Šæ”¾è¿›ç¨‹
 int BlockMemoryManager::freeProcess(PCB &p)
 {
-    if(pid2addr.find(p.id)==pid2addr.end())
+    if (pid2addr.find(p.id) == pid2addr.end())
     {
         return -1;
     }
@@ -115,7 +115,7 @@ int BlockMemoryManager::freeProcess(PCB &p)
     //åŠ¨æ€è°ƒæ•´é“¾è¡?
     adjust_list(mem_config.BLOCK_ALGORITHM);
     // adjust_list(1);
-    //printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
+    // printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
     return 1;
 }
 
@@ -189,24 +189,27 @@ void BlockMemoryManager::print_list()
     puts("**********************End*********************\n");
 }
 
-//一级打印
+// dms打印
 void BlockMemoryManager::dms_command()
 {
-    cout << "total : " << mem_config.MEM_SIZE << "\t  ";
+    cout << "total : " << mem_config.MEM_SIZE << "B \t  ";
     int allc = 0;
     for (auto it = pid2addr.begin(); it != pid2addr.end(); it++)
         allc += it->second.second;
-    cout << "allocated : " << allc << "\t";
-    cout << "free : " << mem_config.MEM_SIZE - allc << endl;
-}
+    cout << "allocated : " << allc << "B \t";
+    cout << "free : " << mem_config.MEM_SIZE - allc << "B\n";
 
-//二级打印
-void BlockMemoryManager::dss_command()
-{
-    dms_command();
     int i = 0;
     for (auto it = addr2pid.begin(); it != addr2pid.end(); it++)
     {
+        if (it != addr2pid.begin())
+        {
+            it--;
+            int temp = it->first + pid2addr[it->second].second;
+            it++;
+            if (temp < it->first)
+                printf("block #%d\t0 / %d Byte(s)\tnull\n", i++, it->first - temp);
+        }
         int pid = it->second;
         int len = pid2addr[pid].second;
         printf("block #%d\t%d / %d Byte(s)\t[pid]%d\n", i++, len, len, pid);
