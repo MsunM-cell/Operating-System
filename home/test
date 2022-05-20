@@ -2,7 +2,7 @@
     "name": "test",
     "type": "erwx",
     "size": 5420,
-    "priority": 2,
+    "priority": 0,
     "content": [
         "cpu 1",
         "access 10",
