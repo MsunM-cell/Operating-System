@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-19 15:05:16
+ * @LastEditTime: 2022-05-20 10:50:54
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -137,7 +137,7 @@ int PageMemoryManager::freeProcess(PCB &p)
             usedFrameNum--;
         }
         //如果在外存中
-        else if (ti->swapAddress != 0)
+        else if (ti->swapAddress != -1)
         {
             char *res = fileManager->readData(ti->swapAddress, mem_config.PAGE_SIZE);
             delete res;
@@ -343,7 +343,7 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
     {
 
         long long address = MyFileManager::getInstance()->write((char *)frameTableItem->getFrameAddress(), mem_config.PAGE_SIZE);
-        if (address != 0)
+        if (address != -1)
         {
             oldTableItem->isInMemory = false;
             oldTableItem->swapAddress = address;
