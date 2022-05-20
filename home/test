@@ -1,16 +1,19 @@
 {
     "name": "test",
     "type": "erwx",
-    "size": 2000,
-    "priority": 0,
+    "size": 5420,
+    "priority": 2,
     "content": [
-        "cpu 10",
+        "cpu 1",
         "access 10",
         "cpu 1000",
         "access 100",
         "access 100",
         "access 100",
-        "cpu 1",
+        "cpu 10",
+        "writeMemory 100 9",
+        "access 100",
+        "access 9",
         "#"
     ]
 }

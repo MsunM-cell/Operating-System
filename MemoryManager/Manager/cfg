@@ -4,7 +4,7 @@
     "Page": "no",
     "Page_size": 4096,
     "Swap_memory_size": 4194304,
-    "Virtual_memory": "no"
+    "Virtual_memory": "yes"
   },
   "name": "configuration",
   "priority": 1,

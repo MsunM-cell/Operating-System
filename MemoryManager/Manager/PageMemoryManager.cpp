@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-08 21:12:33
+ * @LastEditTime: 2022-05-20 10:50:54
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -25,6 +25,8 @@ PageMemoryManager::PageMemoryManager()
 {
     LRU_StackHead = nullptr;
     LRU_StackTail = nullptr;
+    accessTime = 0;
+    pageFaultTime = 0;
     PAGE_NUM = mem_config.FRAME_NUM + mem_config.SWAP_MEMORY_SIZE / mem_config.PAGE_SIZE;
     char *pointer = memory;
     for (int i = 0; i < mem_config.FRAME_NUM; i++)
@@ -43,9 +45,9 @@ PageMemoryManager::~PageMemoryManager()
 }
 
 /**
- * @brief µÃµ½Ò»¸ö½ø³Ì¶ÔÓ¦µÄÒ³±í
+ * @brief å¾—åˆ°ä¸€ä¸ªè¿›ç¨‹å¯¹åº”çš„é¡µè¡¨
  * @param {int} pid
- * @return {¸Ã½ø³Ì¶ÔÓ¦µÄÒ³±í}
+ * @return {è¯¥è¿›ç¨‹å¯¹åº”çš„é¡µè¡¨}
  */
 vector<tableItem *> *PageMemoryManager::getProcessPageTable(int pid)
 {
@@ -66,26 +68,23 @@ vector<tableItem *> *PageMemoryManager::getProcessPageTable(int pid)
 }
 
 /**
- * @brief ¸ø¶¨pidÒÔ¼°ĞèÒª·ÖÅäµÄ³¤¶È£¬Îª¸Ã½ø³Ì·ÖÅäÄÚ´æ
+ * @brief ç»™å®špidä»¥åŠéœ€è¦åˆ†é…çš„é•¿åº¦ï¼Œä¸ºè¯¥è¿›ç¨‹åˆ†é…å†…å­˜
  * @param {unsigned int} pid
  * @param {long long} length
- * @return {1Îª³É¹¦£¬·ñÔòÊ§°Ü}
+ * @return {1ä¸ºæˆåŠŸï¼Œå¦åˆ™å¤±è´¥}
  */
 int PageMemoryManager::createProcess(PCB &p)
 {
-    cout << "very ok!!!" << endl;
     vector<tableItem *> *pageTable = new vector<tableItem *>;
     tableMap[p.id] = pageTable;
     int allocPageNum = p.size % mem_config.PAGE_SIZE == 0 ? p.size / mem_config.PAGE_SIZE : p.size / mem_config.PAGE_SIZE + 1;
-    if (PAGE_NUM - occupiedPageNum < allocPageNum) //Ê£ÓàÄÚ´æ²»×ã
+    if (PAGE_NUM - occupiedPageNum < allocPageNum) //å‰©ä½™å†…å­˜ä¸è¶³
     {
         stringstream ss;
         ss << "There is no enough Memory(" << (PAGE_NUM - occupiedPageNum) * mem_config.PAGE_SIZE << ") for " << p.size;
         Log::logE(TAG, ss.str());
         return -1;
     }
-
-    // TODO:bitmap²»ÖªµÀÓĞÃ»ÓĞ´æÔÚµÄ±ØÒªºğ
 
     int findPage = 0;
 
@@ -108,14 +107,20 @@ int PageMemoryManager::createProcess(PCB &p)
             findPage++;
         }
     }
+    int load_res = load_ins(p.id, p.path);
     occupiedPageNum += allocPageNum;
+    if (load_res == 0)
+    {
+        freeProcess(p);
+        return -1;
+    }
     return 1;
 }
 
 /**
- * @brief ½ø³Ì½áÊøÊ±£¬ÊÍ·Å¸Ã½ø³ÌËùÓĞµÄÄÚ´æ
+ * @brief è¿›ç¨‹ç»“æŸæ—¶ï¼Œé‡Šæ”¾è¯¥è¿›ç¨‹æ‰€æœ‰çš„å†…å­˜
  * @param {int} pid
- * @return {1Îª³É¹¦}
+ * @return {1ä¸ºæˆåŠŸ}
  */
 int PageMemoryManager::freeProcess(PCB &p)
 {
@@ -124,21 +129,21 @@ int PageMemoryManager::freeProcess(PCB &p)
     for (int i = 0; i < mPageTable->size(); i++)
     {
         tableItem *ti = mPageTable->at(i);
-        //Èç¹ûÔÚÄÚ´æÖĞ
+        //å¦‚æœåœ¨å†…å­˜ä¸­
         if (ti->isInMemory)
         {
             FrameTableItem *fti = ti->frame;
             fti->unUsed();
             usedFrameNum--;
         }
-        //Èç¹ûÔÚÍâ´æÖĞ
-        else if (ti->swapAddress != 0)
+        //å¦‚æœåœ¨å¤–å­˜ä¸­
+        else if (ti->swapAddress != -1)
         {
             char *res = fileManager->readData(ti->swapAddress, mem_config.PAGE_SIZE);
             delete res;
             swapPageNum--;
         }
-        //Èç¹û¸ù±¾Ã»ÓĞ·ÖÅä¹ıÄÚ´æ
+        //å¦‚æœæ ¹æœ¬æ²¡æœ‰åˆ†é…è¿‡å†…å­˜
         else
         {
         }
@@ -149,14 +154,15 @@ int PageMemoryManager::freeProcess(PCB &p)
 }
 
 /**
- * @brief ´ÓÖ¸¶¨µØÖ·¶ÁÈ¡Ò»¸ö×Ö½Ú
+ * @brief ä»æŒ‡å®šåœ°å€è¯»å–ä¸€ä¸ªå­—èŠ‚
  * @param {int} pid
  * @param {int} address
- * @return {Ò»¸ö×Ö½Ú}
+ * @return {ä¸€ä¸ªå­—èŠ‚}
  */
 char PageMemoryManager::accessMemory(int pid, int address_index)
-{ //¶ÁÒ»¸ö×Ö½Ú£¿
-    
+{ //è¯»ä¸€ä¸ªå­—èŠ‚ï¼Ÿ
+
+    accessTime++;
     long long address = address_index * 8;
 
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
@@ -176,10 +182,10 @@ char PageMemoryManager::accessMemory(int pid, int address_index)
         return 0;
     }
     tableItem *ti = pageTable->at(temp);
-    //Èç¹û²»ÔÚÄÚ´æÖĞ
+    //å¦‚æœä¸åœ¨å†…å­˜ä¸­
     if (!ti->isInMemory)
     {
-        //Èç¹ûµ÷Ò³Ê§°Ü
+        //å¦‚æœè°ƒé¡µå¤±è´¥
         if (!pageFault(pid, ti))
         {
             return 0;
@@ -192,17 +198,18 @@ char PageMemoryManager::accessMemory(int pid, int address_index)
 }
 
 /**
- * @brief ÏòÄÚ´æÖĞĞ´Èë,ÕâÀï¼ÙÉèĞ´µÄ¶«Î÷»¹±È½Ï¶Ì£¬ÔİÊ±²»ĞèÒª¿çÒ³Ğ´Èë
- * @param {long long} logicalAddress  ĞèÒªĞ´ÈëµÄÄ¿µÄµØÖ·
- * @param {void} *src  Ô´µØÖ·
- * @param {long long} size ´óĞ¡
+ * @brief å‘å†…å­˜ä¸­å†™å…¥,è¿™é‡Œå‡è®¾å†™çš„ä¸œè¥¿è¿˜æ¯”è¾ƒçŸ­ï¼Œæš‚æ—¶ä¸éœ€è¦è·¨é¡µå†™å…¥
+ * @param {long long} logicalAddress  éœ€è¦å†™å…¥çš„ç›®çš„åœ°å€
+ * @param {void} *src  æºåœ°å€
+ * @param {long long} size å¤§å°
  * @param {unsigned int} pid
- * @return {1Îª³É¹¦}
+ * @return {1ä¸ºæˆåŠŸ}
  */
-int PageMemoryManager::writeMemory(int address_index, const char *src, long long size, unsigned int pid)
+int PageMemoryManager::writeMemory(int address_index, char src, unsigned int pid)
 {
+    accessTime++;
     long long logicalAddress = address_index * 8;
-
+    int size = 8;
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
 
     if (!pageTable)
@@ -231,19 +238,19 @@ int PageMemoryManager::writeMemory(int address_index, const char *src, long long
 
     FrameTableItem *fti = ti->frame;
     long long realAddress = fti->getFrameAddress() + logicalAddress % mem_config.PAGE_SIZE;
-    memcpy((void *)realAddress, src, size);
+    ((char *)realAddress)[0] = src;
     useFrame(fti);
     ti->isChange = true;
 
     stringstream logMsg;
-    logMsg << "process " << pid << " write " << size << " words into page " << ti->pageNo;
-    Log::logI(TAG, logMsg.str());
+    logMsg << "process " << pid << " write " << size / 8 << " words into page " << ti->pageNo;
+    Log::logV(TAG, logMsg.str());
 
     return true;
 }
 
 /**
- * @brief ½«bitMapÈ«²¿ÉèÎª0
+ * @brief å°†bitMapå…¨éƒ¨è®¾ä¸º0
  */
 void PageMemoryManager::initPageTable()
 {
@@ -256,10 +263,9 @@ void PageMemoryManager::initPageTable()
 }
 
 /**
- * TODO:¶¨ÒåÉĞ²»Ã÷È·
- * @brief µÃµ½ÒÑÉêÇëµÄÒ³Êı£¬²»Ò»¶¨ÒÑÉêÇëÄÚ´æ
+ * @brief å¾—åˆ°å·²ç”³è¯·çš„é¡µæ•°ï¼Œä¸ä¸€å®šå·²ç”³è¯·å†…å­˜
  * @param {*}
- * @return {ÒÑÉêÇëµÄÒ³Êı}
+ * @return {å·²ç”³è¯·çš„é¡µæ•°}
  */
 int PageMemoryManager::getOccupiedPageNum()
 {
@@ -267,19 +273,20 @@ int PageMemoryManager::getOccupiedPageNum()
 }
 
 /**
- * @brief ÉêÇë½øĞĞLRU»»Ò³
- * @param {unsigned int} pid ½ø³Ìpid
- * @param {tableItem*} ĞèÒª·ÃÎÊÒ³±íÏî
- * @return {trueÎª³É¹¦}
+ * @brief ç”³è¯·è¿›è¡ŒLRUæ¢é¡µ
+ * @param {unsigned int} pid è¿›ç¨‹pid
+ * @param {tableItem*} éœ€è¦è®¿é—®é¡µè¡¨é¡¹
+ * @return {trueä¸ºæˆåŠŸ}
  */
 bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
 {
 
+    pageFaultTime++;
     stringstream logMSG;
     logMSG << "process " << pid << " access page " << ti->pageNo << " fail";
     Log::logI(TAG, logMSG.str());
 
-    //Ê×ÏÈ²é¿´ÊÇ·ñËùÓĞµÄÖ¡¶¼±»Ê¹ÓÃ£¬ÌÈÈô´æÔÚÖ¡Î´±»Ê¹ÓÃ£¬ÔòÖ±½ÓÊ¹ÓÃ¸ÃÖ¡¼´¿É
+    //é¦–å…ˆæŸ¥çœ‹æ˜¯å¦æ‰€æœ‰çš„å¸§éƒ½è¢«ä½¿ç”¨ï¼Œå€˜è‹¥å­˜åœ¨å¸§æœªè¢«ä½¿ç”¨ï¼Œåˆ™ç›´æ¥ä½¿ç”¨è¯¥å¸§å³å¯
     for (int i = 0; i < frameTable.size(); i++)
     {
         FrameTableItem *fti = frameTable.at(i);
@@ -300,16 +307,16 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
         }
     }
 
-    //ÈôÈ«²¿Ö¡¶¼±»Ê¹ÓÃÖĞ£¬ÔòĞèÒªÍ¨¹ıLRU½øĞĞ»»Ò³
+    //è‹¥å…¨éƒ¨å¸§éƒ½è¢«ä½¿ç”¨ä¸­ï¼Œåˆ™éœ€è¦é€šè¿‡LRUè¿›è¡Œæ¢é¡µ
 
-    //ĞèÒª±»»»³öµÄÖ¡
+    //éœ€è¦è¢«æ¢å‡ºçš„å¸§
     FrameTableItem *frameTableItem = LRU_StackTail;
 
-    //Èç¹û¸ÃÒ³±»Ëø¶¨ÁË£¬Ò²²»ÄÜ»»³ö£¬¼ÌĞøÏòÇ°ÕÒ
+    //å¦‚æœè¯¥é¡µè¢«é”å®šäº†ï¼Œä¹Ÿä¸èƒ½æ¢å‡ºï¼Œç»§ç»­å‘å‰æ‰¾
     while (frameTableItem && frameTableItem->isLocked())
     {
         frameTableItem = frameTableItem->pre;
-        //ÕÒÁËÒ»È¦ÓÖÕÒ»ØÀ´ÁË
+        //æ‰¾äº†ä¸€åœˆåˆæ‰¾å›æ¥äº†
         if (frameTableItem == LRU_StackTail)
         {
             stringstream ss;
@@ -319,7 +326,7 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
         }
     }
 
-    //ÒÔ·À³öÏÖ¿ÕÖ¸Õë»òÕßÕÒµ½¾¡Í·
+    //ä»¥é˜²å‡ºç°ç©ºæŒ‡é’ˆæˆ–è€…æ‰¾åˆ°å°½å¤´
     if (!frameTableItem)
     {
         stringstream ss;
@@ -331,12 +338,12 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
     tableItem *oldTableItem = frameTableItem->getLogicalPage();
     oldTableItem->isInMemory = false;
 
-    //±»ĞŞ¸Ä¹ı£¬»òÕßÃ»ÓĞ»»³ö¹ı£¬ĞèÒªĞ´ÈëÎÄ¼şÖĞ
+    //è¢«ä¿®æ”¹è¿‡ï¼Œæˆ–è€…æ²¡æœ‰æ¢å‡ºè¿‡ï¼Œéœ€è¦å†™å…¥æ–‡ä»¶ä¸­
     if (oldTableItem->isChange || oldTableItem->swapAddress == -1)
     {
 
         long long address = MyFileManager::getInstance()->write((char *)frameTableItem->getFrameAddress(), mem_config.PAGE_SIZE);
-        if (address != 0)
+        if (address != -1)
         {
             oldTableItem->isInMemory = false;
             oldTableItem->swapAddress = address;
@@ -347,10 +354,10 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
             Log::logI(TAG, ss.str());
         }
     }
-    //ÏÂÃæ½«¸ÃÖ¡¸øtiÊ¹ÓÃ¡£
-    //Èç¹û¸ÃÒ³Ã»ÓĞ»»³ö¹ı£¬ËµÃ÷Ñ¹¸ù¾ÍÃ»ÓĞ·ÖÅäÄÚ´æ£¬Ö±½ÓÊ¹ÓÃ¼´¿É
+    //ä¸‹é¢å°†è¯¥å¸§ç»™tiä½¿ç”¨ã€‚
+    //å¦‚æœè¯¥é¡µæ²¡æœ‰æ¢å‡ºè¿‡ï¼Œè¯´æ˜å‹æ ¹å°±æ²¡æœ‰åˆ†é…å†…å­˜ï¼Œç›´æ¥ä½¿ç”¨å³å¯
 
-    //·ñÔòĞèÒª»»Èë
+    //å¦åˆ™éœ€è¦æ¢å…¥
     if (ti->swapAddress != -1)
     {
         char *data = MyFileManager::getInstance()->readData(ti->swapAddress, mem_config.PAGE_SIZE);
@@ -375,8 +382,8 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
     }
     else
     {
-        //Ö±½Ó½«ÕâÒ»Ö¡·ÖÅä¸øtiÊ¹ÓÃ
-        // TODO:ÑÏ½÷Ò»µãĞèÒª½«ÕâÒ»Ò³Ô­ÓĞÄÚÈİÈ«²¿Ìî³ä£¬ÒÔÃâ±»ÆäËû½ø³Ì¶ÁÈ¡
+        //ç›´æ¥å°†è¿™ä¸€å¸§åˆ†é…ç»™tiä½¿ç”¨
+        // TODO:ä¸¥è°¨ä¸€ç‚¹éœ€è¦å°†è¿™ä¸€é¡µåŸæœ‰å†…å®¹å…¨éƒ¨å¡«å……ï¼Œä»¥å…è¢«å…¶ä»–è¿›ç¨‹è¯»å–
         stringstream ss;
         ss << "Page " << ti->pageNo << " use frame " << frameTableItem->getFrameNo() << " directly";
         Log::logI(TAG, ss.str());
@@ -392,9 +399,9 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
 }
 
 /**
- * @brief Ê¹ÓÃÄ³Ò»Ö¡£¬½«¸ÃÖ¡Ìáµ½Ë«ÏòLRUÁ´±íµÄÍ·²¿,àÅ,ÉõÖÁ»¹ÊÇÑ­»·µÄ(...)
- * //TODO:°ÑÑ­»·¸Äµô
- * @param {FrameTableItem*} ftiÒªÊ¹ÓÃµÄÖ¡
+ * @brief ä½¿ç”¨æŸä¸€å¸§ï¼Œå°†è¯¥å¸§æåˆ°åŒå‘LRUé“¾è¡¨çš„å¤´éƒ¨,å—¯,ç”šè‡³è¿˜æ˜¯å¾ªç¯çš„(...)
+ * //TODO:æŠŠå¾ªç¯æ”¹æ‰
+ * @param {FrameTableItem*} ftiè¦ä½¿ç”¨çš„å¸§
  * @return {*}
  */
 void PageMemoryManager::useFrame(FrameTableItem *fti)
@@ -405,7 +412,7 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
         return;
     }
 
-    //¼ÙÈçÁ´±íÖĞÃ»ÓĞÖ¡£¬Õâ¸öÊÇµÚÒ»¸ö
+    //å‡å¦‚é“¾è¡¨ä¸­æ²¡æœ‰å¸§ï¼Œè¿™ä¸ªæ˜¯ç¬¬ä¸€ä¸ª
     if (LRU_StackHead == nullptr || LRU_StackTail == nullptr)
     {
         LRU_StackHead = fti;
@@ -415,7 +422,7 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
     }
     else
     {
-        //Èç¹ûÕâ¸öÖ¡Ö®Ç°Ã»ÓĞÌí¼Ó½øÁ´±í¹ı
+        //å¦‚æœè¿™ä¸ªå¸§ä¹‹å‰æ²¡æœ‰æ·»åŠ è¿›é“¾è¡¨è¿‡
         if (fti->pre == nullptr && fti->next == nullptr)
         {
             fti->next = LRU_StackHead;
@@ -425,12 +432,12 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
             LRU_StackTail->next = fti;
             LRU_StackHead = fti;
         }
-        //Èç¹ûÕâ¸öÖ¡ÎªÖ¡Í·
+        //å¦‚æœè¿™ä¸ªå¸§ä¸ºå¸§å¤´
         else if (fti == LRU_StackHead)
         {
             return;
         }
-        //Èç¹ûÕâ¸öÖ¡ÎªÖ¡Î²
+        //å¦‚æœè¿™ä¸ªå¸§ä¸ºå¸§å°¾
         else if (fti == LRU_StackTail)
         {
             LRU_StackTail = fti->pre;
@@ -443,15 +450,15 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
 
             LRU_StackHead = fti;
         }
-        //Õâ¸öÖ¡ÔÚÖĞ¼äµÄÇé¿ö
+        //è¿™ä¸ªå¸§åœ¨ä¸­é—´çš„æƒ…å†µ
         else
         {
-            //Èç¹û´æÔÚÉÏÒ»¸ö
+            //å¦‚æœå­˜åœ¨ä¸Šä¸€ä¸ª
             if (fti->pre)
             {
                 fti->pre->next = fti->next;
             }
-            //Èç¹û´æÔÚÏÂÒ»¸ö
+            //å¦‚æœå­˜åœ¨ä¸‹ä¸€ä¸ª
             if (fti->next)
             {
                 fti->next->pre = fti->pre;
@@ -467,26 +474,98 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
     }
 }
 
-/**
- * @brief ½«¸Ã½ø³ÌµÄÒ³È«²¿ÌîÂú1£¬Ê¹ÏµÍ³ÎªÆä·ÖÅäÄÚ´æ£¬ÒÔ²âÊÔ»»Ò³Êä³ö£¬½öÓÃÓÚ²âÊÔ
- *
- * @param {unsigned int} pid
- * @return {*}
- */
-void PageMemoryManager::stuff(unsigned int pid)
+// /**
+//  * @brief å°†è¯¥è¿›ç¨‹çš„é¡µå…¨éƒ¨å¡«æ»¡1ï¼Œä½¿ç³»ç»Ÿä¸ºå…¶åˆ†é…å†…å­˜ï¼Œä»¥æµ‹è¯•æ¢é¡µè¾“å‡ºï¼Œä»…ç”¨äºæµ‹è¯•
+//  *
+//  * @param {unsigned int} pid
+//  * @return {*}
+//  */
+// void PageMemoryManager::stuff(unsigned int pid)
+// {
+//     char *src = new char[mem_config.PAGE_SIZE];
+//     char c = -1;
+//     for (int i = 0; i < mem_config.PAGE_SIZE; i++)
+//     {
+//         src[i] = c;
+//     }
+//     Log::stopLog(); //æš‚æ—¶å°†æ—¥å¿—è¾“å‡ºé˜ˆå€¼è°ƒåˆ°æœ€é«˜ï¼Œä»¥é˜²stuffè¿‡ç¨‹ä¸­è¾“å‡ºå¤ªå¤šä¿¡æ¯
+//     vector<tableItem *> *table = getProcessPageTable(pid);
+//     for (int i = 0; i < table->size(); i++)
+//     {
+//         writeMemory(i * mem_config.PAGE_SIZE, src, mem_config.PAGE_SIZE, pid);
+//     }
+//     Log::continueLog();
+//     delete src;
+// }
+
+int PageMemoryManager::load_ins(int pid, string file_address)
 {
-    char *src = new char[mem_config.PAGE_SIZE];
-    char c = -1;
-    for (int i = 0; i < mem_config.PAGE_SIZE; i++)
+    vector<tableItem *> *pageTable = getProcessPageTable(pid);
+
+    if (!pageTable)
     {
-        src[i] = c;
+        stringstream ss;
+        ss << "process " << pid << " not found !" << endl;
+        Log::logE(TAG, ss.str());
+        return 0;
     }
-    Log::stopLog(); //ÔİÊ±½«ÈÕÖ¾Êä³öãĞÖµµ÷µ½×î¸ß£¬ÒÔ·Àstuff¹ı³ÌÖĞÊä³öÌ«¶àĞÅÏ¢
-    vector<tableItem *> *table = getProcessPageTable(pid);
-    for (int i = 0; i < table->size(); i++)
+    vector<string> codeTemp;
+    int code_length = 0;
+    json j;
+
+    ifstream in(file_address, ios::binary);
+    if (!in.is_open())
     {
-        writeMemory(i * mem_config.PAGE_SIZE, src, mem_config.PAGE_SIZE, pid);
+        stringstream ss;
+        ss << "Error opening file" << file_address << endl;
+        Log::logE(TAG, ss.str());
+        exit(1);
     }
-    Log::continueLog();
-    delete src;
+    in >> j;
+    in.close();
+    for (int i = 0; i < j["content"].size(); ++i)
+    {
+        string s = j["content"][i];
+        s += '\0'; //æœ«å°¾\0
+        codeTemp.push_back(s);
+        code_length += s.size();
+        // s = s.substr(1, s.size() - 2);
+        // sprintf(memory, "%s", s.c_str());
+    }
+
+    if (code_length > pageTable->size() * mem_config.PAGE_SIZE)
+    {
+        stringstream ss;
+        ss << "the code is too long to load in memory" << endl;
+        Log::logE(TAG, ss.str());
+        return 0;
+    }
+    int address_index = 0;
+    for (string s : codeTemp)
+    {
+        for (int i = 0; i < s.size(); i++)
+        {
+            writeMemory(address_index++, s[i], pid);
+        }
+        //çœ‹èµ·æ¥ä¸ç”¨è¡¥å……\0äº†
+    }
+
+    return 1;
+}
+
+void PageMemoryManager::dss_command()
+{
+
+    cout << "total: " << getPhysicalMemorySize() << " B \tphysical mem: " << mem_config.FRAME_NUM << " \tphysical mem used: " << getUsedFrameNum() << " \tpage used in swap: " << getSwapPageNum() << endl;
+    int ratio = 100 * getUsedFrameNum() / mem_config.FRAME_NUM;
+    cout << "rate:" << ratio / 100.0 << endl;
+    if(getAccessTime() != 0)
+        cout << "total access: " << getAccessTime() << " \tfault number: " << getPageFaultTime() << " \tfault rate: " << ((100 * getPageFaultTime() / getAccessTime()) / 100.0) << endl;
+    else{
+        cout << "total access: " << getAccessTime() << " \tfault number: " << getPageFaultTime() << endl;
+    }
+}
+void PageMemoryManager::dms_command()
+{
+    dss_command();
 }

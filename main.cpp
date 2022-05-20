@@ -134,7 +134,7 @@ int main(void)
         // cout << argv[0];
         // 根据分析出的指令执行相关的操作
         if(args == 0){
-            cout << "error" << endl;
+            puts("error");
             ReleaseMutex(hMutex);
             // system("pause");
             continue;
@@ -165,24 +165,33 @@ int main(void)
                 cout << "unknown cmd!\n";
             }
         }
+        else if(argv[0] == "cm"){
+            if (bmm->getMode() == "block")
+            {
+                bmm->compress_mem();
+            }
+            else
+                cout << "No outer debris, can not compress\n";
+        }
         else if (argv[0] == "run")
         {
-            // 真实模式
             if (args == 2)
             {
                 json file;
                 // cout << fm.working_path << endl;
-                string path = fm.home_path + fm.working_path + argv[1];
+                string path = fileOperation.pathConverter(argv[1]);
                 string get_file_path = fm.working_path + argv[1];
-                cout << path << endl;
-                PCB* pcb;
-                // ProcManager::getInstance().run(argv[1]);
-                file = fm.get_file(get_file_path, "read", "FCFS");
-                cout << file << endl;
-                // 判断有没有x
-                pcb = createPCB(file,path);
-                ProcManager::getInstance().run(pcb);
-                // ProcManager::getInstance().run(path,5000);
+                if (path == "error" || !exists(path)) {
+                    puts("error");
+                }
+                else {
+                    cout << path << endl;
+                    PCB* pcb;
+                    file = fm.get_file(get_file_path, "read", "FCFS");
+                    cout << file << endl;
+                    pcb = createPCB(file,path);
+                    ProcManager::getInstance().run(pcb);
+                }
             }
             else
             {
@@ -198,6 +207,18 @@ int main(void)
                 fileOperation.ls_command("");
             }
             
+        }
+        else if (argv[0] == "td")
+        {
+            fm.tidy_disk();
+        }
+        else if (argv[0] == "dss")
+        {
+            fm.display_storage_status();
+        }
+        else if(argv[0]=="dms")
+        {
+            bmm->dms_command();
         }
         else if(argv[0] == "cd"){
             fileOperation.cd_command(argv[1]);
@@ -218,7 +239,154 @@ int main(void)
             {
                 pcb = createPCB(file,path);
                 ProcManager::getInstance().run(pcb);
-            }   
+            } 
+        }  
+        else if(argv[0] == "rm"){
+            if(args == 2 && argv[1] != "-r"){
+                string dir = "";
+                string file_name = "";
+                if (argv[1].front() == path::preferred_separator) {
+                    dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                    file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                } else {
+                    if (argv[1].find(path::preferred_separator) == string::npos) {
+                        dir = ".";
+                        file_name = argv[1];
+                    }
+                    else {
+                        dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                        file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                    }
+                }
+                fileOperation.delete_file(dir, file_name);
+            }
+            else if (args == 3) {
+                bool recursive = false;
+                int index = -1;
+
+                for (int i = 0; i < 3; i++) 
+                    if (argv[i] == "-r") {
+                        recursive = true;
+                        index = i;
+                        break;
+                    }
+                
+                if (!recursive) {
+                    puts("error");
+                } else {
+                    
+                    if (index == 1) {
+                        string dir = "";
+                        string file_name = "";
+                        if (argv[2].front() == path::preferred_separator) {
+                            dir = argv[2].substr(0, argv[2].find_last_of(path::preferred_separator));
+                            file_name = argv[2].substr(argv[2].find_last_of(path::preferred_separator) + 1);
+                        } else {
+                            if (argv[2].find(path::preferred_separator) == string::npos) {
+                                dir = ".";
+                                file_name = argv[2];
+                            }
+                            else {
+                                dir = argv[2].substr(0, argv[2].find_last_of(path::preferred_separator));
+                                file_name = argv[2].substr(argv[2].find_last_of(path::preferred_separator) + 1);
+                            }
+                        }
+                        fileOperation.delete_dir(dir, file_name);
+                    }
+                    else {
+                        string dir = "";
+                        string file_name = "";
+                        if (argv[1].front() == path::preferred_separator) {
+                            dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                            file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                        } else {
+                            if (argv[1].find(path::preferred_separator) == string::npos) {
+                                dir = ".";
+                                file_name = argv[1];
+                            }
+                            else {
+                                dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                                file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                            }
+                        }
+                        fileOperation.delete_dir(dir, file_name);
+                    }
+                }
+
+            }
+            else{
+                puts("error");
+            }
+        }
+        else if(argv[0] == "mkdir"){
+            if(args == 2){
+                string dir = "";
+                string dir_name = "";
+                if (argv[1].front() == path::preferred_separator) {
+                    dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                    dir_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                } else {
+                    if (argv[1].find(path::preferred_separator) == string::npos) {
+                        dir = ".";
+                        dir_name = argv[1];
+                    }
+                    else {
+                        dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                        dir_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                    }
+                }
+                fileOperation.create_dir(dir, dir_name);
+            }
+            else{
+                puts("error");
+            }
+        }
+        else if(argv[0] == "touch"){
+            if(args == 2){
+                string dir = "";
+                string file_name = "";
+                if (argv[1].front() == path::preferred_separator) {
+                    dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                    file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                } else {
+                    if (argv[1].find(path::preferred_separator) == string::npos) {
+                        dir = ".";
+                        file_name = argv[1];
+                    }
+                    else {
+                        dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                        file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
+                    }
+                }
+                fileOperation.create_file(dir, file_name);
+            }
+            else{
+                puts("error");
+            }
+        }
+        else if(argv[0] == "cp"){
+            if(args == 3){
+                fileOperation.copy_file(argv[1], argv[2]);
+            }
+            else{
+                puts("error");
+            }
+        }
+        else if(argv[0] == "mv"){
+            if(args == 3){
+                fileOperation.move_file(argv[1], argv[2]);
+            }
+            else{
+                puts("error");
+            }
+        }
+        else if (argv[0] == "chmod") {
+            if (args == 3) {
+                fileOperation.modify_file_type(argv[1], 0 + argv[2][0]);
+            }
+            else {
+                puts("error");
+            }
         }
         else
         {

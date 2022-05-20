@@ -26,7 +26,7 @@ private:
 public:
     //构造函数和析构函数
     BasicPageManager() { init_manager(); }
-    ~BasicPageManager(){ printf("Exit BasicPageManager\n"); }
+    ~BasicPageManager(){}
     //访问内存接口
     char accessMemory(int pid, int address);
     //写内存接口
@@ -47,4 +47,7 @@ public:
     void print_frame();
     //打印进程页表
     void print_pagetable(const PCB& p);
+    
+    string getMode(){return "page";}
+    void dms_command();
 };

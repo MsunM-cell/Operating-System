@@ -15,7 +15,7 @@ void BlockMemoryManager::adjust_list(int type)
 }
 
 //åŠ è½½æŒ‡ä»¤
-int BlockMemoryManager::load_ins(int addr, int length,string path)
+int BlockMemoryManager::load_ins(int addr, int length, string path)
 {
 
     json root;
@@ -32,7 +32,7 @@ int BlockMemoryManager::load_ins(int addr, int length,string path)
     for (int i = 0, j = addr; i < root["content"].size(); ++i)
     {
         string s = root["content"][i];
-        s += '\0';//æœ«å°¾\0
+        s += '\0'; //æœ«å°¾\0
         ins_len += s.size();
         // s = s.substr(1, s.size() - 2);
         sprintf(memory + j, "%s", s.c_str());
@@ -71,7 +71,7 @@ int BlockMemoryManager::createProcess(PCB &p)
         adjust_list(mem_config.BLOCK_ALGORITHM);
 
         //åŠ è½½æŒ‡ä»¤
-        int ins_len = load_ins(addr, p.size,p.path);
+        int ins_len = load_ins(addr, p.size, p.path);
         if (ins_len != -1)
             ins_sum_len[p.id] = ins_len;
         return addr;
@@ -81,6 +81,10 @@ int BlockMemoryManager::createProcess(PCB &p)
 //é‡Šæ”¾è¿›ç¨‹
 int BlockMemoryManager::freeProcess(PCB &p)
 {
+    if (pid2addr.find(p.id) == pid2addr.end())
+    {
+        return -1;
+    }
     int addr = pid2addr[p.id].head_addr;
     int length = p.size;
 
@@ -111,7 +115,7 @@ int BlockMemoryManager::freeProcess(PCB &p)
     //åŠ¨æ€è°ƒæ•´é“¾è¡?
     adjust_list(mem_config.BLOCK_ALGORITHM);
     // adjust_list(1);
-    printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
+    // printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
     return 1;
 }
 
@@ -183,6 +187,33 @@ void BlockMemoryManager::print_list()
     for (int i = 0; i < free_block_table.size(); ++i)
         printf("free block %d\nstart : %d\nlength : %d\n\n", i, free_block_table[i].head_addr, free_block_table[i].len);
     puts("**********************End*********************\n");
+}
+
+// dms打印
+void BlockMemoryManager::dms_command()
+{
+    cout << "total : " << mem_config.MEM_SIZE << "B \t  ";
+    int allc = 0;
+    for (auto it = pid2addr.begin(); it != pid2addr.end(); it++)
+        allc += it->second.second;
+    cout << "allocated : " << allc << "B \t";
+    cout << "free : " << mem_config.MEM_SIZE - allc << "B\n";
+
+    int i = 0;
+    for (auto it = addr2pid.begin(); it != addr2pid.end(); it++)
+    {
+        if (it != addr2pid.begin())
+        {
+            it--;
+            int temp = it->first + pid2addr[it->second].second;
+            it++;
+            if (temp < it->first)
+                printf("block #%d\t0 / %d Byte(s)\tnull\n", i++, it->first - temp);
+        }
+        int pid = it->second;
+        int len = pid2addr[pid].second;
+        printf("block #%d\t%d / %d Byte(s)\t[pid]%d\n", i++, len, len, pid);
+    }
 }
 
 // int main()

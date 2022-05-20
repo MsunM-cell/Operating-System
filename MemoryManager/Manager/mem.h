@@ -47,10 +47,12 @@ public:
     static void init_config();
 
     virtual ~MemoryManager();
+    virtual string getMode(){return "memory";}
+    virtual void dms_command(){}
     virtual int createProcess(PCB &p) { return 1; }
     virtual int freeProcess(PCB &p) { return 1; }
     virtual char accessMemory(int pid, int address) { return '0'; }
     virtual int writeMemory(int logicalAddress, char src, unsigned int pid) { return 1; }
     
-    virtual int compress_mem(){return 1;} //压缩内存，仅动态分区使用
+    virtual int compress_mem(){return 1;} //压缩内存
 };
