@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-18 17:58:12
+ * @LastEditTime: 2022-05-19 15:05:16
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -25,6 +25,8 @@ PageMemoryManager::PageMemoryManager()
 {
     LRU_StackHead = nullptr;
     LRU_StackTail = nullptr;
+    accessTime = 0;
+    pageFaultTime = 0;
     PAGE_NUM = mem_config.FRAME_NUM + mem_config.SWAP_MEMORY_SIZE / mem_config.PAGE_SIZE;
     char *pointer = memory;
     for (int i = 0; i < mem_config.FRAME_NUM; i++)
@@ -43,9 +45,9 @@ PageMemoryManager::~PageMemoryManager()
 }
 
 /**
- * @brief �õ�һ�����̶�Ӧ��ҳ��
+ * @brief 得到一个进程对应的页表
  * @param {int} pid
- * @return {�ý��̶�Ӧ��ҳ��}
+ * @return {该进程对应的页表}
  */
 vector<tableItem *> *PageMemoryManager::getProcessPageTable(int pid)
 {
@@ -66,17 +68,17 @@ vector<tableItem *> *PageMemoryManager::getProcessPageTable(int pid)
 }
 
 /**
- * @brief ����pid�Լ���Ҫ����ĳ��ȣ�Ϊ�ý��̷����ڴ�
+ * @brief 给定pid以及需要分配的长度，为该进程分配内存
  * @param {unsigned int} pid
  * @param {long long} length
- * @return {1Ϊ�ɹ�������ʧ��}
+ * @return {1为成功，否则失败}
  */
 int PageMemoryManager::createProcess(PCB &p)
 {
     vector<tableItem *> *pageTable = new vector<tableItem *>;
     tableMap[p.id] = pageTable;
     int allocPageNum = p.size % mem_config.PAGE_SIZE == 0 ? p.size / mem_config.PAGE_SIZE : p.size / mem_config.PAGE_SIZE + 1;
-    if (PAGE_NUM - occupiedPageNum < allocPageNum) //ʣ���ڴ治��
+    if (PAGE_NUM - occupiedPageNum < allocPageNum) //剩余内存不足
     {
         stringstream ss;
         ss << "There is no enough Memory(" << (PAGE_NUM - occupiedPageNum) * mem_config.PAGE_SIZE << ") for " << p.size;
@@ -116,33 +118,32 @@ int PageMemoryManager::createProcess(PCB &p)
 }
 
 /**
- * @brief ���̽���ʱ���ͷŸý������е��ڴ�
+ * @brief 进程结束时，释放该进程所有的内存
  * @param {int} pid
- * @return {1Ϊ�ɹ�}
+ * @return {1为成功}
  */
 int PageMemoryManager::freeProcess(PCB &p)
 {
-    cout << "free Mem successfully" << endl;
     MyFileManager *fileManager = MyFileManager::getInstance();
     vector<tableItem *> *mPageTable = getProcessPageTable(p.id);
     for (int i = 0; i < mPageTable->size(); i++)
     {
         tableItem *ti = mPageTable->at(i);
-        //������ڴ���
+        //如果在内存中
         if (ti->isInMemory)
         {
             FrameTableItem *fti = ti->frame;
             fti->unUsed();
             usedFrameNum--;
         }
-        //����������
+        //如果在外存中
         else if (ti->swapAddress != 0)
         {
             char *res = fileManager->readData(ti->swapAddress, mem_config.PAGE_SIZE);
             delete res;
             swapPageNum--;
         }
-        //�������û�з�����ڴ�
+        //如果根本没有分配过内存
         else
         {
         }
@@ -153,14 +154,15 @@ int PageMemoryManager::freeProcess(PCB &p)
 }
 
 /**
- * @brief ��ָ����ַ��ȡһ���ֽ�
+ * @brief 从指定地址读取一个字节
  * @param {int} pid
  * @param {int} address
- * @return {һ���ֽ�}
+ * @return {一个字节}
  */
 char PageMemoryManager::accessMemory(int pid, int address_index)
-{ //��һ���ֽڣ�
+{ //读一个字节？
 
+    accessTime++;
     long long address = address_index * 8;
 
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
@@ -180,10 +182,10 @@ char PageMemoryManager::accessMemory(int pid, int address_index)
         return 0;
     }
     tableItem *ti = pageTable->at(temp);
-    //��������ڴ���
+    //如果不在内存中
     if (!ti->isInMemory)
     {
-        //�����ҳʧ��
+        //如果调页失败
         if (!pageFault(pid, ti))
         {
             return 0;
@@ -196,15 +198,16 @@ char PageMemoryManager::accessMemory(int pid, int address_index)
 }
 
 /**
- * @brief ���ڴ���д��,�������д�Ķ������Ƚ϶̣���ʱ����Ҫ��ҳд��
- * @param {long long} logicalAddress  ��Ҫд���Ŀ�ĵ�ַ
- * @param {void} *src  Դ��ַ
- * @param {long long} size ��С
+ * @brief 向内存中写入,这里假设写的东西还比较短，暂时不需要跨页写入
+ * @param {long long} logicalAddress  需要写入的目的地址
+ * @param {void} *src  源地址
+ * @param {long long} size 大小
  * @param {unsigned int} pid
- * @return {1Ϊ�ɹ�}
+ * @return {1为成功}
  */
 int PageMemoryManager::writeMemory(int address_index, char src, unsigned int pid)
 {
+    accessTime++;
     long long logicalAddress = address_index * 8;
     int size = 8;
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
@@ -247,7 +250,7 @@ int PageMemoryManager::writeMemory(int address_index, char src, unsigned int pid
 }
 
 /**
- * @brief ��bitMapȫ����Ϊ0
+ * @brief 将bitMap全部设为0
  */
 void PageMemoryManager::initPageTable()
 {
@@ -260,9 +263,9 @@ void PageMemoryManager::initPageTable()
 }
 
 /**
- * @brief �õ��������ҳ������һ���������ڴ�
+ * @brief 得到已申请的页数，不一定已申请内存
  * @param {*}
- * @return {�������ҳ��}
+ * @return {已申请的页数}
  */
 int PageMemoryManager::getOccupiedPageNum()
 {
@@ -270,19 +273,20 @@ int PageMemoryManager::getOccupiedPageNum()
 }
 
 /**
- * @brief �������LRU��ҳ
- * @param {unsigned int} pid ����pid
- * @param {tableItem*} ��Ҫ����ҳ����
- * @return {trueΪ�ɹ�}
+ * @brief 申请进行LRU换页
+ * @param {unsigned int} pid 进程pid
+ * @param {tableItem*} 需要访问页表项
+ * @return {true为成功}
  */
 bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
 {
 
+    pageFaultTime++;
     stringstream logMSG;
     logMSG << "process " << pid << " access page " << ti->pageNo << " fail";
     Log::logI(TAG, logMSG.str());
 
-    //���Ȳ鿴�Ƿ����е�֡����ʹ�ã���������֡δ��ʹ�ã���ֱ��ʹ�ø�֡����
+    //首先查看是否所有的帧都被使用，倘若存在帧未被使用，则直接使用该帧即可
     for (int i = 0; i < frameTable.size(); i++)
     {
         FrameTableItem *fti = frameTable.at(i);
@@ -303,16 +307,16 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
         }
     }
 
-    //��ȫ��֡����ʹ���У�����Ҫͨ��LRU���л�ҳ
+    //若全部帧都被使用中，则需要通过LRU进行换页
 
-    //��Ҫ��������֡
+    //需要被换出的帧
     FrameTableItem *frameTableItem = LRU_StackTail;
 
-    //�����ҳ�������ˣ�Ҳ���ܻ�����������ǰ��
+    //如果该页被锁定了，也不能换出，继续向前找
     while (frameTableItem && frameTableItem->isLocked())
     {
         frameTableItem = frameTableItem->pre;
-        //����һȦ���һ�����
+        //找了一圈又找回来了
         if (frameTableItem == LRU_StackTail)
         {
             stringstream ss;
@@ -322,7 +326,7 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
         }
     }
 
-    //�Է����ֿ�ָ������ҵ���ͷ
+    //以防出现空指针或者找到尽头
     if (!frameTableItem)
     {
         stringstream ss;
@@ -334,7 +338,7 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
     tableItem *oldTableItem = frameTableItem->getLogicalPage();
     oldTableItem->isInMemory = false;
 
-    //���޸Ĺ�������û�л���������Ҫд���ļ���
+    //被修改过，或者没有换出过，需要写入文件中
     if (oldTableItem->isChange || oldTableItem->swapAddress == -1)
     {
 
@@ -350,10 +354,10 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
             Log::logI(TAG, ss.str());
         }
     }
-    //���潫��֡��tiʹ�á�
-    //�����ҳû�л�������˵��ѹ����û�з����ڴ棬ֱ��ʹ�ü���
+    //下面将该帧给ti使用。
+    //如果该页没有换出过，说明压根就没有分配内存，直接使用即可
 
-    //������Ҫ����
+    //否则需要换入
     if (ti->swapAddress != -1)
     {
         char *data = MyFileManager::getInstance()->readData(ti->swapAddress, mem_config.PAGE_SIZE);
@@ -378,8 +382,8 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
     }
     else
     {
-        //ֱ�ӽ���һ֡�����tiʹ��
-        // TODO:�Ͻ�һ����Ҫ����һҳԭ������ȫ����䣬���ⱻ�������̶�ȡ
+        //直接将这一帧分配给ti使用
+        // TODO:严谨一点需要将这一页原有内容全部填充，以免被其他进程读取
         stringstream ss;
         ss << "Page " << ti->pageNo << " use frame " << frameTableItem->getFrameNo() << " directly";
         Log::logI(TAG, ss.str());
@@ -395,9 +399,9 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
 }
 
 /**
- * @brief ʹ��ĳһ֡������֡�ᵽ˫��LRU������ͷ��,��,��������ѭ����(...)
- * //TODO:��ѭ���ĵ�
- * @param {FrameTableItem*} ftiҪʹ�õ�֡
+ * @brief 使用某一帧，将该帧提到双向LRU链表的头部,嗯,甚至还是循环的(...)
+ * //TODO:把循环改掉
+ * @param {FrameTableItem*} fti要使用的帧
  * @return {*}
  */
 void PageMemoryManager::useFrame(FrameTableItem *fti)
@@ -408,7 +412,7 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
         return;
     }
 
-    //����������û��֡������ǵ�һ��
+    //假如链表中没有帧，这个是第一个
     if (LRU_StackHead == nullptr || LRU_StackTail == nullptr)
     {
         LRU_StackHead = fti;
@@ -418,7 +422,7 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
     }
     else
     {
-        //������֮֡ǰû�����ӽ�������
+        //如果这个帧之前没有添加进链表过
         if (fti->pre == nullptr && fti->next == nullptr)
         {
             fti->next = LRU_StackHead;
@@ -428,12 +432,12 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
             LRU_StackTail->next = fti;
             LRU_StackHead = fti;
         }
-        //������֡Ϊ֡ͷ
+        //如果这个帧为帧头
         else if (fti == LRU_StackHead)
         {
             return;
         }
-        //������֡Ϊ֡β
+        //如果这个帧为帧尾
         else if (fti == LRU_StackTail)
         {
             LRU_StackTail = fti->pre;
@@ -446,15 +450,15 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
 
             LRU_StackHead = fti;
         }
-        //���֡���м�����
+        //这个帧在中间的情况
         else
         {
-            //���������һ��
+            //如果存在上一个
             if (fti->pre)
             {
                 fti->pre->next = fti->next;
             }
-            //���������һ��
+            //如果存在下一个
             if (fti->next)
             {
                 fti->next->pre = fti->pre;
@@ -471,7 +475,7 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
 }
 
 // /**
-//  * @brief ���ý��̵�ҳȫ������1��ʹϵͳΪ������ڴ棬�Բ��Ի�ҳ����������ڲ���
+//  * @brief 将该进程的页全部填满1，使系统为其分配内存，以测试换页输出，仅用于测试
 //  *
 //  * @param {unsigned int} pid
 //  * @return {*}
@@ -484,7 +488,7 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
 //     {
 //         src[i] = c;
 //     }
-//     Log::stopLog(); //��ʱ����־�����ֵ������ߣ��Է�stuff���������̫����Ϣ
+//     Log::stopLog(); //暂时将日志输出阈值调到最高，以防stuff过程中输出太多信息
 //     vector<tableItem *> *table = getProcessPageTable(pid);
 //     for (int i = 0; i < table->size(); i++)
 //     {
@@ -522,7 +526,7 @@ int PageMemoryManager::load_ins(int pid, string file_address)
     for (int i = 0; i < j["content"].size(); ++i)
     {
         string s = j["content"][i];
-        s += '\0'; //ĩβ\0
+        s += '\0'; //末尾\0
         codeTemp.push_back(s);
         code_length += s.size();
         // s = s.substr(1, s.size() - 2);
@@ -543,8 +547,25 @@ int PageMemoryManager::load_ins(int pid, string file_address)
         {
             writeMemory(address_index++, s[i], pid);
         }
-        //���������ò���\0��
+        //看起来不用补充\0了
     }
 
     return 1;
+}
+
+void PageMemoryManager::dss_command()
+{
+
+    cout << "total: " << getPhysicalMemorySize() << " B , physical mem: " << mem_config.FRAME_NUM << "  ,physical mem used: " << getUsedFrameNum() << ", page used in swap: " << getSwapPageNum() << endl;
+    int ratio = 100 * getUsedFrameNum() / mem_config.FRAME_NUM;
+    cout << "rate:" << ratio / 100.0 << endl;
+    if(getAccessTime() != 0)
+        cout << "total access: " << getAccessTime() << ", fault number: " << getPageFaultTime() << ", fault rate" << ((100 * getPageFaultTime() / getAccessTime()) / 100.0) << endl;
+    else{
+        cout << "total access: " << getAccessTime() << ", fault number: " << getPageFaultTime() << endl;
+    }
+}
+void PageMemoryManager::dms_command()
+{
+    dss_command();
 }

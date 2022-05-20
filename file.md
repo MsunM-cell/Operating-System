@@ -130,3 +130,17 @@ bool ans = op.modify_file_type("\\test", 7);
 // 即以二进制从左到右读写执行，为每一位为1则表示拥有权限
 // 可读可写不可执行的二进制为110，mode就是6
 ```
+
+# dss
+展示系统外存各磁盘块的占用状态
+
+```c++
+fm.display_storage_status();
+```
+
+# td
+整理系统磁盘外部碎片，即“紧凑”操作
+
+```c++
+fm.tidy_disk();
+```

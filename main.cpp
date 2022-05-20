@@ -161,6 +161,14 @@ int main(void)
                 cout << "unknown cmd!\n";
             }
         }
+        else if(argv[0] == "cm"){
+            if (bmm->getMode() == "block")
+            {
+                bmm->compress_mem();
+            }
+            else
+                cout << "No outer debris, can not compress\n";
+        }
         else if (argv[0] == "run")
         {
             if (args == 2)
@@ -208,16 +216,11 @@ int main(void)
         }
         else if (argv[0] == "td")
         {
-            if (bmm->getMode() == "block")
-            {
-                bmm->compress_mem();
-            }
-            else
-                cout << "No outer debris, can not compress\n";
+            fm.tidy_disk();
         }
         else if (argv[0] == "dss")
         {
-            bmm->dss_command();
+            fm.display_storage_status();
         }
         else if(argv[0]=="dms")
         {
