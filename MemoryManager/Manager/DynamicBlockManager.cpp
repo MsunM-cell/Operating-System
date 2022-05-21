@@ -132,13 +132,15 @@ int BlockMemoryManager::compress_mem()
     {
         int id = it->second;
         int length = pid2addr[id].len;
-        char *s = new char[length];
+        memcpy(memory + sumsize, memory + it->first, length);
+        memset(memory + it->first, 0, sizeof(char) * length);
+        /* char *s = new char[length];
         snprintf(s, length, "%s", memory + it->first);
         memset(memory + it->first, 0, sizeof(char) * length);
-        snprintf(memory + sumsize, length, "%s", s);
+        snprintf(memory + sumsize, length, "%s", s); */
         pid2addr[id].head_addr = sumsize;
         sumsize += length;
-        delete[] s;
+        //delete[] s;
     }
     addr2pid.clear();
     for (auto it = pid2addr.begin(); it != pid2addr.end(); it++)
@@ -209,6 +211,10 @@ void BlockMemoryManager::dms_command()
             it++;
             if (temp < it->first)
                 printf("block #%d\t0 / %d Byte(s)\tnull\n", i++, it->first - temp);
+        }
+        else if (it->first > 0)
+        {
+            printf("block #0\t0 / %d Byte(s)\tnull\n", it->first);
         }
         int pid = it->second;
         int len = pid2addr[pid].second;
