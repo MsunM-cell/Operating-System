@@ -121,6 +121,8 @@ private:
     ProcManager(int n_size, int x_size);
     ~ProcManager();
 public:
+    // 记录现在被杀掉的pid
+    int killed=-1;
     int getActiveNum();
     void kill(int pid);
     void run(string file_name);

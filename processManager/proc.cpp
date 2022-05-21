@@ -79,6 +79,7 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
 {
     // 剩余时间
     int time = TIME_SLICE;
+    int pid;
     // cout << setw(WIDTH) << "Id" << setw(WIDTH) << "Time_need\n";
     // 循环到rr队列为空
     while (!this->rr_que.empty())
@@ -88,6 +89,7 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
         while (it < this->rr_que.end())
         {
             PCB* cur_pcb = *it;
+            pid = cur_pcb->id;
             time = TIME_SLICE;
             // cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
             // 判断时间是否够完成一次循环
@@ -123,9 +125,15 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
             //     ProcManager::getInstance().freePCB(cur_pcb);
             //     it = this->rr_que.erase(it);
             // }
-            exec(cur_pcb, time);
             cur_pcb->slice_cnt++;
-            if (cur_pcb->status == DEAD)
+            exec(cur_pcb, time);
+            if (ProcManager::getInstance().killed == pid)
+            {
+                // 程序死亡
+                cout << "pid: " << pid << " is dead\n";
+                ProcManager::getInstance().killed = -1;
+            }
+            else if (cur_pcb->status == DEAD)
             {
                 // 程序死亡
                 cout << "pid: " << cur_pcb->id << " is dead\n";
@@ -586,6 +594,7 @@ void ProcManager::kill(int pid)
     if (is_found)
     {
         printf("[%ld]Active pid=%d is killed.\n", clock() - system_start, pid);
+        killed = pid;
         this->maintain(0);
         return;
     }
@@ -602,6 +611,23 @@ void ProcManager::kill(int pid)
             this->waiting_pcb.erase(it);
             printf("[%ld]Waiting pid=%d is killed.\n", clock() - system_start, pid);
             return;
+        }
+    }
+    // 在阻塞队列里面寻找进程
+    for (int i=0; i < DEV_NUM; i++)
+    {
+        for (auto it=this->block_pcb[i].begin(); it < this->block_pcb[i].end(); it++)
+        {
+            // 找到了，删除它
+            if ((*it)->id == pid)
+            {
+                (*it)->status = DEAD;
+                // delete *it;
+                this->freePCB(*it);
+                this->block_pcb[i].erase(it);
+                printf("[%ld]Block pid=%d is killed.\n", clock() - system_start, pid);
+                return;
+            }
         }
     }
     printf("[%ld]Can't find pid=%d.\n", clock() - system_start, pid);
@@ -650,6 +676,20 @@ void ProcManager::ps(int pid)
         if (target == nullptr)
         {
             target = fcfsProcManager->getFcfsInfo(pid);
+            if (target == nullptr)
+            {
+                for(int i=0; i < DEV_NUM; i++)
+                {
+                    for (auto pcb:this->block_pcb[i])
+                    {
+                        if (pcb->id == pid)
+                        {
+                            target = pcb;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
     if (target != nullptr)
@@ -958,9 +998,9 @@ void RRQueue::writeMem(string command,int pid){
     char tmp = command[command.length() - 1];
     // int number = atoi(num.c_str());
     int address = atoi(addr.c_str());
-    Sleep(TIME_SLICE * ALPHA);
     cout << "write Memory at addr" << " " << addr << " with " << tmp << endl;
     bmm->writeMemory(address,tmp,pid);
+    Sleep(TIME_SLICE * ALPHA);
     return ;
 }
 
@@ -1025,26 +1065,26 @@ void RRQueue::exec(PCB *p, int &time)
             time = 0;
             break;
         case 2:
+            cout << "pid: " << p->id << " is using cpu for " << TIME_SLICE - time << endl;
             if (p->cpu_time >= time)
             {
-                Sleep(TIME_SLICE * ALPHA);
                 time = 0;
                 p->cpu_time -= TIME_SLICE;
+                Sleep(TIME_SLICE * ALPHA);
             }
             else
             {
-                Sleep(p->cpu_time * ALPHA);
                 time -= p->cpu_time;
                 p->cpu_time = 0;
+                Sleep(p->cpu_time * ALPHA);
             }
-            cout << "pid: " << p->id << " is using cpu for " << TIME_SLICE - time << endl;
             break;
         case 4:
             // 键盘阻塞
             p->status = BLOCKED;
             p->block_time = atoi(command.c_str());
-            Sleep(TIME_SLICE * ALPHA);
             printf("Pid %d block!.\n", p->id);
+            Sleep(TIME_SLICE * ALPHA);
             time = 0;
             break;
         default:
