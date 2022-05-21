@@ -107,7 +107,7 @@ int BasicPageManager::freeProcess(PCB &p)
     bitmap[pageid].second = 0;
   }
   pagetable.erase(p.id);
-  //cout << "free process successfully" << endl;
+  // cout << "free process successfully" << endl;
   return 1;
 }
 
@@ -116,6 +116,11 @@ char BasicPageManager::accessMemory(int pid, int address)
 {
   int page = address / mem_config.PAGE_SIZE;
   int offset = address % mem_config.PAGE_SIZE;
+  if (pagetable.find(pid) == pagetable.end())
+  {
+    printf("pid[%d] is not in memory!\n\n", pid);
+    return char(-1);
+  }
   if (page < pagetable[pid].size())
   {
     int trueaddr = pagetable[pid][page] * mem_config.PAGE_SIZE + offset;
