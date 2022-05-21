@@ -176,20 +176,31 @@ int main(void)
         {
             if (args == 2)
             {
-                json file;
-                // cout << fm.working_path << endl;
                 string path = fileOperation.pathConverter(argv[1]);
-                string get_file_path = fm.working_path + argv[1];
+                string get_file_path = path.substr(fm.home_path.size());
                 if (path == "error" || !exists(path)) {
                     puts("error");
+                }
+                else if (is_directory(path)) {
+                    printf("'%s' is a directory.\n", argv[1].c_str());
                 }
                 else {
                     cout << path << endl;
                     PCB* pcb;
+                    json file;
                     file = fm.get_file(get_file_path, "read", "FCFS");
                     cout << file << endl;
-                    pcb = createPCB(file,path);
-                    ProcManager::getInstance().run(pcb);
+                    if (string(file["type"])[0] != 'e') {
+                        printf("'%s' is not an executable file.\n", argv[1].c_str());
+                    }
+                    else if (string(file["type"])[3] != 'x') {
+                        printf("'%s' Permission denied.\n", argv[1].c_str());
+                    }
+                    else {
+                        pcb = createPCB(file,path);
+                        ProcManager::getInstance().run(pcb);
+                    }
+                    
                 }
             }
             else
