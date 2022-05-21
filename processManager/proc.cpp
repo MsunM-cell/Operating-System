@@ -221,8 +221,10 @@ void ProcManagerFCFS::runProcManager(){
         while(!fcfsQueue.empty()){
             PCB *p = fcfsQueue.front();
             run(p);
-            auto it = fcfsQueue.begin();
-            it = fcfsQueue.erase(it);
+            if(!fcfsQueue.empty()){
+                auto it = fcfsQueue.begin();
+                it = fcfsQueue.erase(it);
+            }
         }
         return ;
     }
@@ -243,12 +245,16 @@ string ProcManagerFCFS::getCommand(PCB *p){
         return command;
     }
     while(tmp != '\0' && tmp != '#'){
-        command += tmp;
-        if(p->id > 65536 || p->id < 0){
-            command = "";
+        if(tmp == -1){
+            command = "proc not found";
             return command;
         }
+        command += tmp;
         tmp = bmm->accessMemory(p->id,p->pc);
+        if(tmp == -1){
+            command = "proc not found";
+            return command;
+        }
         p->pc += 1;
     }
     return command;
@@ -283,6 +289,9 @@ void ProcManagerFCFS::run(PCB *p){
         if(command == ""){
             break ;
         }
+        if(command == "proc not found"){
+            return ;
+        }
         string cmd = splitCommand(command);
         //剩下的是指令中的参数
         cout << endl << command << endl;
@@ -305,9 +314,6 @@ void ProcManagerFCFS::run(PCB *p){
             default:
                 break ;
         }
-    }
-    if(p->id > 65536 || p->id < 0){
-        return ;
     }
     ProcManager::getInstance().freePCB(p);
     return ;
