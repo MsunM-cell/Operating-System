@@ -61,6 +61,7 @@ public:
     int getQueueSize();
 private:
     vector <PCB*> fcfsQueue;
+    vector <PCB*> blocked;
     map<string,int> commandMap;
     void run(PCB *p);
     string getCommand(PCB *p);
@@ -70,6 +71,7 @@ private:
     void accessMem(string command,int pid);
     void writeMem(string command,int pid);
     string splitCommand(string command);
+    void moveToWaiting(int pid);
 };
 
 // RR队列类
