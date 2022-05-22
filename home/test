@@ -11,7 +11,7 @@
         "cpu 1000",
         "fork",
         "access 100",
-        "keyboad 200",
+        "keyboard 200",
         "WriteMemory 1000 9",
         "access 1000",
         "#"
