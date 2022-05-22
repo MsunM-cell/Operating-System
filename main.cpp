@@ -205,7 +205,7 @@ int main(void)
                     PCB* pcb;
                     json file;
                     file = fm.get_file(get_file_path, "read", "FCFS");
-                    cout << file << endl;
+                    // cout << file << endl;
                     if (string(file["type"])[0] != 'e') {
                         printf("'%s' is not an executable file.\n", argv[1].c_str());
                     }
