@@ -1,7 +1,7 @@
 {
   "content": {
     "Block_algorithm": "FF",
-    "Page": "no",
+    "Page": "yes",
     "Page_size": 4096,
     "Swap_memory_size": 4194304,
     "Virtual_memory": "yes"
