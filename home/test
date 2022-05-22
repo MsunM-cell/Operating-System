@@ -6,7 +6,7 @@
     "content": [
         "cpu 250",
         "fork",
-        "keyboad 200",
+        "keyboard 200",
         "access 100",
         "cpu 1000",
         "fork",
