@@ -1092,7 +1092,8 @@ void RRQueue::exec(PCB *p, int &time)
                 p->cpu_time = 0;
                 Sleep(p->cpu_time * ALPHA);
             }
-            cout << "pid: " << p->id << " is using cpu for " << TIME_SLICE - time << endl;
+            if (p->status == RUNNING)
+                cout << "pid: " << p->id << " is using cpu for " << TIME_SLICE - time << endl;
             break;
         case 4:
             // 键盘阻塞

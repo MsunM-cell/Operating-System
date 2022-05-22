@@ -118,7 +118,8 @@ char BasicPageManager::accessMemory(int pid, int address)
   int offset = address % mem_config.PAGE_SIZE;
   if (pagetable.find(pid) == pagetable.end())
   {
-    printf("pid[%d] is not in memory!\n\n", pid);
+    if (pid >= 0 && pid < 65536)
+        printf("pid[%d] is not in memory!\n\n", pid);
     return char(-1);
   }
   if (page < pagetable[pid].size())
