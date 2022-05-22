@@ -73,7 +73,9 @@ private:
     void accessMem(string command,int pid);
     void writeMem(string command,int pid);
     string splitCommand(string command);
+    void useFork(PCB *p);
     void moveToWaiting(int pid);
+    PCB *pcbNew;
 };
 
 // RR队列类

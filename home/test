@@ -4,7 +4,9 @@
     "size": 5420,
     "priority": 0,
     "content": [
-        "cpu 1",
+        "cpu 1100",
+        "fork",
+        "access 100",
         "#"
     ]
 }
