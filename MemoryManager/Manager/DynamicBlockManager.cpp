@@ -19,7 +19,7 @@ int BlockMemoryManager::load_ins(int addr, int length, string path)
 {
 
     json root;
-    cout << path << endl;
+    // cout << path << endl;
     // Sleep(10000);
     ifstream in(path, ios::binary);
     if (!in.is_open())
