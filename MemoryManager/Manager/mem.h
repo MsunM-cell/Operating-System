@@ -24,7 +24,7 @@ typedef struct memory_configuration
     int FRAME_NUM;                        //帧数量
     int SWAP_MEMORY_SIZE;                 //交换空间大小
     bool IS_VIRTUAL;                      //是否启动虚拟内存
-    const int MEM_SIZE = 4 * 1024 * 1024; //内存大小固定
+    const int MEM_SIZE = 32 * 1024; //内存大小固定
     int BLOCK_ALGORITHM;                  //动态分区算法
     bool IS_PAGE;                         //是否使用分页
 } configuration;

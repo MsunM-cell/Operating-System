@@ -140,7 +140,7 @@ int BlockMemoryManager::compress_mem()
         snprintf(memory + sumsize, length, "%s", s); */
         pid2addr[id].head_addr = sumsize;
         sumsize += length;
-        //delete[] s;
+        // delete[] s;
     }
     addr2pid.clear();
     for (auto it = pid2addr.begin(); it != pid2addr.end(); it++)
@@ -153,6 +153,11 @@ int BlockMemoryManager::compress_mem()
 //è®¿å­˜
 char BlockMemoryManager::accessMemory(int pid, int address)
 {
+    if (pid2addr.find(pid) == pid2addr.end())
+    {
+        printf("pid[%d] is not in memory!\n", pid);
+        return char(-1);
+    }
     if (address < 0 || address > pid2addr[pid].len)
     {
         puts("Illegal memory access!\n\n");

@@ -1,8 +1,8 @@
 {
     "name": "test2",
     "type": "erwx",
-    "size": 2000,
-    "priority": 2,
+    "size": 8084,
+    "priority": 0,
     "content": [
         "cpu 10",
         "access 10",
