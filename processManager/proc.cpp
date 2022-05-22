@@ -1105,22 +1105,13 @@ void RRQueue::exec(PCB *p, int &time)
         case 5:
             // 打开新的进程
             ptr = new PCB;
+            *ptr = *p;
             ptr->id= ProcManager::getInstance().getAvailableId();
-            ptr->path = p->path;
-            ptr->name = p->name;
             ptr->status = NEW;
-            ptr->pc = p->pc;
-            ptr->pri = p->pri;
-            ptr->size = ptr->size;
             ptr->slice_cnt = 0;
-            ptr->time_need = p->time_need;
             ptr->cpu_time = 0;
             cout << endl << "new:::::::" << ptr->id << endl;
-            if (bmm->createProcess(*ptr) != -1)
-            {
-                ProcManager::getInstance().run(ptr);
-                return;
-            }
+            ProcManager::getInstance().run(ptr);
             break;
         default:
             return ;
