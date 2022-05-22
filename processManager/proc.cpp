@@ -1094,7 +1094,6 @@ void RRQueue::exec(PCB *p, int &time)
 // int main()
 // {
 //     // RRQueue test_queue(5,2);
-//     // ϵͳ��ʼ��ʱ��ʵ��Ӧ�ø���
 //     system_start = clock();
 //     cout << setiosflags(ios::left);
 //     printf("[%ld]This is a test\n", clock() - system_start);
