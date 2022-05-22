@@ -90,7 +90,7 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
         // while (it != this->rr_que.end())
         while (it < this->rr_que.size())
         {
-            WaitForSingleObject(pMutex,INFINITE);
+            // WaitForSingleObject(pMutex,INFINITE);
             // PCB* cur_pcb = *it;
             PCB* cur_pcb = this->rr_que[it];
             pid = cur_pcb->id;
@@ -139,7 +139,7 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
             }
             // 维护队列
             ProcManager::getInstance().maintain(TIME_SLICE - time);
-            ReleaseMutex(pMutex);
+            // ReleaseMutex(pMutex);
         }
     }
     return 0;
@@ -738,7 +738,7 @@ void ProcManager::run(PCB* pcb)
     WaitForSingleObject(pMutex,INFINITE);
     if (bmm->createProcess(*pcb) == -1)
     {
-        ReleaseMutex(pMutex);
+        // ReleaseMutex(pMutex);
         return;
     }
     // 判断是否需要加入到等待队列
@@ -916,6 +916,7 @@ void RRQueue::initCmdMap(){
     commandMap["cpu"] = 2;
     commandMap["IO"] = 3;
     commandMap["keyboard"] = 4;
+    commandMap["fork"] = 5;
     return ;
 }
 
@@ -1034,19 +1035,22 @@ void RRQueue::exec(PCB *p, int &time)
 {
     string command;
     string cmd = "cpu";
+    PCB* ptr;
     // 零表示上一条cpu占用指令跑完了，需要取新指令
     if (p->cpu_time == 0)
     {
         // 取指令
         command = getCommand(p);
-        if(command == ""){
+        if (command == ""){
             p->status = DEAD;
             return ;
         }
+        
         cmd = splitCommand(command);
         //剩下的是指令中的参数
         // cout << endl << command << endl;
-        command = command.substr(cmd.length() + 1,command.length());
+        if (command != "fork")
+            command = command.substr(cmd.length() + 1,command.length());
         // cout << endl << commandMap[cmd] << endl;
         if (cmd == "cpu")
         {
@@ -1063,7 +1067,6 @@ void RRQueue::exec(PCB *p, int &time)
             time = 0;
             break;
         case 2:
-            cout << "pid: " << p->id << " is using cpu for " << TIME_SLICE - time << endl;
             if (p->cpu_time >= time)
             {
                 time = 0;
@@ -1076,6 +1079,7 @@ void RRQueue::exec(PCB *p, int &time)
                 p->cpu_time = 0;
                 Sleep(p->cpu_time * ALPHA);
             }
+            cout << "pid: " << p->id << " is using cpu for " << TIME_SLICE - time << endl;
             break;
         case 4:
             // 键盘阻塞
@@ -1084,6 +1088,26 @@ void RRQueue::exec(PCB *p, int &time)
             printf("Pid %d block!.\n", p->id);
             Sleep(TIME_SLICE * ALPHA);
             time = 0;
+            break;
+        case 5:
+            // 打开新的进程
+            ptr = new PCB;
+            ptr->id= ProcManager::getInstance().getAvailableId();
+            ptr->path = p->path;
+            ptr->name = p->name;
+            ptr->status = NEW;
+            ptr->pc = p->pc;
+            ptr->pri = p->pri;
+            ptr->size = ptr->size;
+            ptr->slice_cnt = 0;
+            ptr->time_need = p->time_need;
+            ptr->cpu_time = 0;
+            cout << endl << "new:::::::" << ptr->id << endl;
+            if (bmm->createProcess(*ptr) != -1)
+            {
+                ProcManager::getInstance().run(ptr);
+                return;
+            }
             break;
         default:
             return ;
