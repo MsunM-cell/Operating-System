@@ -739,11 +739,7 @@ void ProcManager::run(PCB* pcb)
     if (bmm->createProcess(*pcb) == -1)
     {
         ReleaseMutex(pMutex);
-<<<<<<< HEAD
-        return;
-=======
         return ;
->>>>>>> 7be52068cad0bba07110882d2e9c8daa9706d61c
     }
     // 判断是否需要加入到等待队列
     if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
