@@ -5,7 +5,7 @@
 
 #include "block.h"
 
-//ç©ºé—²åˆ†åŒºé“¾è¡¨æŽ’åº,type=0ä¸ºåœ°å€é€’å¢žæŽ’åºï¼Œtype=1ä¸ºå®¹é‡é€’å¢žæŽ’åº
+//空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
 void BlockMemoryManager::adjust_list(int type)
 {
     if (type)
@@ -14,7 +14,7 @@ void BlockMemoryManager::adjust_list(int type)
         sort(free_block_table.begin(), free_block_table.end(), cmp2);
 }
 
-//åŠ è½½æŒ‡ä»¤
+//加载指令
 int BlockMemoryManager::load_ins(int addr, int length, string path)
 {
 
@@ -43,7 +43,7 @@ int BlockMemoryManager::load_ins(int addr, int length, string path)
     return ins_len;
 }
 
-//åˆ›å»ºè¿›ç¨‹
+//加载进程
 int BlockMemoryManager::createProcess(PCB &p)
 {
     int i = 0;
@@ -70,7 +70,7 @@ int BlockMemoryManager::createProcess(PCB &p)
         printf("Process %d starts from %d, length %d\n\n", p.id, addr, p.size);
         adjust_list(mem_config.BLOCK_ALGORITHM);
 
-        //åŠ è½½æŒ‡ä»¤
+        //加载指令
         int ins_len = load_ins(addr, p.size, p.path);
         if (ins_len != -1)
             ins_sum_len[p.id] = ins_len;
@@ -78,7 +78,7 @@ int BlockMemoryManager::createProcess(PCB &p)
     }
 }
 
-//é‡Šæ”¾è¿›ç¨‹
+//释放进程
 int BlockMemoryManager::freeProcess(PCB &p)
 {
     if (pid2addr.find(p.id) == pid2addr.end())
@@ -88,38 +88,38 @@ int BlockMemoryManager::freeProcess(PCB &p)
     int addr = pid2addr[p.id].head_addr;
     int length = p.size;
 
-    adjust_list(0); //é¦–å…ˆè°ƒæ•´é“¾è¡¨æ–¹ä¾¿åˆå¹¶
+    adjust_list(0); //首先调整链表方便合并
     int i = 0;
     while (i < free_block_table.size() && free_block_table[i].head_addr < addr)
         i++;
-    if (i < free_block_table.size() && addr + length == free_block_table[i].head_addr) //???block??
+    if (i < free_block_table.size() && addr + length == free_block_table[i].head_addr) //合并后一个block
     {
         free_block_table[i].head_addr = addr;
         free_block_table[i].len += length;
-        if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //?????block??
+        if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //合并前后block
         {
             free_block_table[i - 1].len += free_block_table[i].len;
             free_block_table.erase(free_block_table.begin() + i);
         }
     }
-    else if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //???block??
+    else if (i && free_block_table[i - 1].head_addr + free_block_table[i - 1].len == addr) //合并前一个block
         free_block_table[i - 1].len += length;
-    else //å•ç‹¬block
+    else //单独block
         free_block_table.insert(free_block_table.begin() + i, {addr, length});
 
-    //é‡Šæ”¾
+    //释放
     // memset(memory + addr, 0, sizeof(char) * length);
     pid2addr.erase(p.id);
     addr2pid.erase(addr);
 
-    //åŠ¨æ€è°ƒæ•´é“¾è¡?
+    //动态调整链表
     adjust_list(mem_config.BLOCK_ALGORITHM);
     // adjust_list(1);
     // printf("Free process(%d) block...\nMemory %d to %d is deallocated...\n\n", p.id, addr, addr + length - 1);
     return 1;
 }
 
-//åŽ‹ç¼©
+//压缩
 int BlockMemoryManager::compress_mem()
 {
     if (free_block_table.empty())
@@ -127,7 +127,7 @@ int BlockMemoryManager::compress_mem()
         cout << "Memory is full,can not compress any more!\n\n";
         return 1;
     }
-    int sumsize = 0; //æ‰€æœ‰è¿›ç¨‹å¤§å°å’Œ
+    int sumsize = 0; //所有进程大小和
     for (auto it = addr2pid.begin(); it != addr2pid.end(); it++)
     {
         int id = it->second;
@@ -150,7 +150,7 @@ int BlockMemoryManager::compress_mem()
     return 1;
 }
 
-//è®¿å­˜
+//访存
 char BlockMemoryManager::accessMemory(int pid, int address)
 {
     if (pid2addr.find(pid) == pid2addr.end())
@@ -161,12 +161,12 @@ char BlockMemoryManager::accessMemory(int pid, int address)
     if (address < 0 || address > pid2addr[pid].len)
     {
         puts("Illegal memory access!\n\n");
-        return char(-1); //è¿”å›ž-1
+        return char(-1); //返回-1
     }
     return memory[pid2addr[pid].head_addr + address];
 }
 
-//å†™å­˜
+//写存
 int BlockMemoryManager::writeMemory(int logicalAddress, char src, unsigned int pid)
 {
     if (logicalAddress < pid2addr[pid].second && logicalAddress >= ins_sum_len[pid])
@@ -178,14 +178,14 @@ int BlockMemoryManager::writeMemory(int logicalAddress, char src, unsigned int p
     return -1;
 }
 
-//åˆå§‹åŒ?
+//初始化
 void BlockMemoryManager::init_manager()
 {
-    //å…¨éƒ¨ç‰©ç†å†…å­˜
+    //全部物理内存
     free_block_table.push_back({0, mem_config.MEM_SIZE});
 }
 
-//æ‰“å°ç©ºé—²åˆ†åŒºé“¾è¡¨
+//打印空闲分区链表
 void BlockMemoryManager::print_list()
 {
     printf("**********Output the free block list**********\n");
