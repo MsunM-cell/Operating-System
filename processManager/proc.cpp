@@ -738,6 +738,7 @@ void ProcManager::run(PCB* pcb)
     WaitForSingleObject(pMutex,INFINITE);
     if (bmm->createProcess(*pcb) == -1)
     {
+        ReleaseMutex(pMutex);
         return ;
     }
     // 判断是否需要加入到等待队列
