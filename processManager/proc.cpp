@@ -85,46 +85,21 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
     while (!this->rr_que.empty())
     {
         // 对每个pcb进行处理
-        auto it = this->rr_que.begin();
-        while (it < this->rr_que.end())
+        // auto it = this->rr_que.begin();
+        int it = 0;
+        // while (it != this->rr_que.end())
+        while (it < this->rr_que.size())
         {
-            PCB* cur_pcb = *it;
+            WaitForSingleObject(pMutex,INFINITE);
+            // PCB* cur_pcb = *it;
+            PCB* cur_pcb = this->rr_que[it];
             pid = cur_pcb->id;
+            // cout << "DEBUG_PID RRQueue_scheduling " << pid << endl;
+            // cout << "DEBUG_PC " << cur_pcb->pc << endl;
             time = TIME_SLICE;
             // cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
             // 判断时间是否够完成一次循环
             cur_pcb->status = RUNNING;
-            // if (cur_pcb->time_need > TIME_SLICE)
-            // {
-            //     exec(cur_pcb);
-            //     // 模拟服务过程
-            //     Sleep(TIME_SLICE);
-            //     // 时间片到
-            //     cur_pcb->status = READY;
-            //     cur_pcb->time_need -= TIME_SLICE;
-            //     // printf("[%ld]Pid %d time out! Still need %d.\n", clock() - system_start, cur_pcb->id,
-            //     //        cur_pcb->time_need);
-            //     // 判断一下是否使用了过多的时间片,是则降级
-            //     cur_pcb->slice_cnt++;
-            //     if (cur_pcb->slice_cnt == MAX_CNT)
-            //     {
-            //         cur_pcb->pri = LOW_PRI;
-            //         // 降级加入fcfs队列中,并从当前队列删除
-            //         this->downLevel(cur_pcb,fcfs);
-            //         it = this->rr_que.erase(it);
-            //     }
-            // }
-            // else
-            // {
-            //     // 需要的时间小于完整的时间片，完成后从队列中删除该项
-            //     Sleep(cur_pcb->time_need);
-            //     // cur_pcb->time_need = -1;
-            //     cur_pcb->status = DEAD;
-            //     printf("[%ld]Pid %d time out! No time need.\n", clock() - system_start, cur_pcb->id);
-            //     // delete cur_pcb;
-            //     ProcManager::getInstance().freePCB(cur_pcb);
-            //     it = this->rr_que.erase(it);
-            // }
             cur_pcb->slice_cnt++;
             exec(cur_pcb, time);
             if (ProcManager::getInstance().killed == pid)
@@ -138,27 +113,33 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
                 // 程序死亡
                 cout << "pid: " << cur_pcb->id << " is dead\n";
                 ProcManager::getInstance().freePCB(cur_pcb);
-                it = this->rr_que.erase(it);
+                // it = this->rr_que.erase(it);
+                this->rr_que.erase(rr_que.begin() + it);
             }
             else if (cur_pcb->status == BLOCKED)
             {
                 // 从队列移除，加入到阻塞队列中
+                // cout << "DEBUG BLOCKED" << endl;
                 ProcManager::getInstance().block(cur_pcb,0);
-                it = this->rr_que.erase(it);
+                // it = this->rr_que.erase(it);
+                this->rr_que.erase(rr_que.begin() + it);
             }
-            else if (cur_pcb->slice_cnt == MAX_CNT)
+            else if (cur_pcb->slice_cnt >= MAX_CNT)
             {
                 cur_pcb->pri = LOW_PRI;
                 // 降级加入fcfs队列中,并从当前队列删除
                 this->downLevel(cur_pcb,fcfs);
-                it = this->rr_que.erase(it);
+                // it = this->rr_que.erase(it);
+                this->rr_que.erase(rr_que.begin() + it);
             }
             else
             {
+                // cout << "DEBUG IT ++" << endl;
                 it++;
             }
             // 维护队列
             ProcManager::getInstance().maintain(TIME_SLICE - time);
+            ReleaseMutex(pMutex);
         }
     }
     return 0;
@@ -173,7 +154,7 @@ void RRQueue::getInfo()
     for (PCB* pcb : rr_que)
     {
         cout << "pid: " << pcb->id << " name:" << pcb->name ;
-        cout << " pri: " << pcb->pri << " need: " << pcb->time_need << endl;
+        cout << " pri: " << pcb->pri << endl;
     }
 }
 
@@ -245,6 +226,7 @@ void ProcManagerFCFS::runProcManager(){
  */
 string ProcManagerFCFS::getCommand(PCB *p){
     string command = "";
+    // cout << "DEBUG_PC " << p->pc << endl;
     char tmp = bmm->accessMemory(p->id,p->pc);
     p->pc += 1;
     if(tmp == '#'){
@@ -366,8 +348,13 @@ bool ProcManagerFCFS::removeProc(int pid){
  * @return {NULL}
  */
 void ProcManagerFCFS::getFcfsInfo(){
-    for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
-        cout << (*it)->id << " " << endl;
+    // for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
+    //     cout << (*it)->id << " " << endl;
+    // }
+    for (PCB* pcb : fcfsQueue)
+    {
+        cout << "pid: " << pcb->id << " name:" << pcb->name ;
+        cout << " pri: " << pcb->pri << endl;
     }
     return ;
 }
@@ -514,7 +501,8 @@ ProcManager::ProcManager()
     this->cpid = 0;
     this->rr_queue = new RRQueue();
     this->fcfsProcManager = new ProcManagerFCFS();
-    block_pcb.resize(2);
+    pMutex = CreateMutex(NULL, FALSE, NULL);
+    block_pcb.resize(DEV_NUM);
     cout << "ProcManager is running!\n";
 }
 
@@ -642,7 +630,7 @@ void ProcManager::ps()
     for (PCB* pcb : waiting_pcb)
     {
         cout << "pid: " << pcb->id << " name:" << pcb->name ;
-        cout << " pri: " << pcb->pri << " need: " << pcb->time_need << endl;
+        cout << " pri: " << pcb->pri << endl;
     }
     cout << "Running: " << this->getActiveNum() << endl;
     cout << "RR: " << this->rr_queue->getSize() << endl;
@@ -695,7 +683,7 @@ void ProcManager::ps(int pid)
     if (target != nullptr)
     {
         cout << "pid: " << target->id << " name:" << target->name ;
-        cout << " pri: " << target->pri << " need: " << target->time_need << endl;
+        cout << " pri: " << target->pri << endl;
     }
     else
     {
@@ -747,6 +735,7 @@ void ProcManager::run(string file_name)
  */
 void ProcManager::run(PCB* pcb)
 {
+    WaitForSingleObject(pMutex,INFINITE);
     // 判断是否需要加入到等待队列
     if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
     {
@@ -755,7 +744,7 @@ void ProcManager::run(PCB* pcb)
         this->rr_queue->addPCB(pcb);
         printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
     }
-    else if (pcb->pri == LOW_PRI && this->fcfsProcManager->getQueueSize() < MAX_PROC)
+    else if (pcb->pri == LOW_PRI)
     {
         bmm->createProcess(*pcb);
         pcb->status = READY;
@@ -768,6 +757,7 @@ void ProcManager::run(PCB* pcb)
         this->waiting_pcb.push_back(pcb);
         printf("[%ld]Pid=%d is waiting.\n", clock() - system_start, pcb->id);
     }
+    ReleaseMutex(pMutex);
 }
 
 /**
@@ -825,10 +815,10 @@ void ProcManager::maintain(int time_pass)
     // 维护等待队列
     auto it = waiting_pcb.begin();
     bool free1 = rr_queue->getSize() < MAX_PROC;
-    bool free2 = fcfsProcManager->getQueueSize() < MAX_PROC;
-    while (it != waiting_pcb.end() && (free1 || free2))
+    while (it != waiting_pcb.end() && free1)
     {
         PCB* pcb = *it;
+        // cout  << "WAITING: "<< (pcb->pri == HIGH_PRI) << "  " << (pcb->pri == LOW_PRI);
         if (pcb->pri == HIGH_PRI && free1)
         {
             rr_queue->addPCB(pcb);
@@ -836,15 +826,18 @@ void ProcManager::maintain(int time_pass)
             printf("Pid %d is running.\n", pcb->id); 
             it = waiting_pcb.erase(it);
         }
-        else if (pcb->pri == LOW_PRI && free2)
+        else if (pcb->pri == LOW_PRI)
         {
             fcfsProcManager->addToQueue(pcb);
             pcb->status = READY;
             printf("Pid %d is running.\n", pcb->id); 
             it = waiting_pcb.erase(it);
         }
+        else
+        {
+            it++;
+        }
         free1 = rr_queue->getSize() < MAX_PROC;
-        free2 = fcfsProcManager->getQueueSize() < MAX_PROC;
     }
 
     // // 维护RR队列
@@ -979,6 +972,7 @@ void RRQueue::useIO(string command){
  */
 void RRQueue::accessMem(string command,int pid){
     int addr = atoi(command.c_str());
+    // cout << "DEBUG_PID RRQueue::accessMem " << pid << endl;
     cout <<"access Memory at addr" << " " << addr << ", " << "the content is " << bmm->accessMemory(pid,addr) << endl;
     Sleep(TIME_SLICE * ALPHA);
     return ;
@@ -1011,6 +1005,8 @@ void RRQueue::writeMem(string command,int pid){
  */
 string RRQueue::getCommand(PCB *p){
     string command = "";
+    // cout << "DEBUG_PC " << p->pc << endl;
+    // cout << "DEBUG_PID getCommand" << p->id << endl;
     char tmp = bmm->accessMemory(p->id,p->pc);
     p->pc += 1;
     if(tmp == '#'){

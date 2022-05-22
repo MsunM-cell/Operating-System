@@ -121,6 +121,22 @@ int main(void)
     FileManager fm(512, 200, 12);
     FileOperation fileOperation(&fm);
     string pwd;
+
+    // 系统自检
+    // {
+    //     json file;
+    //     string path = fm.home_path + fm.working_path + "cpu2";
+    //     string get_file_path = fm.working_path + "cpu2";
+    //     PCB* pcb;
+    //     file = fm.get_file(get_file_path, "read", "FCFS");
+    //     for (int i = 0; i < 5; i++)
+    //     {
+    //         pcb = createPCB(file,path);
+    //         ProcManager::getInstance().run(pcb);
+    //     }
+    //     while (ProcManager::getInstance().getActiveNum() != 0);
+    // }
+
     while (cmd != "exit")
     {
         pwd = usrname + "@My-OS:" + fm.working_path + "$ ";
@@ -185,7 +201,7 @@ int main(void)
                     printf("'%s' is a directory.\n", argv[1].c_str());
                 }
                 else {
-                    cout << path << endl;
+                    // cout << path << endl;
                     PCB* pcb;
                     json file;
                     file = fm.get_file(get_file_path, "read", "FCFS");
@@ -233,16 +249,16 @@ int main(void)
         else if(argv[0] == "cd"){
             fileOperation.cd_command(argv[1]);
         }
-        else if (argv[0] == "exit")
+        else if (argv[0] == "exit" || argv[0] == "yes")
         {
             // nop
         }
         else if (argv[0] == "tc")
         {
             json file;
-            string path = fm.home_path + fm.working_path + "cpu";
-            string get_file_path = fm.working_path + "cpu";
-            cout << path << endl;
+            string path = fm.home_path + fm.working_path + "cpu2";
+            string get_file_path = fm.working_path + "cpu2";
+            // cout << path << endl;
             PCB* pcb;
             file = fm.get_file(get_file_path, "read", "FCFS");
             for (int i = 0; i < 5; i++)
