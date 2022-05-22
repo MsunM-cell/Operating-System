@@ -259,6 +259,12 @@ string ProcManagerFCFS::splitCommand(string command){
     return command.substr(0,pos);
 }
 
+void ProcManagerFCFS::useFork(PCB *p){
+    p->id = ProcManager::getInstance().getAvailableId();
+    p->status = NEW;
+    ProcManager::getInstance().run(p);
+    return ;
+}
 
 
 /*** 
@@ -285,7 +291,8 @@ void ProcManagerFCFS::run(PCB *p){
         string cmd = splitCommand(command);
         //剩下的是指令中的参数
         cout << endl << command << endl;
-        command = command.substr(cmd.length() + 1,command.length());
+        if(command != "fork")
+            command = command.substr(cmd.length() + 1,command.length());
         cout<<"[pid "<< p->id<<"] ";
         switch(this->commandMap[cmd]){
             case 0:
@@ -301,6 +308,11 @@ void ProcManagerFCFS::run(PCB *p){
                 moveToWaiting(p->id);
                 useIO(command);
                 return ;
+            case 4:
+                pcbNew = new PCB;
+                *pcbNew = *p; 
+                useFork(pcbNew);
+                break;
             default:
                 break ;
         }
@@ -397,6 +409,7 @@ void ProcManagerFCFS::initCmdMap(){
     commandMap["access"] = 1;
     commandMap["cpu"] = 2;
     commandMap["keyboard"] = 3;
+    commandMap["fork"] = 4;
     return ;
 }
 
