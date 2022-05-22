@@ -5,17 +5,6 @@
     "priority": 0,
     "content": [
         "cpu 1",
-        "access 10",
-        "cpu 1000",
-        "access 100",
-        "access 100",
-        "access 100",
-        "cpu 10",
-        "writeMemory 1000 9",
-        "access 100",
-        "access 9",
-        "keyboard 200",
-        "access 1000",
         "#"
     ]
 }

@@ -4,7 +4,7 @@ using namespace std;
 
 
 /*****************************************************************************************
- * RRQueue类的有关定义部分
+ * RRQueue绫荤殑鏈夊叧瀹氫箟閮ㄥ垎
  ****************************************************************************************/
 
 RRQueue::RRQueue(){
@@ -12,7 +12,7 @@ RRQueue::RRQueue(){
 }
 
 /**
- * @brief 析构函数
+ * @brief 鏋愭瀯鍑芥暟
  */
 RRQueue::~RRQueue()
 {
@@ -20,8 +20,8 @@ RRQueue::~RRQueue()
 }
 
 /**
- * @brief 查询目前队列的长度
- * @return 队列长度
+ * @brief 鏌ヨ鐩墠闃熷垪鐨勯暱搴�
+ * @return 闃熷垪闀垮害
  */
 int RRQueue::getSize()
 {
@@ -29,8 +29,8 @@ int RRQueue::getSize()
 }
 
 /**
- * @brief 降级操作
- * @param target 被降级的PCB
+ * @brief 闄嶇骇鎿嶄綔
+ * @param target 琚檷绾х殑PCB
  */
 void RRQueue::downLevel(PCB* target,ProcManagerFCFS* fcfs)
 {
@@ -40,9 +40,9 @@ void RRQueue::downLevel(PCB* target,ProcManagerFCFS* fcfs)
 }
 
 /**
- * 向RR队列中加入一个PCB
- * @param target 指向要加入的PCB
- * @return 成功则返回true
+ * 鍚慠R闃熷垪涓姞鍏ヤ竴涓狿CB
+ * @param target 鎸囧悜瑕佸姞鍏ョ殑PCB
+ * @return 鎴愬姛鍒欒繑鍥瀟rue
  */
 bool RRQueue::addPCB(PCB *target)
 {
@@ -51,9 +51,9 @@ bool RRQueue::addPCB(PCB *target)
 }
 
 /**
- * 移除一个pcb,并将其占用的内存释放
- * @param pid 将要移除的pcb的id
- * @return 成功则返回true
+ * 绉婚櫎涓€涓猵cb,骞跺皢鍏跺崰鐢ㄧ殑鍐呭瓨閲婃斁
+ * @param pid 灏嗚绉婚櫎鐨刾cb鐨刬d
+ * @return 鎴愬姛鍒欒繑鍥瀟rue
  */
 bool RRQueue::removePCB(int pid)
 {
@@ -72,19 +72,19 @@ bool RRQueue::removePCB(int pid)
 }
 
 /**
- * @brief 调度主算法
- * @return 正常结束返回0
+ * @brief 璋冨害涓荤畻娉�
+ * @return 姝ｅ父缁撴潫杩斿洖0
  */
 int RRQueue::scheduling(ProcManagerFCFS* fcfs)
 {
-    // 剩余时间
+    // 鍓╀綑鏃堕棿
     int time = TIME_SLICE;
     int pid;
     // cout << setw(WIDTH) << "Id" << setw(WIDTH) << "Time_need\n";
-    // 循环到rr队列为空
+    // 寰幆鍒皉r闃熷垪涓虹┖
     while (!this->rr_que.empty())
     {
-        // 对每个pcb进行处理
+        // 瀵规瘡涓猵cb杩涜澶勭悊
         // auto it = this->rr_que.begin();
         int it = 0;
         // while (it != this->rr_que.end())
@@ -98,19 +98,19 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
             // cout << "DEBUG_PC " << cur_pcb->pc << endl;
             time = TIME_SLICE;
             // cout << setw(WIDTH) << cur_pcb->id << setw(WIDTH) << cur_pcb->time_need << endl;
-            // 判断时间是否够完成一次循环
+            // 鍒ゆ柇鏃堕棿鏄惁澶熷畬鎴愪竴娆″惊鐜�
             cur_pcb->status = RUNNING;
             cur_pcb->slice_cnt++;
             exec(cur_pcb, time);
             if (ProcManager::getInstance().killed == pid)
             {
-                // 程序死亡
+                // 绋嬪簭姝讳骸
                 cout << "pid: " << pid << " is dead\n";
                 ProcManager::getInstance().killed = -1;
             }
             else if (cur_pcb->status == DEAD)
             {
-                // 程序死亡
+                // 绋嬪簭姝讳骸
                 cout << "pid: " << cur_pcb->id << " is dead\n";
                 ProcManager::getInstance().freePCB(cur_pcb);
                 // it = this->rr_que.erase(it);
@@ -118,7 +118,7 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
             }
             else if (cur_pcb->status == BLOCKED)
             {
-                // 从队列移除，加入到阻塞队列中
+                // 浠庨槦鍒楃Щ闄わ紝鍔犲叆鍒伴樆濉為槦鍒椾腑
                 // cout << "DEBUG BLOCKED" << endl;
                 ProcManager::getInstance().block(cur_pcb,0);
                 // it = this->rr_que.erase(it);
@@ -127,7 +127,7 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
             else if (cur_pcb->slice_cnt >= MAX_CNT)
             {
                 cur_pcb->pri = LOW_PRI;
-                // 降级加入fcfs队列中,并从当前队列删除
+                // 闄嶇骇鍔犲叆fcfs闃熷垪涓�,骞朵粠褰撳墠闃熷垪鍒犻櫎
                 this->downLevel(cur_pcb,fcfs);
                 // it = this->rr_que.erase(it);
                 this->rr_que.erase(rr_que.begin() + it);
@@ -137,7 +137,7 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
                 // cout << "DEBUG IT ++" << endl;
                 it++;
             }
-            // 维护队列
+            // 缁存姢闃熷垪
             ProcManager::getInstance().maintain(TIME_SLICE - time);
             ReleaseMutex(pMutex);
         }
@@ -146,8 +146,8 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
 }
 
 /**
- * 获取RR队列中所有pcb的信息
- * @return 迭代器头指针
+ * 鑾峰彇RR闃熷垪涓墍鏈塸cb鐨勪俊鎭�
+ * @return 杩唬鍣ㄥご鎸囬拡
  */
 void RRQueue::getInfo()
 {
@@ -159,9 +159,9 @@ void RRQueue::getInfo()
 }
 
 /**
- * 获取RR队列中指定pcb的信息
- * @param pid 指定pcb的id
- * @return 返回指向目标的指针
+ * 鑾峰彇RR闃熷垪涓寚瀹歱cb鐨勪俊鎭�
+ * @param pid 鎸囧畾pcb鐨刬d
+ * @return 杩斿洖鎸囧悜鐩爣鐨勬寚閽�
  */
 PCB* RRQueue::getInfo(int pid)
 {
@@ -177,7 +177,7 @@ PCB* RRQueue::getInfo(int pid)
 }
 
 /*****************************************************************************************
- * ProcManagerFCFS类的有关定义部分
+ * ProcManagerFCFS绫荤殑鏈夊叧瀹氫箟閮ㄥ垎
  ****************************************************************************************/
 
 /*** 
@@ -220,7 +220,7 @@ void ProcManagerFCFS::runProcManager(){
 }
 
 /*** 
- * @brief 获得下一条指令
+ * @brief 鑾峰緱涓嬩竴鏉℃寚浠�
  * @param {PCB} p
  * @return {string} command
  */
@@ -248,13 +248,13 @@ string ProcManagerFCFS::getCommand(PCB *p){
         p->pc += 1;
     }
     return command;
-    // 这个函数是用来取出内存中的一条指令
+    // 杩欎釜鍑芥暟鏄敤鏉ュ彇鍑哄唴瀛樹腑鐨勪竴鏉℃寚浠�
     
     // return "WriteMemory 100 5";
 }
 
 string ProcManagerFCFS::splitCommand(string command){
-    // 这个函数用来取出指令字部分
+    // 杩欎釜鍑芥暟鐢ㄦ潵鍙栧嚭鎸囦护瀛楅儴鍒�
     int pos = command.find(' ');
     return command.substr(0,pos);
 }
@@ -268,7 +268,7 @@ string ProcManagerFCFS::splitCommand(string command){
  * @return {NULL}
  */
 void ProcManagerFCFS::run(PCB *p){
-    //把剩下的CPU时间跑完
+    //鎶婂墿涓嬬殑CPU鏃堕棿璺戝畬
     if(p->cpu_time != 0){
         Sleep(p->cpu_time);
         cout << "pid: " << p->id << " is using cpu for " << p->cpu_time << endl;
@@ -283,7 +283,7 @@ void ProcManagerFCFS::run(PCB *p){
             return ;
         }
         string cmd = splitCommand(command);
-        //剩下的是指令中的参数
+        //鍓╀笅鐨勬槸鎸囦护涓殑鍙傛暟
         cout << endl << command << endl;
         command = command.substr(cmd.length() + 1,command.length());
         cout<<"[pid "<< p->id<<"] ";
@@ -364,7 +364,7 @@ void ProcManagerFCFS::getFcfsInfo(){
 /*** 
  * @brief get selected process information in the fcfs queue
  * @param {int} pid
- * @return 指向目标的指针
+ * @return 鎸囧悜鐩爣鐨勬寚閽�
  */
 PCB* ProcManagerFCFS::getFcfsInfo(int pid){
     for(auto it = fcfsQueue.begin();it != fcfsQueue.end();it++){
@@ -489,12 +489,12 @@ ProcManagerFCFS::ProcManagerFCFS(){
 
 
 /*****************************************************************************************
- * ProcManager类的有关定义部分
+ * ProcManager绫荤殑鏈夊叧瀹氫箟閮ㄥ垎
  ****************************************************************************************/
 
 /**
  * @brief Construct a new Proc Manager:: Proc Manager object
- * ProcManager的构造函数
+ * ProcManager鐨勬瀯閫犲嚱鏁�
  */
 ProcManager::ProcManager()
 {
@@ -518,7 +518,7 @@ ProcManager::ProcManager(int n_size, int x_size)
     this->fcfsProcManager = new ProcManagerFCFS();
     cout << "ProcManager is running!\n";
     srand(time(NULL));
-    // 不会被降级的PCB
+    // 涓嶄細琚檷绾х殑PCB
     for (int i = 0; i < n_size; i++)
     {
         PCB* new_pcb = new PCB;
@@ -530,7 +530,7 @@ ProcManager::ProcManager(int n_size, int x_size)
         new_pcb->time_need = rand() % 20 * 100;
         active_pcb.push_back(new_pcb);
     }
-    // 降级测试
+    // 闄嶇骇娴嬭瘯
     for (int i = 0; i < x_size; i++)
     {
         PCB* new_pcb = new PCB;
@@ -544,7 +544,7 @@ ProcManager::ProcManager(int n_size, int x_size)
     }
     this->cpid = n_size+x_size;
 
-    // 向rr添加pcb，之后可重用
+    // 鍚憆r娣诲姞pcb锛屼箣鍚庡彲閲嶇敤
     for (PCB* pcb : this->active_pcb)
     {
         this->rr_queue->addPCB(pcb);
@@ -552,7 +552,7 @@ ProcManager::ProcManager(int n_size, int x_size)
 }
 
 /**
- * @brief ProcManager的析构函数
+ * @brief ProcManager鐨勬瀽鏋勫嚱鏁�
  */
 ProcManager::~ProcManager()
 {
@@ -560,8 +560,8 @@ ProcManager::~ProcManager()
 }
 
 /**
- * 获取当前活跃的进程个数
- * @return 进程个数
+ * 鑾峰彇褰撳墠娲昏穬鐨勮繘绋嬩釜鏁�
+ * @return 杩涚▼涓暟
  */
 int ProcManager::getActiveNum()
 {
@@ -570,14 +570,14 @@ int ProcManager::getActiveNum()
 
 
 /**
- * 杀掉一个进程
- * @param pid 进程的id
+ * 鏉€鎺変竴涓繘绋�
+ * @param pid 杩涚▼鐨刬d
  */
 void ProcManager::kill(int pid)
 {
-    // 找到的标志
+    // 鎵惧埌鐨勬爣蹇�
     bool is_found = false;
-    // 在两个队列里面找
+    // 鍦ㄤ袱涓槦鍒楅噷闈㈡壘
     is_found = this->rr_queue->removePCB(pid) || this->fcfsProcManager->removeProc(pid);
     if (is_found)
     {
@@ -587,10 +587,10 @@ void ProcManager::kill(int pid)
         return;
     }
 
-    // 在等待队列里面寻找进程
+    // 鍦ㄧ瓑寰呴槦鍒楅噷闈㈠鎵捐繘绋�
     for (auto it=this->waiting_pcb.begin(); it < this->waiting_pcb.end(); it++)
     {
-        // 找到了，删除它
+        // 鎵惧埌浜嗭紝鍒犻櫎瀹�
         if ((*it)->id == pid)
         {
             (*it)->status = DEAD;
@@ -601,12 +601,12 @@ void ProcManager::kill(int pid)
             return;
         }
     }
-    // 在阻塞队列里面寻找进程
+    // 鍦ㄩ樆濉為槦鍒楅噷闈㈠鎵捐繘绋�
     for (int i=0; i < DEV_NUM; i++)
     {
         for (auto it=this->block_pcb[i].begin(); it < this->block_pcb[i].end(); it++)
         {
-            // 找到了，删除它
+            // 鎵惧埌浜嗭紝鍒犻櫎瀹�
             if ((*it)->id == pid)
             {
                 (*it)->status = DEAD;
@@ -622,7 +622,7 @@ void ProcManager::kill(int pid)
 }
 
 /**
- * 列出当前所有存在的pcb
+ * 鍒楀嚭褰撳墠鎵€鏈夊瓨鍦ㄧ殑pcb
  */
 void ProcManager::ps()
 {  
@@ -644,8 +644,8 @@ void ProcManager::ps()
 }
 
 /**
- * 列出指定的pcb
- * @param pid 指定
+ * 鍒楀嚭鎸囧畾鐨刾cb
+ * @param pid 鎸囧畾
  */
 void ProcManager::ps(int pid)
 {
@@ -692,12 +692,12 @@ void ProcManager::ps(int pid)
 }
 
 /**
- * 启动一个进程
- * @param file_name 要启动的文件名
+ * 鍚姩涓€涓繘绋�
+ * @param file_name 瑕佸惎鍔ㄧ殑鏂囦欢鍚�
  */
 void ProcManager::run(string file_name)
 {
-    // 从其他模块获取文件的有关信息，这里模拟一下
+    // 浠庡叾浠栨ā鍧楄幏鍙栨枃浠剁殑鏈夊叧淇℃伅锛岃繖閲屾ā鎷熶竴涓�
     PCB* new_pcb = new PCB;
     new_pcb->id = this->cpid;
     this->cpid = (this->cpid + 1) % 65536;
@@ -708,7 +708,7 @@ void ProcManager::run(string file_name)
     new_pcb->slice_cnt = 0;
     PCB* pcb = new_pcb;
 
-    // 判断是否需要加入到等待队列
+    // 鍒ゆ柇鏄惁闇€瑕佸姞鍏ュ埌绛夊緟闃熷垪
     if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
     {
         pcb->status = READY;
@@ -729,7 +729,7 @@ void ProcManager::run(string file_name)
 }
 
 /**
- * @brief 正式的run
+ * @brief 姝ｅ紡鐨剅un
  * 
  * @param pcb 
  */
@@ -739,7 +739,11 @@ void ProcManager::run(PCB* pcb)
     if (bmm->createProcess(*pcb) == -1)
     {
         ReleaseMutex(pMutex);
+<<<<<<< HEAD
         return;
+=======
+        return ;
+>>>>>>> 7be52068cad0bba07110882d2e9c8daa9706d61c
     }
     // 判断是否需要加入到等待队列
     if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
@@ -763,7 +767,7 @@ void ProcManager::run(PCB* pcb)
 }
 
 /**
- * 开始调度
+ * 寮€濮嬭皟搴�
  */
 void ProcManager::scheduling()
 {
@@ -772,11 +776,11 @@ void ProcManager::scheduling()
 }
 
 /**
- * @brief 释放pcb占用的空间
+ * @brief 閲婃斁pcb鍗犵敤鐨勭┖闂�
  * 
- * @param target 指向释放pcb的指针
- * @return true 成功
- * @return false 失败
+ * @param target 鎸囧悜閲婃斁pcb鐨勬寚閽�
+ * @return true 鎴愬姛
+ * @return false 澶辫触
  */
 bool ProcManager::freePCB(PCB* target)
 {
@@ -786,12 +790,12 @@ bool ProcManager::freePCB(PCB* target)
 }
 
 /**
- * @brief 维护调度队列
+ * @brief 缁存姢璋冨害闃熷垪
  * 
  */
 void ProcManager::maintain(int time_pass)
 {
-    // 维护阻塞队列
+    // 缁存姢闃诲闃熷垪
     for (int i=0; i < DEV_NUM; i++)
     {
         auto it = block_pcb[i].begin();
@@ -814,7 +818,7 @@ void ProcManager::maintain(int time_pass)
         }
     }
 
-    // 维护等待队列
+    // 缁存姢绛夊緟闃熷垪
     auto it = waiting_pcb.begin();
     bool free1 = rr_queue->getSize() < MAX_PROC;
     while (it != waiting_pcb.end() && free1)
@@ -842,7 +846,7 @@ void ProcManager::maintain(int time_pass)
         free1 = rr_queue->getSize() < MAX_PROC;
     }
 
-    // // 维护RR队列
+    // // 缁存姢RR闃熷垪
     // if (rr_queue->getSize() < MAX_PROC && waiting_pcb.size() > 0)
     // {
     //     for (auto it = waiting_pcb.begin(); it != waiting_pcb.end(); it++)
@@ -857,7 +861,7 @@ void ProcManager::maintain(int time_pass)
     //         }
     //     }
     // }
-    // // 维护fcfs队列
+    // // 缁存姢fcfs闃熷垪
     // if (fcfsProcManager->getQueueSize() < MAX_PROC && waiting_pcb.size() > 0)
     // {
     //     for (auto it = waiting_pcb.begin(); it != waiting_pcb.end(); it++)
@@ -875,22 +879,22 @@ void ProcManager::maintain(int time_pass)
 }
 
 /**
- * @brief 可以返回单例的函数
+ * @brief 鍙互杩斿洖鍗曚緥鐨勫嚱鏁�
  * 
  * @return ProcManager& 
  */
 ProcManager& ProcManager::getInstance() 
 {
-    // 测试用
+    // 娴嬭瘯鐢�
     static ProcManager instance;
     // static ProcManager instance;
     return instance;
 }
 
 /**
- * @brief 返回一个可用的pid
+ * @brief 杩斿洖涓€涓彲鐢ㄧ殑pid
  * 
- * @return int 可用的pid
+ * @return int 鍙敤鐨刾id
  */
 int ProcManager::getAvailableId()
 {
@@ -1001,7 +1005,7 @@ void RRQueue::writeMem(string command,int pid){
 }
 
 /*** 
- * @brief 获得下一条指令
+ * @brief 鑾峰緱涓嬩竴鏉℃寚浠�
  * @param {PCB} p
  * @return {string} command
  */
@@ -1025,7 +1029,7 @@ string RRQueue::getCommand(PCB *p){
 
 string RRQueue::splitCommand(string command)
 {
-    // 这个函数用来取出指令字部分
+    // 杩欎釜鍑芥暟鐢ㄦ潵鍙栧嚭鎸囦护瀛楅儴鍒�
     int pos = command.find(' ');
     return command.substr(0,pos);
 }
@@ -1034,17 +1038,17 @@ void RRQueue::exec(PCB *p, int &time)
 {
     string command;
     string cmd = "cpu";
-    // 零表示上一条cpu占用指令跑完了，需要取新指令
+    // 闆惰〃绀轰笂涓€鏉pu鍗犵敤鎸囦护璺戝畬浜嗭紝闇€瑕佸彇鏂版寚浠�
     if (p->cpu_time == 0)
     {
-        // 取指令
+        // 鍙栨寚浠�
         command = getCommand(p);
         if(command == ""){
             p->status = DEAD;
             return ;
         }
         cmd = splitCommand(command);
-        //剩下的是指令中的参数
+        //鍓╀笅鐨勬槸鎸囦护涓殑鍙傛暟
         // cout << endl << command << endl;
         command = command.substr(cmd.length() + 1,command.length());
         // cout << endl << commandMap[cmd] << endl;
@@ -1078,7 +1082,7 @@ void RRQueue::exec(PCB *p, int &time)
             }
             break;
         case 4:
-            // 键盘阻塞
+            // 閿洏闃诲
             p->status = BLOCKED;
             p->block_time = atoi(command.c_str());
             printf("Pid %d block!.\n", p->id);
@@ -1094,7 +1098,7 @@ void RRQueue::exec(PCB *p, int &time)
 // int main()
 // {
 //     // RRQueue test_queue(5,2);
-//     // ϵͳ��ʼ��ʱ��ʵ��Ӧ�ø���
+
 //     system_start = clock();
 //     cout << setiosflags(ios::left);
 //     printf("[%ld]This is a test\n", clock() - system_start);

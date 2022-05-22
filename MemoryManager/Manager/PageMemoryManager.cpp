@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-20 10:50:54
+ * @LastEditTime: 2022-05-22 11:23:43
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -149,7 +149,11 @@ int PageMemoryManager::freeProcess(PCB &p)
         }
         bitMap[ti->pageNo] = false;
         occupiedPageNum--;
+        delete ti;
     }
+    mPageTable->clear();
+    delete mPageTable;
+    tableMap.erase(p.id);
     return 1;
 }
 
@@ -519,7 +523,7 @@ int PageMemoryManager::load_ins(int pid, string file_address)
         stringstream ss;
         ss << "Error opening file" << file_address << endl;
         Log::logE(TAG, ss.str());
-        exit(1);
+        return 0;
     }
     in >> j;
     in.close();
@@ -549,23 +553,33 @@ int PageMemoryManager::load_ins(int pid, string file_address)
         }
         //看起来不用补充\0了
     }
-
     return 1;
 }
 
-void PageMemoryManager::dss_command()
-{
-
-    cout << "total: " << getPhysicalMemorySize() << " B \tphysical mem: " << mem_config.FRAME_NUM << " \tphysical mem used: " << getUsedFrameNum() << " \tpage used in swap: " << getSwapPageNum() << endl;
-    int ratio = 100 * getUsedFrameNum() / mem_config.FRAME_NUM;
-    cout << "rate:" << ratio / 100.0 << endl;
-    if(getAccessTime() != 0)
-        cout << "total access: " << getAccessTime() << " \tfault number: " << getPageFaultTime() << " \tfault rate: " << ((100 * getPageFaultTime() / getAccessTime()) / 100.0) << endl;
-    else{
-        cout << "total access: " << getAccessTime() << " \tfault number: " << getPageFaultTime() << endl;
-    }
-}
 void PageMemoryManager::dms_command()
 {
-    dss_command();
+    cout << "total: " << getPhysicalMemorySize() << " B alloced :" << getUsedFrameNum()*mem_config.PAGE_SIZE << " \tswapSpace used: " << getSwapPageNum()*mem_config.PAGE_SIZE << endl;
+    int ratio = 100 * getUsedFrameNum() / mem_config.FRAME_NUM;
+    cout << "rate:" << ratio / 100.0 << endl;
+    if (getAccessTime() != 0)
+        cout << "total access: " << getAccessTime() << " \tpage fault times: " << getPageFaultTime() << " \tfault rate: " << ((100 * getPageFaultTime() / getAccessTime()) / 100.0) << endl;
+    else
+    {
+        cout << "total access: " << getAccessTime() << " \tpage fault times: " << getPageFaultTime() << endl;
+    }
+
+    for (auto it = tableMap.begin(); it != tableMap.end(); it++)
+    {
+        int pid = it->first;
+        vector<tableItem *> *pageTable = it->second;
+        long use = 0;
+        for (tableItem *ti : *pageTable)
+        {
+            if (ti->isInMemory || ti->swapAddress != -1)
+            {
+                use += mem_config.PAGE_SIZE;
+            }
+        }
+        cout << "[pid " << pid << "] " << use << " B" << endl;
+    }
 }
