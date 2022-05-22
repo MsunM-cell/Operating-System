@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-19 15:00:24
+ * @LastEditTime: 2022-05-22 10:43:06
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #pragma once
@@ -77,6 +77,5 @@ public:
     long long getPageFaultTime(){return pageFaultTime;};
 
     string getMode() { return "Page Memory Manager with Virtual Memory"; }
-    void dss_command();
     void dms_command();
 };

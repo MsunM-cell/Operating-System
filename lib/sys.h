@@ -13,7 +13,7 @@
 #define BLOCKED 2
 #define DEAD 3
 #define NEW 4
-#define DEV_NUM 2
+#define DEV_NUM 1
 
 
 
