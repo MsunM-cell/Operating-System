@@ -736,24 +736,26 @@ void ProcManager::run(string file_name)
 void ProcManager::run(PCB* pcb)
 {
     WaitForSingleObject(pMutex,INFINITE);
+    if (bmm->createProcess(*pcb) == -1)
+    {
+        ReleaseMutex(pMutex);
+        return;
+    }
     // 判断是否需要加入到等待队列
     if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
     {
-        bmm->createProcess(*pcb);
         pcb->status = READY;
         this->rr_queue->addPCB(pcb);
         printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
     }
     else if (pcb->pri == LOW_PRI)
     {
-        bmm->createProcess(*pcb);
         pcb->status = READY;
         this->fcfsProcManager->addToQueue(pcb);
         printf("[%ld]Pid=%d is running.\n", clock() - system_start, pcb->id);
     }
     else
     {
-        bmm->createProcess(*pcb);
         this->waiting_pcb.push_back(pcb);
         printf("[%ld]Pid=%d is waiting.\n", clock() - system_start, pcb->id);
     }
