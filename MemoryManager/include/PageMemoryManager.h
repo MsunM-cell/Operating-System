@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-23 23:30:32
+ * @LastEditTime: 2022-05-24 00:23:35
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #pragma once
@@ -72,11 +72,11 @@ public:
     int createProcess(PCB &p);
     int freeProcess(PCB &p);
     int freeProcess(int pid);
-    char accessMemory(int pid, int address_index);
+    char accessMemory(int pid, int logicalAddress);
     void initPageTable();
     void useFrame(FrameTableItem *frameTableItem);
     bool pageFault(unsigned int pid, tableItem *ti);
-    int writeMemory(int logicalAddress_index, char src, unsigned int pid);
+    int writeMemory(int logicalAddress, char src, unsigned int pid);
     // void stuff(unsigned int pid);
 
     int getUsedFrameNum() { return usedFrameNum; };

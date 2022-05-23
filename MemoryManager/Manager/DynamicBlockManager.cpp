@@ -165,9 +165,6 @@ char BlockMemoryManager::accessMemory(int pid, int address)
         puts("Illegal memory access!\n\n");
         return char(-1); //返回-1
     }
-    cout<<"start:"<<pid2addr[pid].head_addr <<endl;
-    cout<<"end:"<<pid2addr[pid].head_addr + pid2addr[pid].len<<endl;
-    cout<<"access:"<<pid2addr[pid].head_addr + address<<endl;
     return memory[pid2addr[pid].head_addr + address];
 }
 
