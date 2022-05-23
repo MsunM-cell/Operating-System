@@ -149,7 +149,7 @@ int main(void)
         // cout << argv[0];
         // 根据分析出的指令执行相关的操作
         if(args == 0){
-            puts("error");
+            // puts("error");
             ReleaseMutex(hMutex);
             // system("pause");
             continue;
@@ -195,7 +195,7 @@ int main(void)
                 string path = fileOperation.pathConverter(argv[1]);
                 string get_file_path = path.substr(fm.home_path.size());
                 if (path == "error" || !exists(path)) {
-                    puts("error");
+                    puts("run: File path wrong");
                 }
                 else if (is_directory(path)) {
                     printf("'%s' is a directory.\n", argv[1].c_str());

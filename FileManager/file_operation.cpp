@@ -61,7 +61,7 @@ bool FileOperation::create_file(string current_dir, string file_name)
 }
 
 /**
- * @brief delete a new file (only for file !! Not used to delete a directory!!)
+ * @brief delete a file (only for file !! Not used to delete a directory!!)
  * 
  * @param current_dir the working directory (absolute)
  * @param file_name the name of the file
@@ -194,7 +194,7 @@ void FileOperation::tree(string dir, int layer) {
 }
 
 /**
- * @brief return the size of the file, -1 means 'a existed path', -2 means 'is a directroy', 
+ * @brief return the size of the file, -1 means 'a not existed path', -2 means 'is a directroy', 
  *         -3 means 'file open error', else means the size of the file. 
  * @param path the absolute of the file
  * @return  int
@@ -620,19 +620,18 @@ void FileOperation::cd_command(string dir_path) {
      * @return bool 
      */
 bool FileOperation::move_dir(string src_path, string dst_path) {
+    if (!copy_dir(src_path, dst_path))
+        return false;
     src_path = pathConverter(src_path);
     dst_path = pathConverter(dst_path);
     if (src_path == "error" || dst_path == "error") {
         printf("mv: Cannot find the source directory.\n");
         return false;
     }
-
-    if (!copy_dir(src_path, dst_path))
-        return false;
     if (src_path.back() == path::preferred_separator)   src_path.pop_back();
     string dir_name = src_path.substr(src_path.find_last_of(path::preferred_separator) + 1);
     src_path.erase(src_path.find_last_of(path::preferred_separator));
-    if (!delete_dir(src_path, dir_name))
+    if (!delete_dir(src_path.substr(file_manager->home_path.size()), dir_name))
         return false;
     return true;
 }
@@ -656,12 +655,12 @@ bool FileOperation::recursive_copy_dir(string src_path, string dst_path) {
         string file_path = STRING(item.path());
         string file_name = STRING(item.path().filename());
         if (is_directory(file_path)) {
-            if (!create_dir(dst_path, file_name))   return false;
+            if (!create_dir(dst_path.substr(file_manager->home_path.size()), file_name))   return false;
             if (!recursive_copy_dir(file_path, dst_path + file_name))     return false;
             // puts("DEBUG: create dir.");
         }
         else {
-            copy_file(file_path, dst_path);
+            copy_file(file_path.substr(file_manager->home_path.size()), dst_path.substr(file_manager->home_path.size()));
             // puts("DEBUG: copy file.");
         }
     }
@@ -705,17 +704,17 @@ bool FileOperation::copy_dir(string src_path, string dst_path) {
     } 
     string tmp = file_manager->home_path + (char)path::preferred_separator + ".tmp";
 
-    if (!create_dir(file_manager->home_path + (char)path::preferred_separator, ".tmp"))
+    if (!create_dir("\\", ".tmp"))
         return false;
     if (!recursive_copy_dir(src_path, tmp))
         return false;
     if (dst_path.back() != path::preferred_separator)
         dst_path.push_back(path::preferred_separator);
-    if (!create_dir(dst_path, dst_dir_name))
+    if (!create_dir(dst_path.substr(file_manager->home_path.size()), dst_dir_name))
         return false;
     if (!recursive_copy_dir(tmp, dst_path + dst_dir_name))
         return false;
-    if (!delete_dir(file_manager->home_path + (char)path::preferred_separator, ".tmp"))
+    if (!delete_dir("\\", ".tmp"))
         return false;
 
     return true;
