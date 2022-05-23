@@ -9,7 +9,7 @@
         "access 100",
         "access 100",
         "access 100",
-        "cpu 1",
+        "cpu 10",
         "#"
     ]
 }

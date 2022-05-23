@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 16:54:08
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-07 22:39:52
+ * @LastEditTime: 2022-05-23 12:37:08
  * @FilePath: \Operating-System\MemoryManager\include\FrameTableItem.h
  */
 
@@ -25,6 +25,7 @@ public:
     ~FrameTableItem(){};
     void setFrameAddress(long long frameAddress) { this->frameAddress = frameAddress; }
     long long getFrameAddress() { return frameAddress; }
+    int getPid(){return pid;}
     void setPid(unsigned int pid) { this->pid = pid; }
     void setLogicalPage(tableItem *ti) { this->logicalPage = ti; }
     /**

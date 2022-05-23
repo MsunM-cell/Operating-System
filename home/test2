@@ -6,9 +6,9 @@
     "content": [
         "cpu 10",
         "access 10",
-        "access 100",
-        "access 100",
-        "access 100",
+        "access 127",
+        "access 250",
+        "access 520",
         "cpu 1",
         "#"
     ]

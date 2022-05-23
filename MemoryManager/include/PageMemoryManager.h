@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-22 10:43:06
+ * @LastEditTime: 2022-05-23 16:59:03
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #pragma once
@@ -13,6 +13,7 @@
 #include <sstream>
 #include <iostream>
 #include <string.h>
+#include <thread>
 
 using namespace std;
 
@@ -51,7 +52,11 @@ private:
 
     vector<tableItem *> *getProcessPageTable(int pid);
 
+    thread monitorThread;
+
     int load_ins(int pid, string file_address);
+
+    static void monitor();
 
 public:
     long PAGE_NUM;
@@ -61,6 +66,7 @@ public:
     ~PageMemoryManager();
     int createProcess(PCB &p);
     int freeProcess(PCB &p);
+    int freeProcess(int pid);
     char accessMemory(int pid, int address_index);
     void initPageTable();
     void useFrame(FrameTableItem *frameTableItem);
@@ -73,8 +79,8 @@ public:
     int getSwapPageNum() { return swapPageNum; };
     long getPhysicalMemorySize() { return mem_config.MEM_SIZE; };
     unsigned long getLogicalMemorySize() { return mem_config.MEM_SIZE + mem_config.SWAP_MEMORY_SIZE; };
-    long long getAccessTime(){return accessTime;};
-    long long getPageFaultTime(){return pageFaultTime;};
+    long long getAccessTime() { return accessTime; };
+    long long getPageFaultTime() { return pageFaultTime; };
 
     string getMode() { return "Page Memory Manager with Virtual Memory"; }
     void dms_command();
