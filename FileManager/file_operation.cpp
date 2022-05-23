@@ -327,16 +327,6 @@ bool FileOperation::move_file(string src_path, string dst_path) {
         return false;
     }
 
-    json temp;
-    ifstream input(src_path);
-    if (!input.is_open()) {
-        printf("mv: Cannot open the source file.\n");
-        input.close();
-        return false;
-    }
-    input >> temp;
-    input.close();
-
     string file_name = src_path.substr(src_path.find_last_of((char)path::preferred_separator) + 1);
 
     if (is_directory(src_path)) {
@@ -349,6 +339,17 @@ bool FileOperation::move_file(string src_path, string dst_path) {
         return false;
     }
 
+    json temp;
+    ifstream input(src_path);
+    if (!input.is_open()) {
+        printf("mv: Cannot open the source file.\n");
+        input.close();
+        return false;
+    }
+    input >> temp;
+    input.close();
+
+
     // if dst_path is a existed directroy, move directly.
     if (exists(dst_path) && is_directory(dst_path)) {
         if (dst_path.back() != path::preferred_separator)  dst_path += path::preferred_separator;
@@ -356,9 +357,9 @@ bool FileOperation::move_file(string src_path, string dst_path) {
             // puts("DEBUG: delete_json_node done!");
             // puts("DEBUG: delete_file_blocks done!");
             rename(src_path, dst_path + file_name);
-            if (file_manager->add_json_node_to_tree(dst_path + file_name, temp) 
-                    && file_manager->fill_file_into_blocks(temp, dst_path.substr(file_manager->home_path.size()), 0)) {
-                // puts("DEBUG: add_json_node done!");
+            if (file_manager->add_json_node_to_tree(dst_path + file_name, temp)  
+                && file_manager->fill_file_into_blocks(temp, (dst_path + file_name).substr(file_manager->home_path.size()), 0)) {
+                    // puts("DEBUG: add_json_node done!");
                 printf("mv: Success.\n");
                 return true;
             }
@@ -464,14 +465,18 @@ bool FileOperation::copy_file(string src_path, string dst_path) {
     }
 
     if (src_path == dst_path) {
-        printf("cp: '%s' and '%s' are the same file.\n", file_name.c_str(), file_name.c_str());
+        printf("cp: the same path.\n");
         return false;
     } 
     // if dst_path is a existed directroy, move directly.
     if (exists(dst_path) && is_directory(dst_path)) {
         if (dst_path.back() != path::preferred_separator)  dst_path += path::preferred_separator;
         if (src_path == dst_path + file_name) {
-            printf("cp: '%s' and '%s' are the same file.\n", file_name.c_str(), (dst_path + file_name).c_str());
+            printf("cp: the same path.\n");
+            return false;
+        }
+        if (exists(dst_path + file_name)) {
+            printf("cp: '%s' existed.\n", (dst_path + file_name).substr(file_manager->home_path.size()).c_str());
             return false;
         }
         copy(src_path, dst_path + file_name);
