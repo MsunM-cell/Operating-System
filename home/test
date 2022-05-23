@@ -4,7 +4,16 @@
     "size": 5420,
     "priority": 0,
     "content": [
-        "cpu 1",
+        "cpu 250",
+        "fork",
+        "keyboard 200",
+        "access 100",
+        "cpu 1000",
+        "fork",
+        "access 100",
+        "keyboard 200",
+        "WriteMemory 1000 9",
+        "access 1000",
         "#"
     ]
 }

@@ -149,7 +149,7 @@ int main(void)
         // cout << argv[0];
         // 根据分析出的指令执行相关的操作
         if(args == 0){
-            puts("error");
+            // puts("error");
             ReleaseMutex(hMutex);
             // system("pause");
             continue;
@@ -195,7 +195,7 @@ int main(void)
                 string path = fileOperation.pathConverter(argv[1]);
                 string get_file_path = path.substr(fm.home_path.size());
                 if (path == "error" || !exists(path)) {
-                    puts("error");
+                    puts("run: File path wrong");
                 }
                 else if (is_directory(path)) {
                     printf("'%s' is a directory.\n", argv[1].c_str());
@@ -205,7 +205,7 @@ int main(void)
                     PCB* pcb;
                     json file;
                     file = fm.get_file(get_file_path, "read", "FCFS");
-                    cout << file << endl;
+                    // cout << file << endl;
                     if (string(file["type"])[0] != 'e') {
                         printf("'%s' is not an executable file.\n", argv[1].c_str());
                     }

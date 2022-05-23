@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-22 11:23:43
+ * @LastEditTime: 2022-05-23 18:09:46
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -38,10 +38,22 @@ PageMemoryManager::PageMemoryManager()
     usedFrameNum = 0;
     swapPageNum = 0;
     initPageTable();
+    instance = this;
+    monitorThread = thread(monitor);
 }
 
 PageMemoryManager::~PageMemoryManager()
 {
+    for (auto it : tableMap)
+    {
+        freeProcess(it.first);
+    }
+    for (FrameTableItem *f : frameTable)
+    {
+        delete f;
+    }
+    delete bitMap;
+    monitorThread.join();
 }
 
 /**
@@ -82,6 +94,8 @@ int PageMemoryManager::createProcess(PCB &p)
     {
         stringstream ss;
         ss << "There is no enough Memory(" << (PAGE_NUM - occupiedPageNum) * mem_config.PAGE_SIZE << ") for " << p.size;
+        tableMap.erase(p.id);
+        delete pageTable;
         Log::logE(TAG, ss.str());
         return -1;
     }
@@ -126,6 +140,10 @@ int PageMemoryManager::freeProcess(PCB &p)
 {
     MyFileManager *fileManager = MyFileManager::getInstance();
     vector<tableItem *> *mPageTable = getProcessPageTable(p.id);
+    if (mPageTable == nullptr)
+    {
+        return -1;
+    }
     for (int i = 0; i < mPageTable->size(); i++)
     {
         tableItem *ti = mPageTable->at(i);
@@ -157,6 +175,41 @@ int PageMemoryManager::freeProcess(PCB &p)
     return 1;
 }
 
+int PageMemoryManager::freeProcess(int pid)
+{
+    MyFileManager *fileManager = MyFileManager::getInstance();
+    vector<tableItem *> *mPageTable = getProcessPageTable(pid);
+    for (int i = 0; i < mPageTable->size(); i++)
+    {
+        tableItem *ti = mPageTable->at(i);
+        //如果在内存中
+        if (ti->isInMemory)
+        {
+            FrameTableItem *fti = ti->frame;
+            fti->unUsed();
+            usedFrameNum--;
+        }
+        //如果在外存中
+        else if (ti->swapAddress != -1)
+        {
+            char *res = fileManager->readData(ti->swapAddress, mem_config.PAGE_SIZE);
+            delete res;
+            swapPageNum--;
+        }
+        //如果根本没有分配过内存
+        else
+        {
+        }
+        bitMap[ti->pageNo] = false;
+        occupiedPageNum--;
+        delete ti;
+    }
+    mPageTable->clear();
+    delete mPageTable;
+    tableMap.erase(pid);
+    return 1;
+}
+
 /**
  * @brief 从指定地址读取一个字节
  * @param {int} pid
@@ -170,12 +223,12 @@ char PageMemoryManager::accessMemory(int pid, int address_index)
     long long address = address_index * 8;
 
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
-    if (!pageTable)
+    if (pageTable == nullptr)
     {
         stringstream ss;
         ss << "process " << pid << " not found !" << endl;
         Log::logE(TAG, ss.str());
-        return 0;
+        return char(-1);
     }
     int temp = address / mem_config.PAGE_SIZE;
     if (temp + 1 > pageTable->size())
@@ -183,7 +236,7 @@ char PageMemoryManager::accessMemory(int pid, int address_index)
         stringstream ss;
         ss << "process " << pid << " asscess memory address " << address << " out of bound (" << pageTable->size() * mem_config.PAGE_SIZE << ")";
         Log::logI(TAG, ss.str());
-        return 0;
+        return char(-1);
     }
     tableItem *ti = pageTable->at(temp);
     //如果不在内存中
@@ -192,7 +245,7 @@ char PageMemoryManager::accessMemory(int pid, int address_index)
         //如果调页失败
         if (!pageFault(pid, ti))
         {
-            return 0;
+            return char(-1);
         }
     }
     FrameTableItem *fti = ti->frame;
@@ -216,12 +269,12 @@ int PageMemoryManager::writeMemory(int address_index, char src, unsigned int pid
     int size = 8;
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
 
-    if (!pageTable)
+    if (pageTable == nullptr)
     {
         stringstream ss;
         ss << "process " << pid << " not found !" << endl;
         Log::logE(TAG, ss.str());
-        return 0;
+        return -1;
     }
 
     if (logicalAddress + size > pageTable->size() * mem_config.PAGE_SIZE)
@@ -229,14 +282,14 @@ int PageMemoryManager::writeMemory(int address_index, char src, unsigned int pid
         stringstream ss;
         ss << "process " << pid << " write logical address [" << logicalAddress << " - " << logicalAddress + size << "] out of bound (" << pageTable->size() * mem_config.PAGE_SIZE - 1 << ")!";
         Log::logE(TAG, ss.str());
-        return false;
+        return -1;
     }
     tableItem *ti = pageTable->at(logicalAddress / mem_config.PAGE_SIZE);
     if (!ti->isInMemory)
     {
         if (!pageFault(pid, ti))
         {
-            return false;
+            return -1;
         }
     }
 
@@ -250,7 +303,7 @@ int PageMemoryManager::writeMemory(int address_index, char src, unsigned int pid
     logMsg << "process " << pid << " write " << size / 8 << " words into page " << ti->pageNo;
     Log::logV(TAG, logMsg.str());
 
-    return true;
+    return 1;
 }
 
 /**
@@ -286,6 +339,7 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
 {
 
     pageFaultTime++;
+
     stringstream logMSG;
     logMSG << "process " << pid << " access page " << ti->pageNo << " fail";
     Log::logI(TAG, logMSG.str());
@@ -506,12 +560,12 @@ int PageMemoryManager::load_ins(int pid, string file_address)
 {
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
 
-    if (!pageTable)
+    if (pageTable == nullptr)
     {
         stringstream ss;
         ss << "process " << pid << " not found !" << endl;
         Log::logE(TAG, ss.str());
-        return 0;
+        return -1;
     }
     vector<string> codeTemp;
     int code_length = 0;
@@ -523,7 +577,7 @@ int PageMemoryManager::load_ins(int pid, string file_address)
         stringstream ss;
         ss << "Error opening file" << file_address << endl;
         Log::logE(TAG, ss.str());
-        return 0;
+        return -1;
     }
     in >> j;
     in.close();
@@ -542,7 +596,7 @@ int PageMemoryManager::load_ins(int pid, string file_address)
         stringstream ss;
         ss << "the code is too long to load in memory" << endl;
         Log::logE(TAG, ss.str());
-        return 0;
+        return -1;
     }
     int address_index = 0;
     for (string s : codeTemp)
@@ -558,28 +612,98 @@ int PageMemoryManager::load_ins(int pid, string file_address)
 
 void PageMemoryManager::dms_command()
 {
-    cout << "total: " << getPhysicalMemorySize() << " B alloced :" << getUsedFrameNum()*mem_config.PAGE_SIZE << " \tswapSpace used: " << getSwapPageNum()*mem_config.PAGE_SIZE << endl;
-    int ratio = 100 * getUsedFrameNum() / mem_config.FRAME_NUM;
-    cout << "rate:" << ratio / 100.0 << endl;
+    cout << endl;
+    long inUsed = getUsedFrameNum() * mem_config.PAGE_SIZE;
+    int ratio = 100.0 * getUsedFrameNum() / mem_config.FRAME_NUM;
+    long available = getPhysicalMemorySize() - inUsed;
+    long committed = getOccupiedPageNum() * mem_config.PAGE_SIZE;
+    cout << "In used: " << inUsed << " B Memory used rate:" << ratio << " %" << endl;
+    cout << "Available: " << available << " B" << endl;
+    cout << "Committed: " << committed << " / " << getLogicalMemorySize() << "  B" << endl;
+
     if (getAccessTime() != 0)
-        cout << "total access: " << getAccessTime() << " \tpage fault times: " << getPageFaultTime() << " \tfault rate: " << ((100 * getPageFaultTime() / getAccessTime()) / 100.0) << endl;
+        cout << "total access: " << getAccessTime() << " \tpage fault times: " << getPageFaultTime() << " \tfault rate: " << (100.0 * getPageFaultTime() / getAccessTime()) << " %" << endl;
     else
     {
         cout << "total access: " << getAccessTime() << " \tpage fault times: " << getPageFaultTime() << endl;
     }
 
-    for (auto it = tableMap.begin(); it != tableMap.end(); it++)
+    cout << "frame use graph" << endl;
+    int i = 0;
+    for (FrameTableItem *item : frameTable)
     {
-        int pid = it->first;
-        vector<tableItem *> *pageTable = it->second;
-        long use = 0;
-        for (tableItem *ti : *pageTable)
+        if (item->isOccupied())
         {
-            if (ti->isInMemory || ti->swapAddress != -1)
-            {
-                use += mem_config.PAGE_SIZE;
-            }
+            cout << "*" << setw(3) << item->getPid() << "  ";
         }
-        cout << "[pid " << pid << "] " << use << " B" << endl;
+        else
+        {
+            cout << "o" << setw(3) << " "
+                 << "  ";
+        }
+        i++;
+        if (i >= 5)
+        {
+            i = 0;
+            cout << endl;
+        }
     }
+    cout << endl;
+    // for (auto it = tableMap.begin(); it != tableMap.end(); it++)
+    // {
+    //     int pid = it->first;
+    //     vector<tableItem *> *pageTable = it->second;
+    //     long use = 0;
+    //     for (tableItem *ti : *pageTable)
+    //     {
+    //         if (ti->isInMemory || ti->swapAddress != -1)
+    //         {
+    //             use += mem_config.PAGE_SIZE;
+    //         }
+    //     }
+    //     cout << "[pid " << pid << "] " << use << " B" << endl;
+    // }
+}
+
+void PageMemoryManager::monitor()
+{
+    ofstream log;
+    long inUsed;
+    int ratio;
+    long available;
+    long committed;
+    log.open("./MemoryManager/test/MemoryUsage.txt", ios::out);
+    if (!log.is_open())
+    {
+        return;
+    }
+    log << setw(12) << left << "time"
+        << " "
+        << setw(10) << "inUsed"
+        << " "
+        << setw(10) << "ratio"
+        << " "
+        << setw(10) << "available"
+        << " "
+        << setw(10) << "committed"
+        << " " << endl;
+    Sleep(2000);
+
+    PageMemoryManager *manager = PageMemoryManager::getInstance();
+    while (manager)
+    {
+        inUsed = manager->getUsedFrameNum() * mem_config.PAGE_SIZE;
+        ratio = 100.0 * manager->getUsedFrameNum() / mem_config.FRAME_NUM;
+        available = manager->getPhysicalMemorySize() - inUsed;
+        committed = manager->getOccupiedPageNum() * mem_config.PAGE_SIZE;
+
+        log << setw(12) << Log::getTimeString() << " "
+            << setw(10) << inUsed << " "
+            << setw(10) << ratio << " "
+            << setw(10) << available << " "
+            << setw(10) << committed << " "
+            << endl;
+        Sleep(500);
+    }
+    log.close();
 }
