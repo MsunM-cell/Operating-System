@@ -36,7 +36,7 @@ private:
     static DynamicAllocationManager *instance;
 
     //记录帧使用情况，双向的...循环的...
-    FrameTableItem *LRU_StackHead, *LRU_StackTail;
+    FrameTableItem *link_list_head, *link_list_tail;
 
     // pid--进程表
     map<int, ProcessTableItem *> processTable;

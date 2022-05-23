@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-08 16:51:14
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-18 17:54:25
+ * @LastEditTime: 2022-05-24 00:19:43
  * @FilePath: \Operating-System\MemoryManager\Entity\Log.cpp
  */
 
@@ -24,9 +24,8 @@ public:
     static const int DEBUG = 0;
     static const int VERBOSE = 1;
     static const int INFO = 2;
-    static const int ERRORR = 3;     //不知道和哪个库重名了....多加一个R 
+    static const int ERRORR = 3;     //不知道和哪个库重名了....多加一个R
     static const int SUPPRESS = 100; //不输出任何信息
-
 
     /**
      * @brief : 日志输出等级为Verbose
@@ -45,7 +44,7 @@ public:
      * @brief : 日志输出等级为Infomation
      * @param {string} TAG 标签
      * @param {string} msg 日志
-     */    
+     */
     static void logI(std::string TAG, std::string msg)
     {
         if (log_mode <= INFO)
@@ -58,7 +57,7 @@ public:
      * @brief : 日志等级为Error
      * @param {string} TAG 标签
      * @param {string} msg 日志
-     */    
+     */
     static void logE(std::string TAG, std::string msg)
     {
         if (log_mode <= ERRORR)
@@ -100,7 +99,6 @@ public:
     {
         log_mode = last_log_mode;
     }
-    
 };
 
 #endif

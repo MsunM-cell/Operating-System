@@ -32,7 +32,7 @@ int BlockMemoryManager::load_ins(int addr, int length, string path)
     for (int i = 0, j = addr; i < root["content"].size(); ++i)
     {
         string s = root["content"][i];
-        s += '\0'; //æœ«å°¾\0
+        s += '\0'; 
         ins_len += s.size();
         // s = s.substr(1, s.size() - 2);
         sprintf(memory + j, "%s", s.c_str());
@@ -164,6 +164,9 @@ char BlockMemoryManager::accessMemory(int pid, int address)
         puts("Illegal memory access!\n\n");
         return char(-1); //返回-1
     }
+    cout<<"start:"<<pid2addr[pid].head_addr <<endl;
+    cout<<"end:"<<pid2addr[pid].head_addr + pid2addr[pid].len<<endl;
+    cout<<"access:"<<pid2addr[pid].head_addr + address<<endl;
     return memory[pid2addr[pid].head_addr + address];
 }
 
