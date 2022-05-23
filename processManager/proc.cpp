@@ -305,8 +305,9 @@ void ProcManagerFCFS::run(PCB *p){
                 useCPU(command);
                 break;
             case 3:
+                p->block_time = atoi(command.c_str());
                 moveToWaiting(p->id);
-                useIO(command);
+                // useIO(command);
                 return ;
             case 4:
                 pcbNew = new PCB;
@@ -323,15 +324,8 @@ void ProcManagerFCFS::run(PCB *p){
 
 void ProcManagerFCFS::moveToWaiting(int pid){
     PCB *tmp = fcfsQueue.front();
-    blocked.push_back(tmp);
+    ProcManager::getInstance().block(tmp,0);
     cout << "pid " << tmp->id << "is blocked" << endl;
-    for(auto it = blocked.begin();it != blocked.end();it++){
-        if((*it)->id == pid){
-            it = blocked.erase(it);
-            break;
-        }
-    }
-    fcfsQueue.push_back(tmp);
     return ;
 }
 
