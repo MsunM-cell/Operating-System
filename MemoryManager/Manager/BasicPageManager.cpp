@@ -107,6 +107,7 @@ int BasicPageManager::freeProcess(PCB &p)
     bitmap[pageid].second = 0;
   }
   pagetable.erase(p.id);
+  ins_sum_len.erase(p.id);
   // cout << "free process successfully" << endl;
   return 1;
 }
@@ -134,6 +135,11 @@ char BasicPageManager::accessMemory(int pid, int address)
 //写内存
 int BasicPageManager::writeMemory(int logicalAddress, char src, unsigned int pid)
 {
+  if (pagetable.find(pid) == pagetable.end())
+  {
+    printf("pid[%d] is not in memory!\n\n", pid);
+    return -1;
+  }
   if (logicalAddress >= ins_sum_len[pid] && logicalAddress < pagetable[pid].size() * mem_config.PAGE_SIZE)
   {
     int page = logicalAddress / mem_config.PAGE_SIZE;
