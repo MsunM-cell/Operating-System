@@ -19,7 +19,7 @@ int BlockMemoryManager::load_ins(int addr, int length, string path)
 {
 
     json root;
-    cout << path << endl;
+    // cout << path << endl;
     // Sleep(10000);
     ifstream in(path, ios::binary);
     if (!in.is_open())
@@ -155,7 +155,8 @@ char BlockMemoryManager::accessMemory(int pid, int address)
 {
     if (pid2addr.find(pid) == pid2addr.end())
     {
-        printf("pid[%d] is not in memory!\n", pid);
+        if (pid >= 0 && pid < 65536)
+            printf("pid[%d] is not in memory!\n", pid);
         return char(-1);
     }
     if (address < 0 || address > pid2addr[pid].len)

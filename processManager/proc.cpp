@@ -90,7 +90,7 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
         // while (it != this->rr_que.end())
         while (it < this->rr_que.size())
         {
-            WaitForSingleObject(pMutex,INFINITE);
+            // WaitForSingleObject(pMutex,INFINITE);
             // PCB* cur_pcb = *it;
             PCB* cur_pcb = this->rr_que[it];
             pid = cur_pcb->id;
@@ -139,7 +139,7 @@ int RRQueue::scheduling(ProcManagerFCFS* fcfs)
             }
             // 维护队列
             ProcManager::getInstance().maintain(TIME_SLICE - time);
-            ReleaseMutex(pMutex);
+            // ReleaseMutex(pMutex);
         }
     }
     return 0;
@@ -259,6 +259,12 @@ string ProcManagerFCFS::splitCommand(string command){
     return command.substr(0,pos);
 }
 
+void ProcManagerFCFS::useFork(PCB *p){
+    p->id = ProcManager::getInstance().getAvailableId();
+    p->status = NEW;
+    ProcManager::getInstance().run(p);
+    return ;
+}
 
 
 /*** 
@@ -285,7 +291,8 @@ void ProcManagerFCFS::run(PCB *p){
         string cmd = splitCommand(command);
         //剩下的是指令中的参数
         cout << endl << command << endl;
-        command = command.substr(cmd.length() + 1,command.length());
+        if(command != "fork")
+            command = command.substr(cmd.length() + 1,command.length());
         cout<<"[pid "<< p->id<<"] ";
         switch(this->commandMap[cmd]){
             case 0:
@@ -301,6 +308,11 @@ void ProcManagerFCFS::run(PCB *p){
                 moveToWaiting(p->id);
                 useIO(command);
                 return ;
+            case 4:
+                pcbNew = new PCB;
+                *pcbNew = *p; 
+                useFork(pcbNew);
+                break;
             default:
                 break ;
         }
@@ -397,6 +409,7 @@ void ProcManagerFCFS::initCmdMap(){
     commandMap["access"] = 1;
     commandMap["cpu"] = 2;
     commandMap["keyboard"] = 3;
+    commandMap["fork"] = 4;
     return ;
 }
 
@@ -916,6 +929,7 @@ void RRQueue::initCmdMap(){
     commandMap["cpu"] = 2;
     commandMap["IO"] = 3;
     commandMap["keyboard"] = 4;
+    commandMap["fork"] = 5;
     return ;
 }
 
@@ -1034,19 +1048,22 @@ void RRQueue::exec(PCB *p, int &time)
 {
     string command;
     string cmd = "cpu";
+    PCB* ptr;
     // 零表示上一条cpu占用指令跑完了，需要取新指令
     if (p->cpu_time == 0)
     {
         // 取指令
         command = getCommand(p);
-        if(command == ""){
+        if (command == ""){
             p->status = DEAD;
             return ;
         }
+        
         cmd = splitCommand(command);
         //剩下的是指令中的参数
         // cout << endl << command << endl;
-        command = command.substr(cmd.length() + 1,command.length());
+        if (command != "fork")
+            command = command.substr(cmd.length() + 1,command.length());
         // cout << endl << commandMap[cmd] << endl;
         if (cmd == "cpu")
         {
@@ -1063,7 +1080,6 @@ void RRQueue::exec(PCB *p, int &time)
             time = 0;
             break;
         case 2:
-            cout << "pid: " << p->id << " is using cpu for " << TIME_SLICE - time << endl;
             if (p->cpu_time >= time)
             {
                 time = 0;
@@ -1076,6 +1092,8 @@ void RRQueue::exec(PCB *p, int &time)
                 p->cpu_time = 0;
                 Sleep(p->cpu_time * ALPHA);
             }
+            if (p->status == RUNNING)
+                cout << "pid: " << p->id << " is using cpu for " << TIME_SLICE - time << endl;
             break;
         case 4:
             // 键盘阻塞
@@ -1084,6 +1102,17 @@ void RRQueue::exec(PCB *p, int &time)
             printf("Pid %d block!.\n", p->id);
             Sleep(TIME_SLICE * ALPHA);
             time = 0;
+            break;
+        case 5:
+            // 打开新的进程
+            ptr = new PCB;
+            *ptr = *p;
+            ptr->id= ProcManager::getInstance().getAvailableId();
+            ptr->status = NEW;
+            ptr->slice_cnt = 0;
+            ptr->cpu_time = 0;
+            cout << endl << "new:::::::" << ptr->id << endl;
+            ProcManager::getInstance().run(ptr);
             break;
         default:
             return ;
@@ -1094,7 +1123,6 @@ void RRQueue::exec(PCB *p, int &time)
 // int main()
 // {
 //     // RRQueue test_queue(5,2);
-//     // ϵͳ��ʼ��ʱ��ʵ��Ӧ�ø���
 //     system_start = clock();
 //     cout << setiosflags(ios::left);
 //     printf("[%ld]This is a test\n", clock() - system_start);

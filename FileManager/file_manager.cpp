@@ -486,7 +486,7 @@ bool FileManager::add_json_node_to_tree(string path, json node)
 bool FileManager::delete_json_node_from_tree(string path)
 {
     json *temp = &(this->file_system_tree); // the temporary pointer to the file_system_tree
-
+    // cout << setw(4) << *temp << endl;
     string relative_path = path.substr(this->home_path.size() + 1); // get the path relative to the home
     // cout << relative_path << endl;
 
@@ -506,13 +506,13 @@ bool FileManager::delete_json_node_from_tree(string path)
 
     if (exists(path) && is_directory(path))
     {
-        (*temp).erase(file_name);
+        temp->erase(file_name);
         // cout << setw(4) << this->file_system_tree << endl;               // debug
         return true;
     }
     else if (exists(path))
     {
-        (*temp).erase(file_name);
+        temp->erase(file_name);
         // cout << setw(4) << this->file_system_tree << endl;               // debug
         return true;
     }
