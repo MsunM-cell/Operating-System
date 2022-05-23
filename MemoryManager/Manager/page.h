@@ -18,7 +18,7 @@ private:
     map<int,int> ins_sum_len;
     //初始化基本分页系统
     void init_manager();
-    //标记帧使用情况,first为进程pid,初识为-1,second为该帧实际使用大小
+    //标记帧使用情况,first为进程pid,初始为-1,second为该帧实际使用大小
     vector<PII> bitmap;
     //(所有)进程页表
     map<int,vector<int>> pagetable;

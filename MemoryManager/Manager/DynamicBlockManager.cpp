@@ -111,6 +111,7 @@ int BlockMemoryManager::freeProcess(PCB &p)
     // memset(memory + addr, 0, sizeof(char) * length);
     pid2addr.erase(p.id);
     addr2pid.erase(addr);
+    ins_sum_len.erase(p.id);
 
     //动态调整链表
     adjust_list(mem_config.BLOCK_ALGORITHM);
@@ -169,6 +170,11 @@ char BlockMemoryManager::accessMemory(int pid, int address)
 //写存
 int BlockMemoryManager::writeMemory(int logicalAddress, char src, unsigned int pid)
 {
+    if (pid2addr.find(pid) == pid2addr.end())
+    {
+        printf("pid[%d] is not in memory!\n", pid);
+        return -1;
+    }
     if (logicalAddress < pid2addr[pid].second && logicalAddress >= ins_sum_len[pid])
     {
         memory[pid2addr[pid].first + logicalAddress] = src;
@@ -227,38 +233,27 @@ void BlockMemoryManager::dms_command()
     }
 }
 
-// int main()
-// {
-//     PCB a, b, c, d;
-//     a.id = 1001, a.size = 12 * 1024; // 12KB
-//     b.id = 1002, b.size = 6 * 1024;  // 6KB
-//     c.id = 1003, c.size = 10 * 1024; // 10KB
-//     d.id = 1004, d.size = 4 * 1024;  // 4KB
+/* int main()
+{
+    PCB a, b, c, d;
+    a.id = 1001, a.size = 12 * 1024, a.path = "home/test"; // 12KB
+    b.id = 1002, b.size = 6 * 1024, b.path = "home/test";  // 6KB
+    c.id = 1003, c.size = 10 * 1024, c.path = "home/test"; // 10KB
+    d.id = 1004, d.size = 4 * 1024, d.path = "home/test";  // 4KB
 
-//     BlockMemoryManager bmm;
-//     bmm.print_list();
-//     bmm.createProcess(a);
-//     bmm.createProcess(b);
-//     bmm.createProcess(c);
-//     cout << bmm.accessMemory(a.id, 1) << endl;
-//     bmm.writeMemory(256, 't', b.id);
-//     cout << bmm.accessMemory(b.id, 256) << endl;
-//     bmm.writeMemory(2, 'a', b.id);
-//     bmm.print_list();
-//     bmm.freeProcess(b);
-//     bmm.print_list();
-//     bmm.compress_mem();
-//     bmm.print_list();
-//     bmm.createProcess(d);
-//     bmm.print_list();
-//     bmm.freeProcess(a);
-//     bmm.createProcess(b);
-//     bmm.print_list();
-//     bmm.freeProcess(d);
-//     bmm.print_list();
-//     bmm.freeProcess(b);
-//     bmm.print_list();
-//     bmm.freeProcess(c);
-//     bmm.print_list();
-//     return 0;
-// }
+    BlockMemoryManager bmm;
+    bmm.createProcess(a);
+    bmm.dms_command();
+    bmm.createProcess(b);
+    bmm.dms_command();
+    bmm.createProcess(c);
+    bmm.dms_command();
+    bmm.freeProcess(b);
+    bmm.dms_command();
+    bmm.createProcess(d);
+    bmm.dms_command();
+    bmm.accessMemory(a.id,100);
+    bmm.writeMemory(100,'a',a.id);
+    bmm.accessMemory(a.id,100);
+    return 0;
+}  */
