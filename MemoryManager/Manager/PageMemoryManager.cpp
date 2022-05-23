@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-23 18:06:56
+ * @LastEditTime: 2022-05-23 18:09:46
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -140,7 +140,8 @@ int PageMemoryManager::freeProcess(PCB &p)
 {
     MyFileManager *fileManager = MyFileManager::getInstance();
     vector<tableItem *> *mPageTable = getProcessPageTable(p.id);
-    if(mPageTable == nullptr){
+    if (mPageTable == nullptr)
+    {
         return -1;
     }
     for (int i = 0; i < mPageTable->size(); i++)
@@ -222,7 +223,7 @@ char PageMemoryManager::accessMemory(int pid, int address_index)
     long long address = address_index * 8;
 
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
-    if (pageTable==nullptr)
+    if (pageTable == nullptr)
     {
         stringstream ss;
         ss << "process " << pid << " not found !" << endl;
@@ -268,7 +269,7 @@ int PageMemoryManager::writeMemory(int address_index, char src, unsigned int pid
     int size = 8;
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
 
-    if (pageTable==nullptr)
+    if (pageTable == nullptr)
     {
         stringstream ss;
         ss << "process " << pid << " not found !" << endl;
@@ -672,6 +673,10 @@ void PageMemoryManager::monitor()
     long available;
     long committed;
     log.open("./MemoryManager/test/MemoryUsage.txt", ios::out);
+    if (!log.is_open())
+    {
+        return;
+    }
     log << setw(12) << left << "time"
         << " "
         << setw(10) << "inUsed"
@@ -683,6 +688,7 @@ void PageMemoryManager::monitor()
         << setw(10) << "committed"
         << " " << endl;
     Sleep(2000);
+
     PageMemoryManager *manager = PageMemoryManager::getInstance();
     while (manager)
     {
