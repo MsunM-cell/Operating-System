@@ -4,6 +4,9 @@
 */
 
 #include "block.h"
+#include <thread>
+
+BlockMemoryManager *BlockMemoryManager::instance = nullptr;
 
 //空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
 void BlockMemoryManager::adjust_list(int type)
@@ -69,6 +72,7 @@ int BlockMemoryManager::createProcess(PCB &p)
         }
         printf("Process %d starts from %d, length %d\n\n", p.id, addr, p.size);
         adjust_list(mem_config.BLOCK_ALGORITHM);
+        usedMem += p.size;
 
         //加载指令
         int ins_len = load_ins(addr, p.size, p.path);
@@ -112,6 +116,7 @@ int BlockMemoryManager::freeProcess(PCB &p)
     pid2addr.erase(p.id);
     addr2pid.erase(addr);
     ins_sum_len.erase(p.id);
+    usedMem -= length;
 
     //动态调整链表
     adjust_list(mem_config.BLOCK_ALGORITHM);
@@ -186,10 +191,67 @@ int BlockMemoryManager::writeMemory(int logicalAddress, char src, unsigned int p
 }
 
 //初始化
-void BlockMemoryManager::init_manager()
+BlockMemoryManager::BlockMemoryManager()
 {
     //全部物理内存
     free_block_table.push_back({0, mem_config.MEM_SIZE});
+    usedMem = 0;
+    instance = this;
+    monitorThread = thread(monitor);
+}
+
+BlockMemoryManager::~BlockMemoryManager()
+{
+    monitorThread.join();
+}
+
+//获取实例指针
+BlockMemoryManager *BlockMemoryManager::getInstance()
+{
+    if (instance)
+    {
+        return instance;
+    }
+    instance = new BlockMemoryManager;
+    return instance;
+}
+
+//内存监视
+void BlockMemoryManager::monitor()
+{
+    ofstream log;
+    log.open("memorylog.txt", ios::out);
+    if (!log.is_open())
+    {
+        return;
+    }
+    log << setw(15) << "time"
+        << " "
+        << setw(37) << "inUsedMem"
+        << " "
+        << setw(18) << "freeMem"
+        << " "
+        << setw(20) << "MemoryUtilization"
+        << " " << endl;
+    Sleep(2000);
+
+    BlockMemoryManager *manager = BlockMemoryManager::getInstance();
+    SYSTEMTIME sys;
+    char now_time[40];
+    while (manager)
+    {
+        GetLocalTime(&sys);
+        sprintf(now_time, "%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds, sys.wDayOfWeek);
+        int up = manager->getUsedMem();
+        double utilization = (double)up / mem_config.MEM_SIZE;
+        log << setw(12) << now_time << " "
+            << setw(20) << up << " "
+            << setw(20) << mem_config.MEM_SIZE - up << " "
+            << setw(20) << utilization << " "
+            << endl;
+        Sleep(500);
+    }
+    log.close();
 }
 
 //打印空闲分区链表
@@ -207,9 +269,7 @@ void BlockMemoryManager::print_list()
 void BlockMemoryManager::dms_command()
 {
     cout << "total : " << mem_config.MEM_SIZE << "B \t  ";
-    int allc = 0;
-    for (auto it = pid2addr.begin(); it != pid2addr.end(); it++)
-        allc += it->second.second;
+    int allc = getUsedMem();
     cout << "allocated : " << allc << "B \t";
     cout << "free : " << mem_config.MEM_SIZE - allc << "B\n";
 

@@ -20,16 +20,24 @@ private:
     map<int, int> addr2pid;
     //进程指令长度
     map<int,int> ins_sum_len;
-    //读取配置文件，修改分配策略
-    void modify_tactic(int new_mode) { mem_config.BLOCK_ALGORITHM = new_mode; }
-    //初始化该内存管理系统
-    void init_manager();
+    //实例指针
+    static BlockMemoryManager* instance;
+    //内存监视
+    static void monitor();
+    //已使用内存大小
+    int usedMem;
+    //监控线程
+    thread monitorThread;
 
 public:
     //构造函数
-    BlockMemoryManager() { init_manager(); }
+    BlockMemoryManager();
     //析构函数
-    ~BlockMemoryManager() {}
+    ~BlockMemoryManager();
+    //获取已使用内存大小
+    int getUsedMem(){return usedMem;}
+    //返回自己指针
+    static BlockMemoryManager* getInstance();
     //空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
     void adjust_list(int type);
     //为进程分配内存

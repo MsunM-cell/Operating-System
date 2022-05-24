@@ -5,11 +5,68 @@
 
 #include "page.h"
 #include "../../lib/sys.h"
+#include <windows.h>
 
-//初始化基本分页管理系统
-void BasicPageManager::init_manager()
+BasicPageManager *BasicPageManager::instance = nullptr;
+
+BasicPageManager::~BasicPageManager()
+{
+  monitorThread.join();
+}
+
+BasicPageManager *BasicPageManager::getInstance()
+{
+  if (instance)
+  {
+    return instance;
+  }
+  instance = new BasicPageManager;
+  return instance;
+}
+
+void BasicPageManager::monitor()
+{
+  ofstream log;
+  log.open("memorylog.txt", ios::out);
+  if (!log.is_open())
+  {
+    return;
+  }
+  log << setw(15) << "time"
+      << " "
+      << setw(37) << "inUsedPage"
+      << " "
+      << setw(20) << "freePage"
+      << " "
+      << setw(20) << "MemoryUtilization"
+      << " " << endl;
+  Sleep(2000);
+
+  BasicPageManager *manager = BasicPageManager::getInstance();
+  SYSTEMTIME sys;
+  char now_time[20];
+  while (manager)
+  {
+    GetLocalTime(&sys);
+    sprintf(now_time, "%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds, sys.wDayOfWeek);
+    int up=manager->getUsedPage();
+    double utilization = (double)up / mem_config.FRAME_NUM;
+    log << setw(12) << now_time << " "
+        << setw(20) << up << " "
+        << setw(20) << mem_config.FRAME_NUM - up << " "
+        << setw(20) << utilization << " "
+        << endl;
+    Sleep(500);
+  }
+  log.close();
+}
+
+BasicPageManager::BasicPageManager()
 {
   bitmap.resize(mem_config.FRAME_NUM, {-1, 0});
+  instance = this;
+  usedPage = 0;
+  monitorThread = thread(monitor);
 }
 
 //加载进程指令
@@ -78,6 +135,7 @@ int BasicPageManager::createProcess(PCB &p)
         pagetable[p.id][j] = i;
         j++;
       }
+    usedPage += pagetable_len;
 
     int ins_len = load_ins(p.id, p.path);
     if (ins_len != -1)
@@ -108,6 +166,7 @@ int BasicPageManager::freeProcess(PCB &p)
   }
   pagetable.erase(p.id);
   ins_sum_len.erase(p.id);
+  usedPage -= m;
   // cout << "free process successfully" << endl;
   return 1;
 }
@@ -184,11 +243,7 @@ void BasicPageManager::print_pagetable(const PCB &p)
 void BasicPageManager::dms_command()
 {
   cout << "total : " << mem_config.MEM_SIZE << "B \t  ";
-  int used = 0;
-  for (auto it = pagetable.begin(); it != pagetable.end(); it++)
-  {
-    used += it->second.size();
-  }
+  int used = usedPage;
   cout << "allocated : " << mem_config.PAGE_SIZE * used << "B \t";
   cout << "free : " << mem_config.PAGE_SIZE * (mem_config.FRAME_NUM - used) << "B\n";
 
