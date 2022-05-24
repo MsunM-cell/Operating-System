@@ -557,6 +557,7 @@ json FileManager::path2dict(string file_path)
 void FileManager::get_file_demo(string seek_algo)
 {
     vector<pair<int, int>> seek_queue;
+    cout << seek_algo << endl;
     seek_queue = {{98, 3}, {183, 5}, {37, 2}, {122, 11}, {119, 5}, {14, 0}, {124, 8}, {65, 5}, {67, 1}, {198, 5}, {105, 5}, {53, 3}};
     if (seek_algo == "FCFS")
         this->disk.FCFS(seek_queue);
@@ -961,9 +962,27 @@ json FileManager::get_file_system_tree()
 // {
 //     FileManager fm(512, 200, 12);
 //     // fm.display_storage_status();
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("FCFS");
+
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("SSTF");
+
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("SCAN");
+
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("C-SCAN");
+
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("LOOK");
+
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("C-LOOK");
+
 //     // fm.tidy_disk();
 //     // fm.write_data("/a.txt", 120);
-//     fm.print_file_system_tree(fm.home_path);
+//     // fm.print_file_system_tree(fm.home_path);
 //     // fm.set_disk_head_pointer(110);
 //     // fm.get_file_demo("C-SCAN");
 //     // fm.set_disk_head_pointer(12);
@@ -975,6 +994,6 @@ json FileManager::get_file_system_tree()
 //     // seek_queue.push_back({60, 1});
 //     // seek_queue.push_back({10, 1});
 //     // d.SSTF(seek_queue);
-//     system("pause");
+//     // system("pause");
 //     return 0;
 // }

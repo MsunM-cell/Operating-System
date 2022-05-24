@@ -32,7 +32,7 @@ int BlockMemoryManager::load_ins(int addr, int length, string path)
     for (int i = 0, j = addr; i < root["content"].size(); ++i)
     {
         string s = root["content"][i];
-        s += '\0'; 
+        s += '\0';
         ins_len += s.size();
         // s = s.substr(1, s.size() - 2);
         sprintf(memory + j, "%s", s.c_str());
@@ -232,6 +232,7 @@ void BlockMemoryManager::dms_command()
         int len = pid2addr[pid].second;
         printf("block #%d\t%d / %d Byte(s)\t[pid]%d\n", i++, len, len, pid);
     }
+    cout << endl;
 }
 
 /* int main()
