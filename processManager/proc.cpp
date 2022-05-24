@@ -651,6 +651,11 @@ void ProcManager::ps()
     for (int i=0; i < DEV_NUM; i++)
     {
         cout << "Block" << i << ": " << block_pcb[i].size() << endl;
+        for (PCB* pcb : block_pcb[i])
+        {
+            cout << "pid: " << pcb->id << " name:" << pcb->name ;
+            cout << " block_time: " << pcb->block_time << endl;
+        }
     }
     rr_queue->getInfo();
     fcfsProcManager->getFcfsInfo();
