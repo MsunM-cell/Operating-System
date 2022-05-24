@@ -572,7 +572,12 @@ ProcManager::~ProcManager()
  */
 int ProcManager::getActiveNum()
 {
-    return rr_queue->getSize() + fcfsProcManager->getQueueSize();
+    int num=0;
+    for (int i=0; i < DEV_NUM; i++)
+    {
+        num += block_pcb[i].size();
+    }
+    return num + rr_queue->getSize() + fcfsProcManager->getQueueSize();
 }
 
 
@@ -749,7 +754,12 @@ void ProcManager::run(PCB* pcb)
         return;
     }
     // 判断是否需要加入到等待队列
-    if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
+    if (ProcManager::getInstance().getActiveNum() >= 2 * MAX_PROC)
+    {
+        this->waiting_pcb.push_back(pcb);
+        printf("[%ld]Pid=%d is waiting.\n", clock() - system_start, pcb->id);
+    }
+    else if (pcb->pri == HIGH_PRI && this->rr_queue->getSize() < MAX_PROC)
     {
         pcb->status = READY;
         this->rr_queue->addPCB(pcb);
@@ -824,7 +834,7 @@ void ProcManager::maintain(int time_pass)
     // 维护等待队列
     auto it = waiting_pcb.begin();
     bool free1 = rr_queue->getSize() < MAX_PROC;
-    while (it != waiting_pcb.end() && free1)
+    while (it != waiting_pcb.end() && free1 && getActiveNum() < MAX_PROC*2)
     {
         PCB* pcb = *it;
         // cout  << "WAITING: "<< (pcb->pri == HIGH_PRI) << "  " << (pcb->pri == LOW_PRI);

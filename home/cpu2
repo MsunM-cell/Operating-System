@@ -1,10 +1,12 @@
 {
     "name": "cpu2",
     "type": "erwx",
-    "size": 2000,
+    "size": 1000,
     "priority": 0,
     "content": [
-        "cpu 10",
+        "cpu 250",
+        "keyboard 200",
+        "cpu 1000",
         "#"
     ]
 }
