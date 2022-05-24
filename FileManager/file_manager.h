@@ -175,7 +175,7 @@ class FileManager
 {
 public:
     char file_separator = (char)path::preferred_separator;                             // directory separator
-    string home_path = STRING(current_path().parent_path()) + file_separator + "home"; // absolute path of home directory
+    string home_path = STRING(current_path()) + file_separator + "home"; // absolute path of home directory
     string working_path;                                                               // working directory
 
     /**

@@ -958,42 +958,42 @@ json FileManager::get_file_system_tree()
     return file_system_tree;
 }
 
-int main()
-{
-    FileManager fm(512, 200, 12);
-    // fm.display_storage_status();
-    fm.set_disk_head_pointer(100);
-    fm.get_file_demo("FCFS");
+// int main()
+// {
+//     FileManager fm(512, 200, 12);
+//     // fm.display_storage_status();
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("FCFS");
 
-    fm.set_disk_head_pointer(100);
-    fm.get_file_demo("SSTF");
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("SSTF");
 
-    fm.set_disk_head_pointer(100);
-    fm.get_file_demo("SCAN");
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("SCAN");
 
-    fm.set_disk_head_pointer(100);
-    fm.get_file_demo("C-SCAN");
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("C-SCAN");
 
-    fm.set_disk_head_pointer(100);
-    fm.get_file_demo("LOOK");
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("LOOK");
 
-    fm.set_disk_head_pointer(100);
-    fm.get_file_demo("C-LOOK");
+//     fm.set_disk_head_pointer(100);
+//     fm.get_file_demo("C-LOOK");
 
-    // fm.tidy_disk();
-    // fm.write_data("/a.txt", 120);
-    // fm.print_file_system_tree(fm.home_path);
-    // fm.set_disk_head_pointer(110);
-    // fm.get_file_demo("C-SCAN");
-    // fm.set_disk_head_pointer(12);
-    // fm.get_file_demo("SSTF");
-    // Disk d(512, 200, 12);
-    // vector<pair<int, int>> seek_queue;
-    // seek_queue.push_back({100, 1});
-    // seek_queue.push_back({40, 1});
-    // seek_queue.push_back({60, 1});
-    // seek_queue.push_back({10, 1});
-    // d.SSTF(seek_queue);
-    // system("pause");
-    return 0;
-}
+//     // fm.tidy_disk();
+//     // fm.write_data("/a.txt", 120);
+//     // fm.print_file_system_tree(fm.home_path);
+//     // fm.set_disk_head_pointer(110);
+//     // fm.get_file_demo("C-SCAN");
+//     // fm.set_disk_head_pointer(12);
+//     // fm.get_file_demo("SSTF");
+//     // Disk d(512, 200, 12);
+//     // vector<pair<int, int>> seek_queue;
+//     // seek_queue.push_back({100, 1});
+//     // seek_queue.push_back({40, 1});
+//     // seek_queue.push_back({60, 1});
+//     // seek_queue.push_back({10, 1});
+//     // d.SSTF(seek_queue);
+//     // system("pause");
+//     return 0;
+// }

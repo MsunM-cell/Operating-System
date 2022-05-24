@@ -118,6 +118,10 @@ class FileManager {
     +add_json_node_to_tree(string path, json node) bool
     +delete_json_node_from_tree(string path) bool
     +get_file(string file_path, string mode, string seek_algo) json
+    +read_data(string file_path, int address, int length) bool
+    +write_data(string file_path, int length) bool
+    +tidy_disk() void
+    +display_storage_status() void
 }
 
 class FileOperation {
@@ -128,6 +132,15 @@ class FileOperation {
     +create_dir(string currenet_dir, string dir_name) bool
     +delete_dir(string current_dir, string dir_name) bool
     +tree(string dir, int layer = 0) void
+    +file_size(string path) int
+    +modify_file_type(string file_path, unsigned int mode) bool
+    +move_file(string src_path, string dst_path) bool
+    +copy_file(string src_path, string dst_path) bool
+    +cd_command(string dir_path) void
+    +move_dir(string src_path, string dst_path) bool
+    +copy_dir(string src_path, string dst_path) bool
+    +ls_command(string dir_path) void
+    +pathConverter(string shell_input_path) string
 }
 
 class Block {
@@ -140,6 +153,8 @@ class Block {
     +set_free_space(int free_space) void
     +set_fp(string fp) void
     +get_location() pair<int, int>
+    +get_free_space() int
+    +get_fp() string
 }
 
 class Disk {
@@ -155,6 +170,10 @@ class Disk {
     +seek_by_queue(vector<pair<int, int>> seek_queue) void
     +FCFS(vector<pair<int, int>> seek_queue) void
     +SSTF(vector<pair<int, int>> seek_queue) void
+    +SCAN(vector<pair<int, int>> seek_queue) void
+    +C-SCAN(vector<pair<int, int>> seek_queue) void
+    +LOOK(vector<pair<int, int>> seek_queue) void
+    +C-LOOK(vector<pair<int, int>> seek_queue) void
 }
 
 FileManager *-- Disk
