@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-23 18:09:46
+ * @LastEditTime: 2022-05-24 00:17:00
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -23,8 +23,8 @@ PageMemoryManager *PageMemoryManager::getInstance()
 
 PageMemoryManager::PageMemoryManager()
 {
-    LRU_StackHead = nullptr;
-    LRU_StackTail = nullptr;
+    link_list_head = nullptr;
+    link_list_tail = nullptr;
     accessTime = 0;
     pageFaultTime = 0;
     PAGE_NUM = mem_config.FRAME_NUM + mem_config.SWAP_MEMORY_SIZE / mem_config.PAGE_SIZE;
@@ -216,11 +216,10 @@ int PageMemoryManager::freeProcess(int pid)
  * @param {int} address
  * @return {一个字节}
  */
-char PageMemoryManager::accessMemory(int pid, int address_index)
+char PageMemoryManager::accessMemory(int pid, int address)
 { //读一个字节？
 
     accessTime++;
-    long long address = address_index * 8;
 
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
     if (pageTable == nullptr)
@@ -262,11 +261,10 @@ char PageMemoryManager::accessMemory(int pid, int address_index)
  * @param {unsigned int} pid
  * @return {1为成功}
  */
-int PageMemoryManager::writeMemory(int address_index, char src, unsigned int pid)
+int PageMemoryManager::writeMemory(int logicalAddress, char src, unsigned int pid)
 {
     accessTime++;
-    long long logicalAddress = address_index * 8;
-    int size = 8;
+    int size = 1;
     vector<tableItem *> *pageTable = getProcessPageTable(pid);
 
     if (pageTable == nullptr)
@@ -280,7 +278,7 @@ int PageMemoryManager::writeMemory(int address_index, char src, unsigned int pid
     if (logicalAddress + size > pageTable->size() * mem_config.PAGE_SIZE)
     {
         stringstream ss;
-        ss << "process " << pid << " write logical address [" << logicalAddress << " - " << logicalAddress + size << "] out of bound (" << pageTable->size() * mem_config.PAGE_SIZE - 1 << ")!";
+        ss << "process " << pid << " write logical address " << logicalAddress << " out of bound (" << pageTable->size() * mem_config.PAGE_SIZE - 1 << ")!";
         Log::logE(TAG, ss.str());
         return -1;
     }
@@ -356,7 +354,7 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
             usedFrameNum++;
             ti->frame = fti;
             ti->isInMemory = true;
-
+            moveToLinkHead(fti);
             stringstream ss;
             ss << "move page " << ti->pageNo << " into memory , frame number " << fti->getFrameNo();
             Log::logI(TAG, ss.str());
@@ -368,14 +366,19 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
     //若全部帧都被使用中，则需要通过LRU进行换页
 
     //需要被换出的帧
-    FrameTableItem *frameTableItem = LRU_StackTail;
+    FrameTableItem *frameTableItem = link_list_tail;
+    // if(frameTableItem){
+    //     cout<<"尾巴不是空指针好吧！"<<endl;
+    // }else{
+    //     cout<<"tail is null prt ???"<<endl;
+    // }
 
     //如果该页被锁定了，也不能换出，继续向前找
     while (frameTableItem && frameTableItem->isLocked())
     {
         frameTableItem = frameTableItem->pre;
         //找了一圈又找回来了
-        if (frameTableItem == LRU_StackTail)
+        if (frameTableItem == link_list_tail)
         {
             stringstream ss;
             ss << "there is no frame can be swaped out";
@@ -452,61 +455,70 @@ bool PageMemoryManager::pageFault(unsigned int pid, tableItem *ti)
     ti->frame = frameTableItem;
     ti->isInMemory = true;
     ti->swapAddress = -1;
-    useFrame(frameTableItem);
+    //如果是LRU的话直接使用update
+    //如果是FIFO的话需要放入链表头部
+    moveToLinkHead(frameTableItem);
     return true;
+}
+
+// FIFO与LRU的区别就在于，两者在换入或新建时都要移动到链表头部。而日常访问时，仅有LRU需要移动到链表头部，FIFO则不需要
+void PageMemoryManager::useFrame(FrameTableItem *fti)
+{
+    if (PAGE_ALGORITHRM == PageMemoryManager::LRU_ALGORITHRM)
+    {
+        moveToLinkHead(fti);
+    }
 }
 
 /**
  * @brief 使用某一帧，将该帧提到双向LRU链表的头部,嗯,甚至还是循环的(...)
- * //TODO:把循环改掉
  * @param {FrameTableItem*} fti要使用的帧
  * @return {*}
  */
-void PageMemoryManager::useFrame(FrameTableItem *fti)
+void PageMemoryManager::moveToLinkHead(FrameTableItem *fti)
 {
-
     if (!fti)
     {
+        cout<<"unexpected frame null poiter"<<endl;
         return;
     }
-
-    //假如链表中没有帧，这个是第一个
-    if (LRU_StackHead == nullptr || LRU_StackTail == nullptr)
+    if (link_list_head == nullptr || link_list_tail == nullptr)
     {
-        LRU_StackHead = fti;
-        LRU_StackTail = fti;
-        LRU_StackHead->pre = LRU_StackTail;
-        LRU_StackTail->next = LRU_StackHead;
+        link_list_head = fti;
+        link_list_tail = fti;
+        link_list_head->pre = link_list_tail;
+        link_list_tail->next = link_list_head;
     }
     else
     {
         //如果这个帧之前没有添加进链表过
         if (fti->pre == nullptr && fti->next == nullptr)
         {
-            fti->next = LRU_StackHead;
-            fti->pre = LRU_StackTail;
-            LRU_StackHead->pre = fti;
 
-            LRU_StackTail->next = fti;
-            LRU_StackHead = fti;
+            fti->next = link_list_head;
+            fti->pre = link_list_tail;
+            link_list_head->pre = fti;
+
+            link_list_tail->next = fti;
+            link_list_head = fti;
         }
         //如果这个帧为帧头
-        else if (fti == LRU_StackHead)
+        else if (fti == link_list_head)
         {
             return;
         }
         //如果这个帧为帧尾
-        else if (fti == LRU_StackTail)
+        else if (fti == link_list_tail)
         {
-            LRU_StackTail = fti->pre;
+            link_list_tail = fti->pre;
 
-            LRU_StackTail->next = fti;
-            LRU_StackHead->pre = fti;
+            link_list_tail->next = fti;
+            link_list_head->pre = fti;
 
-            fti->next = LRU_StackHead;
-            fti->pre = LRU_StackTail;
+            fti->next = link_list_head;
+            fti->pre = link_list_tail;
 
-            LRU_StackHead = fti;
+            link_list_head = fti;
         }
         //这个帧在中间的情况
         else
@@ -522,12 +534,12 @@ void PageMemoryManager::useFrame(FrameTableItem *fti)
                 fti->next->pre = fti->pre;
             }
 
-            fti->next = LRU_StackHead;
-            if (LRU_StackHead)
+            fti->next = link_list_head;
+            if (link_list_head)
             {
-                LRU_StackHead->pre = fti;
+                link_list_head->pre = fti;
             }
-            LRU_StackHead = fti;
+            link_list_head = fti;
         }
     }
 }

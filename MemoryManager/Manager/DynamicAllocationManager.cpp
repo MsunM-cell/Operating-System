@@ -21,8 +21,8 @@ DynamicAllocationManager *DynamicAllocationManager::getInstance()
 
 DynamicAllocationManager::DynamicAllocationManager()
 {
-    LRU_StackHead = nullptr;
-    LRU_StackTail = nullptr;
+    link_list_head = nullptr;
+    link_list_tail = nullptr;
     PAGE_NUM = mem_config.FRAME_NUM + mem_config.SWAP_MEMORY_SIZE / mem_config.PAGE_SIZE;
     char *pointer = memory;
     for (int i = 0; i < mem_config.FRAME_NUM; i++)

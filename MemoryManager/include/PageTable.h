@@ -31,7 +31,7 @@ class PageTable
 {
 private:
     std::unordered_map<pagePair, PageTableItem*, hash_func, cmp_func> pageTableMap;
-    PageTableItem *LRU_StackHead, *LRU_StackTail;
+    PageTableItem *link_list_head, *link_list_tail;
 
 public:
 

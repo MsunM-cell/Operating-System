@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-23 16:59:03
+ * @LastEditTime: 2022-05-24 00:23:35
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #pragma once
@@ -20,6 +20,10 @@ using namespace std;
 class PageMemoryManager : public MemoryManager
 {
 private:
+    static const int LRU_ALGORITHRM = 1;
+    static const int FIFO_ALGORITHRM = 2;
+    int PAGE_ALGORITHRM = PageMemoryManager::FIFO_ALGORITHRM;
+
     std::string TAG = "PageMemoryManager";
 
     //逻辑页的使用位图
@@ -42,7 +46,7 @@ private:
     static PageMemoryManager *instance;
 
     //记录帧使用情况，双向的...循环的...
-    FrameTableItem *LRU_StackHead, *LRU_StackTail;
+    FrameTableItem *link_list_head, *link_list_tail;
 
     // pid--页表映射
     map<int, vector<tableItem *> *> tableMap;
@@ -57,6 +61,7 @@ private:
     int load_ins(int pid, string file_address);
 
     static void monitor();
+    void moveToLinkHead(FrameTableItem *fti);
 
 public:
     long PAGE_NUM;
@@ -67,11 +72,11 @@ public:
     int createProcess(PCB &p);
     int freeProcess(PCB &p);
     int freeProcess(int pid);
-    char accessMemory(int pid, int address_index);
+    char accessMemory(int pid, int logicalAddress);
     void initPageTable();
     void useFrame(FrameTableItem *frameTableItem);
     bool pageFault(unsigned int pid, tableItem *ti);
-    int writeMemory(int logicalAddress_index, char src, unsigned int pid);
+    int writeMemory(int logicalAddress, char src, unsigned int pid);
     // void stuff(unsigned int pid);
 
     int getUsedFrameNum() { return usedFrameNum; };
