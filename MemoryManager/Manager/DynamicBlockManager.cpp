@@ -227,6 +227,7 @@ void BlockMemoryManager::dms_command()
         else if (it->first > 0)
         {
             printf("block #0\t0 / %d Byte(s)\tnull\n", it->first);
+            i++;
         }
         int pid = it->second;
         int len = pid2addr[pid].second;
