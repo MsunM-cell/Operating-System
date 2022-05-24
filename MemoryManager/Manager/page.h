@@ -18,7 +18,7 @@ private:
     map<int,int> ins_sum_len;
     //初始化基本分页系统
     void init_manager();
-    //标记帧使用情况,first为进程pid,初识为-1,second为该帧实际使用大小
+    //标记帧使用情况,first为进程pid,初始为-1,second为该帧实际使用大小
     vector<PII> bitmap;
     //(所有)进程页表
     map<int,vector<int>> pagetable;
@@ -26,7 +26,7 @@ private:
 public:
     //构造函数和析构函数
     BasicPageManager() { init_manager(); }
-    ~BasicPageManager(){ printf("Exit BasicPageManager\n"); }
+    ~BasicPageManager(){}
     //访问内存接口
     char accessMemory(int pid, int address);
     //写内存接口
@@ -49,6 +49,5 @@ public:
     void print_pagetable(const PCB& p);
     
     string getMode(){return "page";}
-    void dss_command();
     void dms_command();
 };

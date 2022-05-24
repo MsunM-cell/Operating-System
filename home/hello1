@@ -1,0 +1,14 @@
+{
+    "name": "hello1",
+    "type": "erwx",
+    "size": 2000,
+    "priority": 0,
+    "content": [
+        "cpu 10",
+        "cpu 300",
+        "access 10",
+        "keyboard 200",
+        "cpu 1",
+        "#"
+    ]
+}

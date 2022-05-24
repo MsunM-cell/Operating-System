@@ -1,0 +1,30 @@
+{
+    "name": "test3",
+    "type": "erwx",
+    "size": 12345,
+    "priority": 0,
+    "content": [
+        "cpu 10",
+        "access 127",
+        "access 250",
+        "access 383",
+        "access 511",
+        "cpu 1",
+        "access 512",
+        "cpu 1",
+        "access 250",
+        "access 640",
+        "cpu 1",
+        "access 762",
+        "cpu 1",
+        "access 125",
+        "access 787",
+        "cpu 1",
+        "access 895",
+        "access 375",
+        "access 1025",
+        "cpu 1",
+        "access 625",
+        "#"
+    ]
+}

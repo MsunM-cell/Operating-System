@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-29 14:55:30
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-07 21:39:22
+ * @LastEditTime: 2022-05-22 10:15:40
  * @FilePath: \Operating-System\MemoryManager\Manager\DynamicAllocationManager.cpp
  * @copyright: Copyright (C) 2022 shimaoZeng. All rights reserved.
  */
@@ -21,8 +21,8 @@ DynamicAllocationManager *DynamicAllocationManager::getInstance()
 
 DynamicAllocationManager::DynamicAllocationManager()
 {
-    LRU_StackHead = nullptr;
-    LRU_StackTail = nullptr;
+    link_list_head = nullptr;
+    link_list_tail = nullptr;
     PAGE_NUM = mem_config.FRAME_NUM + mem_config.SWAP_MEMORY_SIZE / mem_config.PAGE_SIZE;
     char *pointer = memory;
     for (int i = 0; i < mem_config.FRAME_NUM; i++)
@@ -64,8 +64,7 @@ ProcessTableItem *DynamicAllocationManager::getProcess(int pid)
  */
 int DynamicAllocationManager::createProcess(PCB &p)
 {
-    cout << "very ok!" << endl;
-    // // FIXME:现在没有文件地址哦，所以就把需要的长度当成文件长度吧
+    ProcessTableItem* pti =  new ProcessTableItem(p.id,p.size,)
     // ProcessTableItem *psti = new ProcessTableItem(p.id, p.size, p.size);
 
     // int allocPageNum = p.size % mem_config.PAGE_SIZE == 0 ? p.size / mem_config.PAGE_SIZE : p.size / mem_config.PAGE_SIZE + 1;

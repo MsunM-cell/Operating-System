@@ -35,7 +35,6 @@ DWORD WINAPI getch(LPVOID lpParamter)
     }
     return 0L;
 }
-
 /**
  * @brief 进程管理器调度的线程函数，确保可以边接收指令边调度
  * 
@@ -44,13 +43,13 @@ DWORD WINAPI getch(LPVOID lpParamter)
  */
 DWORD WINAPI setupProcManager(LPVOID lpParamter)
 {
-    // ProcManager::getInstance().scheduling();
     while(true)
     {
         ProcManager::getInstance().scheduling();
         if (ProcManager::getInstance().getActiveNum() == 0)
         {
-            Sleep(200);
+            Sleep(20);
+            ProcManager::getInstance().maintain(20);
         }
     }
 
@@ -85,13 +84,17 @@ int parse(string cmd, vector<string> &argv)
 PCB* createPCB(json file,string path)
 {
     PCB* ptr = new PCB;
-    // ptr->id=;
+    ptr->id= ProcManager::getInstance().getAvailableId();
     ptr->path = path;
-    // ptr->pc=0;
-    // ptr->pri=;
-    // ptr->size=;
-    // ptr->slice_cnt=0;
-    // ptr->time_need=;
+    ptr->name = file["name"];
+    ptr->status = NEW;
+    ptr->pc = 0;
+    ptr->pri = file["priority"];
+    ptr->size = file["size"];
+    ptr->slice_cnt = 0;
+    ptr->time_need = 5000;
+    ptr->cpu_time = 0;
+    
     return ptr;
 }
 
@@ -118,9 +121,25 @@ int main(void)
     FileManager fm(512, 200, 12);
     FileOperation fileOperation(&fm);
     string pwd;
+
+    // 系统自检
+    // {
+    //     json file;
+    //     string path = fm.home_path + fm.working_path + "cpu2";
+    //     string get_file_path = fm.working_path + "cpu2";
+    //     PCB* pcb;
+    //     file = fm.get_file(get_file_path, "read", "FCFS");
+    //     for (int i = 0; i < 5; i++)
+    //     {
+    //         pcb = createPCB(file,path);
+    //         ProcManager::getInstance().run(pcb);
+    //     }
+    //     while (ProcManager::getInstance().getActiveNum() != 0);
+    // }
+
     while (cmd != "exit")
     {
-        pwd = "BUPT@My-OS:" + fm.working_path + "$ ";
+        pwd = usrname + "@My-OS:" + fm.working_path + "$ ";
         cout << pwd;
         WaitForSingleObject(hSemaphore, INFINITE);
         WaitForSingleObject(hMutex,INFINITE);
@@ -130,7 +149,7 @@ int main(void)
         // cout << argv[0];
         // 根据分析出的指令执行相关的操作
         if(args == 0){
-            puts("error");
+            // puts("error");
             ReleaseMutex(hMutex);
             // system("pause");
             continue;
@@ -161,36 +180,45 @@ int main(void)
                 cout << "unknown cmd!\n";
             }
         }
+        else if(argv[0] == "cm"){
+            if (bmm->getMode() == "block")
+            {
+                bmm->compress_mem();
+            }
+            else
+                cout << "No outer debris, can not compress\n";
+        }
         else if (argv[0] == "run")
         {
             if (args == 2)
             {
-                json file;
-                // cout << fm.working_path << endl;
                 string path = fileOperation.pathConverter(argv[1]);
+                string get_file_path = path.substr(fm.home_path.size());
                 if (path == "error" || !exists(path)) {
-                    puts("error");
+                    puts("run: File path wrong");
+                }
+                else if (is_directory(path)) {
+                    printf("'%s' is a directory.\n", argv[1].c_str());
                 }
                 else {
-                    cout << path << endl;
+                    // cout << path << endl;
                     PCB* pcb;
-                    // ProcManager::getInstance().run(argv[1]);
-                    // file = fm.get_file(get_file_path, "read", "FCFS");
+                    json file;
+                    file = fm.get_file(get_file_path, "read", "FCFS");
                     // cout << file << endl;
-                    // 判断有没有x
-                    pcb = createPCB(file,path);
-                    // TODO 怎么引用
-                    // createProcess();
-                    int time = 5 * fileOperation.file_size(argv[1]);
-                    cout << "time need " << time << endl;
-                    ProcManager::getInstance().run(path,time,time/5 + 1024);
+                    if (string(file["type"])[0] != 'e') {
+                        printf("'%s' is not an executable file.\n", argv[1].c_str());
+                    }
+                    else if (string(file["type"])[3] != 'x') {
+                        printf("'%s' Permission denied.\n", argv[1].c_str());
+                    }
+                    else {
+                        pcb = createPCB(file,path);
+                        ProcManager::getInstance().run(pcb);
+                    }
+                    
                 }
             }
-            // 测试�??
-            // else if (args == 3)
-            // {
-            //     ProcManager::getInstance().run(argv[1], atoi(argv[2].c_str()));
-            // }
             else
             {
                 cout << "unknown cmd!\n";
@@ -221,10 +249,24 @@ int main(void)
         else if(argv[0] == "cd"){
             fileOperation.cd_command(argv[1]);
         }
-        else if (argv[0] == "exit")
+        else if (argv[0] == "exit" || argv[0] == "yes")
         {
             // nop
         }
+        else if (argv[0] == "tc")
+        {
+            json file;
+            string path = fm.home_path + fm.working_path + "cpu2";
+            string get_file_path = fm.working_path + "cpu2";
+            // cout << path << endl;
+            PCB* pcb;
+            file = fm.get_file(get_file_path, "read", "FCFS");
+            for (int i = 0; i < 5; i++)
+            {
+                pcb = createPCB(file,path);
+                ProcManager::getInstance().run(pcb);
+            } 
+        }  
         else if(argv[0] == "rm"){
             if(args == 2 && argv[1] != "-r"){
                 string dir = "";

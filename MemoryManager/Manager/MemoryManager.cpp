@@ -22,7 +22,7 @@ MemoryManager::MemoryManager()
 MemoryManager::~MemoryManager()
 {
     delete[] memory;
-    //FIXME:å†™å›žå­˜åœ¨å¤§é—®é¢˜ï¼Œæ¯”å¦‚page size ä¼šå˜æˆ?0 ï¼? ispageä¹Ÿä¼šèŽ«åå…¶å¦™å˜æˆno....ä»¥åŽå†ä¿®å§ï¼Œç´¯äº�?
+    //回写配置文件
     // json cfgfile;
     // cfgfile["name"] = "configuration";
     // cfgfile["priority"] = 1;
@@ -78,7 +78,7 @@ void MemoryManager::init_config()
     }
 
     in >> cfgFile;
-    //è¯»å–å­èŠ‚ç‚¹ä¿¡æ�??
+    //读取子节点
     mem_config.PAGE_SIZE = cfgFile["content"]["Page_size"];
     mem_config.FRAME_NUM = mem_config.MEM_SIZE / mem_config.PAGE_SIZE;
     string blockAlgorithm = cfgFile["content"]["Block_algorithm"];

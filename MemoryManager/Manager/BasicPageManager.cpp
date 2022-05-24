@@ -107,7 +107,8 @@ int BasicPageManager::freeProcess(PCB &p)
     bitmap[pageid].second = 0;
   }
   pagetable.erase(p.id);
-  cout << "free process successfully" << endl;
+  ins_sum_len.erase(p.id);
+  // cout << "free process successfully" << endl;
   return 1;
 }
 
@@ -116,6 +117,12 @@ char BasicPageManager::accessMemory(int pid, int address)
 {
   int page = address / mem_config.PAGE_SIZE;
   int offset = address % mem_config.PAGE_SIZE;
+  if (pagetable.find(pid) == pagetable.end())
+  {
+    if (pid >= 0 && pid < 65536)
+      printf("pid[%d] is not in memory!\n\n", pid);
+    return char(-1);
+  }
   if (page < pagetable[pid].size())
   {
     int trueaddr = pagetable[pid][page] * mem_config.PAGE_SIZE + offset;
@@ -128,6 +135,11 @@ char BasicPageManager::accessMemory(int pid, int address)
 //写内存
 int BasicPageManager::writeMemory(int logicalAddress, char src, unsigned int pid)
 {
+  if (pagetable.find(pid) == pagetable.end())
+  {
+    printf("pid[%d] is not in memory!\n\n", pid);
+    return -1;
+  }
   if (logicalAddress >= ins_sum_len[pid] && logicalAddress < pagetable[pid].size() * mem_config.PAGE_SIZE)
   {
     int page = logicalAddress / mem_config.PAGE_SIZE;
@@ -171,24 +183,16 @@ void BasicPageManager::print_pagetable(const PCB &p)
 // dms打印
 void BasicPageManager::dms_command()
 {
-  cout << "total : " << mem_config.MEM_SIZE << "\t  ";
+  cout << "total : " << mem_config.MEM_SIZE << "B \t  ";
   int used = 0;
   for (auto it = pagetable.begin(); it != pagetable.end(); it++)
   {
     used += it->second.size();
   }
-  cout << "allocated : " << mem_config.PAGE_SIZE * used << "\t";
-  cout << "free : " << mem_config.PAGE_SIZE * (mem_config.FRAME_NUM - used) << endl;
-}
+  cout << "allocated : " << mem_config.PAGE_SIZE * used << "B \t";
+  cout << "free : " << mem_config.PAGE_SIZE * (mem_config.FRAME_NUM - used) << "B\n";
 
-// dss打印
-void BasicPageManager::dss_command()
-{
-  dms_command();
-  int used = 0;
-  for (auto it = pagetable.begin(); it != pagetable.end(); it++)
-    used += it->second.size();
-  for (int i = 0, j = 0; i < mem_config.FRAME_NUM; i++)
+  for (int i = 0, j = 0; i < mem_config.FRAME_NUM && j < used; i++)
   {
     printf("frame #%d\t%d / %d Byte(s)\t", i, bitmap[i].second, mem_config.PAGE_SIZE);
     if (bitmap[i].first == -1)
@@ -197,10 +201,9 @@ void BasicPageManager::dss_command()
     {
       printf("[pid]%d\n", bitmap[i].first);
       j++;
-      if (j >= used)
-        break;
     }
   }
+  cout << endl;
 }
 
 void init_pcb(int id, int size, PCB &p)
