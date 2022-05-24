@@ -120,7 +120,7 @@ char BasicPageManager::accessMemory(int pid, int address)
   if (pagetable.find(pid) == pagetable.end())
   {
     if (pid >= 0 && pid < 65536)
-        printf("pid[%d] is not in memory!\n\n", pid);
+      printf("pid[%d] is not in memory!\n\n", pid);
     return char(-1);
   }
   if (page < pagetable[pid].size())
@@ -203,6 +203,7 @@ void BasicPageManager::dms_command()
       j++;
     }
   }
+  cout << endl;
 }
 
 void init_pcb(int id, int size, PCB &p)
