@@ -2,10 +2,11 @@
  * 系统共用头文件
  */
 
-#include<ctime>
-
 #ifndef SYS_H
 #define SYS_H
+#include<ctime>
+#include <fstream>
+#include <iostream>
 
 #define SYS_NAME 114
 #define RUNNING 0
@@ -62,5 +63,6 @@ typedef struct XFILE
 
 //程序运行的开始时间
 clock_t system_start;
-
+// 进程管理debug输出
+std::ostream pbug(std::cout.rdbuf());
 #endif //SYS_H

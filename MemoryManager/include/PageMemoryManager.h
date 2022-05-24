@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-01 15:52:02
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-24 00:23:35
+ * @LastEditTime: 2022-05-24 00:44:24
  * @FilePath: \Operating-System\MemoryManager\include\PageMemoryManager.h
  */
 #pragma once
@@ -65,7 +65,6 @@ private:
 
 public:
     long PAGE_NUM;
-
     static PageMemoryManager *getInstance();
     PageMemoryManager();
     ~PageMemoryManager();

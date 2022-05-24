@@ -99,8 +99,21 @@ PCB* createPCB(json file,string path)
 }
 
 
-int main(void)
+int main(int argc1, char* argv1[])
 {
+    ofstream pout("./processManager/debug.txt");
+    if (argc1 > 1)
+    {
+        if (string(argv1[1]) == "-d1")
+        {
+            pbug.rdbuf(cout.rdbuf());
+            pout.close();
+        }
+    }
+    else
+    {
+        pbug.rdbuf(pout.rdbuf());
+    }
     string usrname;
     cout << "Please enter your name:";
     cin >> usrname;
@@ -121,21 +134,6 @@ int main(void)
     FileManager fm(512, 200, 12);
     FileOperation fileOperation(&fm);
     string pwd;
-
-    // 系统自检
-    // {
-    //     json file;
-    //     string path = fm.home_path + fm.working_path + "cpu2";
-    //     string get_file_path = fm.working_path + "cpu2";
-    //     PCB* pcb;
-    //     file = fm.get_file(get_file_path, "read", "FCFS");
-    //     for (int i = 0; i < 5; i++)
-    //     {
-    //         pcb = createPCB(file,path);
-    //         ProcManager::getInstance().run(pcb);
-    //     }
-    //     while (ProcManager::getInstance().getActiveNum() != 0);
-    // }
 
     while (cmd != "exit")
     {
@@ -420,5 +418,6 @@ int main(void)
         }
         ReleaseMutex(hMutex);
     }
+    pout.close();
     return 0;
 }

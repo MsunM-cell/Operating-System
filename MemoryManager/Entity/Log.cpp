@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-04-08 16:51:14
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-24 00:19:43
+ * @LastEditTime: 2022-05-24 12:17:58
  * @FilePath: \Operating-System\MemoryManager\Entity\Log.cpp
  */
 
@@ -13,7 +13,7 @@
 #include <sstream>
 #include <windows.h>
 
-int log_mode = 3;
+int log_mode = Log::ERRORR;
 int last_log_mode = -1;
 
 class Log

@@ -1,7 +1,7 @@
 /*
  * @Date: 2022-03-24 13:40:50
  * @LastEditors: ShimaoZ
- * @LastEditTime: 2022-05-24 00:17:00
+ * @LastEditTime: 2022-05-24 10:17:31
  * @FilePath: \Operating-System\MemoryManager\Manager\PageMemoryManager.cpp
  */
 
@@ -479,7 +479,7 @@ void PageMemoryManager::moveToLinkHead(FrameTableItem *fti)
 {
     if (!fti)
     {
-        cout<<"unexpected frame null poiter"<<endl;
+        cout << "unexpected frame null poiter" << endl;
         return;
     }
     if (link_list_head == nullptr || link_list_tail == nullptr)
@@ -681,9 +681,10 @@ void PageMemoryManager::monitor()
 {
     ofstream log;
     long inUsed;
-    int ratio;
+    double ratio;
     long available;
     long committed;
+    double pageFaultRate;
     log.open("./MemoryManager/test/MemoryUsage.txt", ios::out);
     if (!log.is_open())
     {
@@ -698,6 +699,8 @@ void PageMemoryManager::monitor()
         << setw(10) << "available"
         << " "
         << setw(10) << "committed"
+        << " "
+        << setw(10) << "pageFault"
         << " " << endl;
     Sleep(2000);
 
@@ -708,12 +711,14 @@ void PageMemoryManager::monitor()
         ratio = 100.0 * manager->getUsedFrameNum() / mem_config.FRAME_NUM;
         available = manager->getPhysicalMemorySize() - inUsed;
         committed = manager->getOccupiedPageNum() * mem_config.PAGE_SIZE;
+        pageFaultRate = (100.0 * manager->getPageFaultTime() / (manager->getAccessTime() + 1));
 
         log << setw(12) << Log::getTimeString() << " "
             << setw(10) << inUsed << " "
             << setw(10) << ratio << " "
             << setw(10) << available << " "
             << setw(10) << committed << " "
+            << setw(10) << pageFaultRate << " "
             << endl;
         Sleep(500);
     }
