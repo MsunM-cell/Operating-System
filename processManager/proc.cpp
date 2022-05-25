@@ -1074,8 +1074,9 @@ void RRQueue::exec(PCB *p, int &time)
             else
             {
                 time -= p->cpu_time;
+                int tmp = p->cpu_time;
                 p->cpu_time = 0;
-                Sleep(p->cpu_time * ALPHA);
+                Sleep(tmp * ALPHA);
             }
             if (p->status == RUNNING)
                 pbug << "pid: " << p->id << " is using cpu for " << TIME_SLICE - time << endl;
