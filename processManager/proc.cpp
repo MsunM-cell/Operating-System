@@ -578,7 +578,12 @@ ProcManager::~ProcManager()
  */
 int ProcManager::getActiveNum()
 {
-    return rr_queue->getSize() + fcfsProcManager->getQueueSize();
+    int cnt=0;
+    for (int i=0; i < DEV_NUM; i++)
+    {
+        cnt += block_pcb[i].size();
+    }
+    return rr_queue->getSize() + fcfsProcManager->getQueueSize() + cnt;
 }
 
 
