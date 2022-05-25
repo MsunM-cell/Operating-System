@@ -1,0 +1,17 @@
+{
+    "name": "fork",
+    "type": "erwx",
+    "size": 3000,
+    "priority": 0,
+    "content": [
+        "cpu 200",
+        "fork",
+        "access 1000",
+        "cpu 200",
+        "access 3000",
+        "cpu 2000",
+        "fork",
+        "access 3000",
+        "#"
+    ]
+}
