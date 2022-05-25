@@ -46,7 +46,7 @@ void BasicPageManager::monitor()
 
   BasicPageManager *manager = BasicPageManager::getInstance();
   SYSTEMTIME sys;
-  char now_time[20];
+  char now_time[40];
   while (active)
   {
     GetLocalTime(&sys);
