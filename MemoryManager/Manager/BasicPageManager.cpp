@@ -36,11 +36,11 @@ void BasicPageManager::monitor()
   }
   log << setw(15) << "time"
       << " "
-      << setw(37) << "inUsedPage"
+      << setw(32) << "inUsedPage"
       << " "
-      << setw(20) << "freePage"
+      << setw(19) << "freePage"
       << " "
-      << setw(20) << "MemoryUtilization"
+      << setw(23) << "MemoryUtilization"
       << " " << endl;
   Sleep(2000);
 
@@ -50,7 +50,7 @@ void BasicPageManager::monitor()
   while (active)
   {
     GetLocalTime(&sys);
-    sprintf(now_time, "%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds, sys.wDayOfWeek);
+    sprintf(now_time, "%4d/%02d/%02d %02d:%02d:%02d.%03d", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds);
     int up = manager->getUsedPage();
     double utilization = (double)up / mem_config.FRAME_NUM;
     log << setw(12) << now_time << " "
