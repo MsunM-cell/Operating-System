@@ -1,0 +1,15 @@
+{
+    "name": "test",
+    "type": "erwx",
+    "size": 5420,
+    "priority": 0,
+    "content": [
+        "WriteMemory 1000 9",
+        "access 1000",
+        "cpu 200",
+        "access 3000",
+        "cpu 2000",
+        "access 3000",
+        "#"
+    ]
+}
