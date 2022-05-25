@@ -28,6 +28,8 @@ private:
     int usedMem;
     //监控线程
     thread monitorThread;
+    //是否正在工作
+    static bool active;
 
 public:
     //构造函数

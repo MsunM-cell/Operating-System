@@ -7,6 +7,7 @@
 #include <thread>
 
 BlockMemoryManager *BlockMemoryManager::instance = nullptr;
+bool BlockMemoryManager::active = true;
 
 //空闲分区链表排序,type=0为地址递增排序，type=1为容量递增排序
 void BlockMemoryManager::adjust_list(int type)
@@ -202,6 +203,7 @@ BlockMemoryManager::BlockMemoryManager()
 
 BlockMemoryManager::~BlockMemoryManager()
 {
+    active = false;
     monitorThread.join();
 }
 
@@ -238,7 +240,7 @@ void BlockMemoryManager::monitor()
     BlockMemoryManager *manager = BlockMemoryManager::getInstance();
     SYSTEMTIME sys;
     char now_time[40];
-    while (manager)
+    while (active)
     {
         GetLocalTime(&sys);
         sprintf(now_time, "%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds, sys.wDayOfWeek);

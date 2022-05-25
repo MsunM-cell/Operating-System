@@ -10,6 +10,7 @@
 #include "../Entity/Log.cpp"
 
 PageMemoryManager *PageMemoryManager::instance = nullptr;
+bool PageMemoryManager::active = true;
 
 PageMemoryManager *PageMemoryManager::getInstance()
 {
@@ -53,6 +54,7 @@ PageMemoryManager::~PageMemoryManager()
         delete f;
     }
     delete bitMap;
+    active = false;
     monitorThread.join();
 }
 
@@ -705,7 +707,7 @@ void PageMemoryManager::monitor()
     Sleep(2000);
 
     PageMemoryManager *manager = PageMemoryManager::getInstance();
-    while (manager)
+    while (active)
     {
         inUsed = manager->getUsedFrameNum() * mem_config.PAGE_SIZE;
         ratio = 100.0 * manager->getUsedFrameNum() / mem_config.FRAME_NUM;

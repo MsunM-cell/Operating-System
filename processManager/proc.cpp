@@ -564,6 +564,7 @@ ProcManager::ProcManager(int n_size, int x_size)
 ProcManager::~ProcManager()
 {
     pbug << "ProcManager is over!\n";
+    delete bmm;
 }
 
 /**

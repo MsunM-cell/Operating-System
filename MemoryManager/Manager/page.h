@@ -24,6 +24,8 @@ private:
     static BasicPageManager *instance;
     //已使用的页数
     int usedPage;
+    //是否正在工作
+    static bool active;
 
 public:
     //构造函数和析构函数

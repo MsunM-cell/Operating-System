@@ -63,6 +63,8 @@ private:
     static void monitor();
     void moveToLinkHead(FrameTableItem *fti);
 
+    static bool active;
+
 public:
     long PAGE_NUM;
     static PageMemoryManager *getInstance();

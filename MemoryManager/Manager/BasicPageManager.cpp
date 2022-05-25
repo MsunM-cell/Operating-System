@@ -8,9 +8,11 @@
 #include <windows.h>
 
 BasicPageManager *BasicPageManager::instance = nullptr;
+bool BasicPageManager::active = true;
 
 BasicPageManager::~BasicPageManager()
 {
+  active = false;
   monitorThread.join();
 }
 
@@ -45,11 +47,11 @@ void BasicPageManager::monitor()
   BasicPageManager *manager = BasicPageManager::getInstance();
   SYSTEMTIME sys;
   char now_time[20];
-  while (manager)
+  while (active)
   {
     GetLocalTime(&sys);
     sprintf(now_time, "%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds, sys.wDayOfWeek);
-    int up=manager->getUsedPage();
+    int up = manager->getUsedPage();
     double utilization = (double)up / mem_config.FRAME_NUM;
     log << setw(12) << now_time << " "
         << setw(20) << up << " "
