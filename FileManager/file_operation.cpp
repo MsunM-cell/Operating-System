@@ -561,9 +561,12 @@ bool FileOperation::copy_file(string src_path, string dst_path) {
  */
 void FileOperation::cd_command(string dir_path) {
     string tmp = dir_path;
-    if (tmp.front() == (char)path::preferred_separator) 
-        tmp.erase(0, 1);
-    tmp = file_manager->get_absolute_working_path() + tmp;
+    if (tmp.front() == (char)path::preferred_separator) {
+        tmp = file_manager->home_path + tmp; 
+    }
+    else {
+        tmp = file_manager->get_absolute_working_path() + tmp;
+    }
     if (!exists(tmp)) {
         printf("cd: '%s' Not such directory.\n", dir_path.c_str());
         return;
