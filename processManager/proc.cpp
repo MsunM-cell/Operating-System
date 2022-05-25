@@ -835,7 +835,8 @@ void ProcManager::maintain(int time_pass)
     // 维护等待队列
     auto it = waiting_pcb.begin();
     bool free1 = rr_queue->getSize() < MAX_PROC;
-    while (it != waiting_pcb.end() && free1)
+    bool free = ProcManager::getInstance().getActiveNum() < MAX_PROC * 2;
+    while (it != waiting_pcb.end() && free1 && free)
     {
         PCB* pcb = *it;
         // pbug  << "WAITING: "<< (pcb->pri == HIGH_PRI) << "  " << (pcb->pri == LOW_PRI);
@@ -858,6 +859,7 @@ void ProcManager::maintain(int time_pass)
             it++;
         }
         free1 = rr_queue->getSize() < MAX_PROC;
+        free = ProcManager::getInstance().getActiveNum() < MAX_PROC * 2;
     }
 }
 
