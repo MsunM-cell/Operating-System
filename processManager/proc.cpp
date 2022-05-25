@@ -464,7 +464,12 @@ void ProcManagerFCFS::useIO(string command){
  */
 void ProcManagerFCFS::accessMem(string command,int pid){
     int addr = atoi(command.c_str());
-    pbug <<"access Memory at addr" << " " << addr << ", " << "the content is " << bmm->accessMemory(pid,addr) << endl;
+    // pbug << "DEBUG_PID RRQueue::accessMem " << pid << endl;
+    char ch = bmm->accessMemory(pid,addr);
+    if (ch == 0)
+        pbug <<"access Memory at addr" << " " << addr << ", " << "the content is null" << endl;
+    else
+        pbug <<"access Memory at addr" << " " << addr << ", " << "the content is " << ch << endl;
     Sleep(1000);
     return ;
 }
@@ -958,7 +963,11 @@ void RRQueue::useIO(string command){
 void RRQueue::accessMem(string command,int pid){
     int addr = atoi(command.c_str());
     // pbug << "DEBUG_PID RRQueue::accessMem " << pid << endl;
-    pbug <<"access Memory at addr" << " " << addr << ", " << "the content is " << bmm->accessMemory(pid,addr) << endl;
+    char ch = bmm->accessMemory(pid,addr);
+    if (ch == 0)
+        pbug <<"access Memory at addr" << " " << addr << ", " << "the content is null" << endl;
+    else
+        pbug <<"access Memory at addr" << " " << addr << ", " << "the content is " << ch << endl;
     Sleep(TIME_SLICE * ALPHA);
     return ;
 }
