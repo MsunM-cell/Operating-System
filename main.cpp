@@ -257,9 +257,11 @@ int main(int argc1, char *argv1[])
         {
             fileOperation.cd_command(argv[1]);
         }
-        else if (argv[0] == "exit" || argv[0] == "yes")
+        else if (argv[0] == "exit")
         {
-            // nop
+            TerminateThread(procManagerThread, 0);
+            pout.close();
+            return 0;
         }
         else if (argv[0] == "tc")
         {
