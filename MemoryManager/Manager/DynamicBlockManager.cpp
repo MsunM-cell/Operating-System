@@ -229,11 +229,11 @@ void BlockMemoryManager::monitor()
     }
     log << setw(15) << "time"
         << " "
-        << setw(37) << "inUsedMem"
+        << setw(32) << "inUsedMem"
         << " "
         << setw(18) << "freeMem"
         << " "
-        << setw(20) << "MemoryUtilization"
+        << setw(25) << "MemoryUtilization"
         << " " << endl;
     Sleep(2000);
 
@@ -243,7 +243,7 @@ void BlockMemoryManager::monitor()
     while (active)
     {
         GetLocalTime(&sys);
-        sprintf(now_time, "%4d/%02d/%02d %02d:%02d:%02d.%03d 星期%1d", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds, sys.wDayOfWeek);
+        sprintf(now_time, "%4d/%02d/%02d %02d:%02d:%02d.%03d", sys.wYear, sys.wMonth, sys.wDay, sys.wHour, sys.wMinute, sys.wSecond, sys.wMilliseconds);
         int up = manager->getUsedMem();
         double utilization = (double)up / mem_config.MEM_SIZE;
         log << setw(12) << now_time << " "
