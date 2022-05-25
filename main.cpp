@@ -327,7 +327,7 @@ int main(int argc1, char *argv1[])
                         string file_name = "";
                         if (argv[2].front() == path::preferred_separator)
                         {
-                            dir = argv[2].substr(0, argv[2].find_last_of(path::preferred_separator));
+                            dir = argv[2].substr(0, argv[2].find_last_of(path::preferred_separator) + 1);
                             file_name = argv[2].substr(argv[2].find_last_of(path::preferred_separator) + 1);
                         }
                         else
@@ -351,7 +351,7 @@ int main(int argc1, char *argv1[])
                         string file_name = "";
                         if (argv[1].front() == path::preferred_separator)
                         {
-                            dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                            dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator) + 1);
                             file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
                         }
                         else
@@ -363,7 +363,7 @@ int main(int argc1, char *argv1[])
                             }
                             else
                             {
-                                dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator));
+                                dir = argv[1].substr(0, argv[1].find_last_of(path::preferred_separator) + 1);
                                 file_name = argv[1].substr(argv[1].find_last_of(path::preferred_separator) + 1);
                             }
                         }
