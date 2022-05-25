@@ -46,11 +46,8 @@ DWORD WINAPI setupProcManager(LPVOID lpParamter)
     while (true)
     {
         ProcManager::getInstance().scheduling();
-        if (ProcManager::getInstance().getActiveNum() == 0)
-        {
-            Sleep(20);
-            ProcManager::getInstance().maintain(20);
-        }
+        Sleep(100);
+        ProcManager::getInstance().maintain(100);
     }
 
     return 0L;
